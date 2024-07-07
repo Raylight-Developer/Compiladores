@@ -3,7 +3,10 @@
 #include <string>
 #include <map>
 static std::map<std::string, int> vars;
-inline void yyerror(const char *str) { std::cout << str << std::endl; }
+
+inline void yyerror(const char *str) {
+	std::cerr << "Error: " << str << std::endl;
+}
 
 extern int yylex();
 extern int yyparse();

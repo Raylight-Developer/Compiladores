@@ -1,0 +1,12 @@
+echo "Ejercicio 1"
+./parser < 01.txt
+echo "Ejercicio 2"
+./parser < 02.txt
+echo "Ejercicio 3"
+./parser < 03.txt
+echo "Ejercicio 4"
+./parser < 04.txt
+echo "Ejercicio 5"
+./parser < 05.txt
+echo "Ejercicio 6"
+./parser < 06.txt

@@ -12,3 +12,4 @@ WORKDIR /home/files
 RUN flex simple_language.lex
 RUN bison -d simple_language.y
 RUN g++ -o parser simple_language.tab.c lex.yy.c
+RUN ./script.bash
