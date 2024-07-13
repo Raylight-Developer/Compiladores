@@ -1,0 +1,5 @@
+def square(x)
+  x * x
+end
+
+square(4)
