@@ -143,5 +143,14 @@ class MiniLangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by MiniLangParser#error.
+    def enterError(self, ctx:MiniLangParser.ErrorContext):
+        pass
+
+    # Exit a parse tree produced by MiniLangParser#error.
+    def exitError(self, ctx:MiniLangParser.ErrorContext):
+        pass
+
+
 
 del MiniLangParser

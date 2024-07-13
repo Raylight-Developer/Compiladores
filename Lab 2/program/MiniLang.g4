@@ -2,22 +2,22 @@ grammar MiniLang;
 
 prog:   stat+ ;
 
-stat:   expr NEWLINE                    # printExpr
-    |   ID '=' expr NEWLINE             # assign
-    |   'if' expr 'then' stat+ 'end'    # if
-    |   'while' expr 'do' stat+ 'end'   # while
-    |   'def' ID '(' ID ')' stat+ 'end' # func
-    |   ID '(' expr ')' NEWLINE         # call
-    |   NEWLINE                         # blank
+stat:   expr NEWLINE                              # printExpr
+    |   ID '=' expr NEWLINE                       # assign
+    |   'if' expr 'then' stat+ 'end'              # if
+    |   'while' expr 'do' stat+ 'end'             # while
+    |   'def' ID '(' ID ')' stat+ 'end'           # func
+    |   ID '(' expr ')' NEWLINE                   # call
+    |   NEWLINE                                   # blank
     ;
 
-expr:   expr ('*'|'/') expr                     # MulDiv
-    |   expr ('+'|'-') expr                     # AddSub
-    |   expr ('=='|'!='|'<'|'>'|'<='|'>=') expr # Compare
-    |   INT                                     # int
-    |   STRING                                  # string
-    |   ID                                      # id
-    |   '(' expr ')'                            # parens
+expr:   expr ('*'|'/') expr                       # MulDiv
+    |   expr ('+'|'-') expr                       # AddSub
+    |   expr ('=='|'!='|'<'|'>'|'<='|'>=') expr   # Compare
+    |   INT                                       # int
+    |   STRING                                    # string
+    |   ID                                        # id
+    |   '(' expr ')'                              # parens
     ;
 
 STRING  : '"' (~["\\] | '\\' .)* '"';
@@ -48,4 +48,8 @@ WS  : [ \t]+ -> skip ; // toss out whitespace
 
 COMMENT
     :   '//' ~[\r\n]* -> skip
+    ;
+
+error
+    : . {"Invalid character: " + $text }
     ;

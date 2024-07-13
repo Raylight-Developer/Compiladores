@@ -1,3 +1,66 @@
+# Alejandro Martínez - 21430
+# Samuel Argueta - 211024
+
+<i><u>[GRAMATICA](./program/MiniLang.g4)</u></i>
+
+```bash
+grammar MiniLang;
+
+prog:   stat+ ;
+
+stat:   expr NEWLINE                              # printExpr
+    |   ID '=' expr NEWLINE                       # assign
+    |   'if' expr 'then' stat+ 'end'              # if
+    |   'while' expr 'do' stat+ 'end'             # while
+    |   'def' ID '(' ID ')' stat+ 'end'           # func
+    |   ID '(' expr ')' NEWLINE                   # call
+    |   NEWLINE                                   # blank
+    ;
+
+expr:   expr ('*'|'/') expr                       # MulDiv
+    |   expr ('+'|'-') expr                       # AddSub
+    |   expr ('=='|'!='|'<'|'>'|'<='|'>=') expr   # Compare
+    |   INT                                       # int
+    |   STRING                                    # string
+    |   ID                                        # id
+    |   '(' expr ')'                              # parens
+    ;
+
+STRING  : '"' (~["\\] | '\\' .)* '"';
+
+DEF     : 'def';
+
+IF      : 'if';
+THEN    : 'then';
+WHILE   : 'while';
+DO      : 'do';
+END     : 'end';
+
+EQ  : '==';
+NEQ : '!=';
+LT  : '<';
+GT  : '>';
+LE  : '<=';
+GE  : '>=';
+
+MUL : '*' ; // define token for multiplication
+DIV : '/' ; // define token for division
+ADD : '+' ; // define token for addition
+SUB : '-' ; // define token for subtraction
+ID  : [a-zA-Z]+ ; // match identifiers
+INT : [0-9]+ ; // match integers
+NEWLINE:'\r'? '\n' ; // return newlines to parser (is end-statement signal)
+WS  : [ \t]+ -> skip ; // toss out whitespace
+
+COMMENT
+    :   '//' ~[\r\n]* -> skip
+    ;
+
+error
+    : . {"Invalid character: " + $text }
+    ;
+```
+
 ## 1. Cree un programa que asigne un valor a una variable.
 Test
 ```bash
@@ -20,6 +83,8 @@ a * (b + 3) / 2
 ```
 ## 4. Modifique el lenguaje para incluir la asignacion de variables con expresiones aritmeticas.
 Modificacion
+
+**ya existia, no es necesario modificar*
 ```bash
 stat: ID '=' expr NEWLINE
 ```
@@ -34,7 +99,7 @@ c = a * (b + 3) / 2
 Modificacion
 ```bash
 error
-    : . { System.err.println("Invalid character: " + $text); }
+    : . {"Invalid character: " + $text }
     ;
 ```
 ## 6. Cree un programa que utilice parentesis para cambiar la precedencia de operadores.
@@ -85,6 +150,7 @@ a >= 5
 
 ```
 ## 10. Extienda el lenguaje para soportar estructuras de control como ‘if‘ y ‘while‘.
+Modification
 ```bash
 prog:   stat+ ;
 
@@ -163,6 +229,7 @@ square(4)
 
 ```
 ## 15. Implemente un sistema de tipos basico que, ademas de incluir enteros, tambien incluya cadenas.
+Modification
 ```bash
 expr:   expr ('*'|'/') expr                     # MulDiv
     |   expr ('+'|'-') expr                     # AddSub
