@@ -7,10 +7,13 @@ stat: reserve NEWLINE                # reserveStat
     | NEWLINE                        # blank
     ;
 
-reserve: 'RESERVAR' ID 'PARA' DATE 'DE' TIME 'A' TIME 'POR' NAME ; 
+reserve: 'RESERVAR' ROOMTYPE ID 'PARA' DATE 'DE' TIME 'A' TIME 'POR' NAME ; 
 
 cancel: 'CANCELAR' ID 'PARA' DATE 'DE' TIME 'A' TIME ; 
 
+reschedule: 'REPROGRAMAR' ID 'PARA' DATE 'DE' TIME 'A' TIME 'SOLICITADO_POR' NAME ;
+
+ROOMTYPE: 'sala_de_juntas' | 'sala_de_capacitacion' ; 
 NAME: [a-zA-Z]+ ; 
 DATE: DIGIT DIGIT '/' DIGIT DIGIT '/' DIGIT DIGIT DIGIT DIGIT ; 
 TIME: DIGIT DIGIT ':' DIGIT DIGIT ; 

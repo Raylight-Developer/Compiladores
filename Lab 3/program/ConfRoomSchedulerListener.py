@@ -62,5 +62,14 @@ class ConfRoomSchedulerListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by ConfRoomSchedulerParser#reschedule.
+    def enterReschedule(self, ctx:ConfRoomSchedulerParser.RescheduleContext):
+        pass
+
+    # Exit a parse tree produced by ConfRoomSchedulerParser#reschedule.
+    def exitReschedule(self, ctx:ConfRoomSchedulerParser.RescheduleContext):
+        pass
+
+
 
 del ConfRoomSchedulerParser

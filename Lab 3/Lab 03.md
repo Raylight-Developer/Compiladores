@@ -80,15 +80,17 @@ Test
 ```bash
 ```
 ## 10. Cree un programa que utilice todas las caracterısticas extendidas del DSL.
-Modificacion
-```bash
-```
 Test
 ```bash
+RESERVAR sala101 PARA 15/07/2024 DE 09:00 A 11:00 SOLICITADO_POR Juan DESCRIPCION Reunión de equipo
+RESERVAR sala102 PARA 16/07/2024 DE 10:00 A 12:00 SOLICITADO_POR María DESCRIPCION Taller de capacitación
+CANCELAR sala101 PARA 15/07/2024 DE 09:00 A 11:00 SOLICITADO_POR Juan
 ```
 ## 11. Añada soporte para diferentes tipos de salas (por ejemplo, sala de juntas, sala de capacitacion).
 Modificacion
 ```bash
+reserve: 'RESERVAR' ROOMTYPE ID 'PARA' DATE 'DE' TIME 'A' TIME 'SOLICITADO_POR' NAME 'DESCRIPCION' DESCRIPTION ;
+ROOMTYPE: 'sala_de_juntas' | 'sala_de_capacitacion' ;
 ```
 Test
 ```bash
@@ -103,6 +105,7 @@ Test
 ## 13. Extienda el DSL para permitir la reprogramacion de reservas.
 Modificacion
 ```bash
+reschedule: 'REPROGRAMAR' ID 'PARA' DATE 'DE' TIME 'A' TIME 'SOLICITADO_POR' NAME ;
 ```
 Test
 ```bash
