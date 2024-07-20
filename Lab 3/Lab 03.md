@@ -1,16 +1,17 @@
 # Alejandro Martínez - 21430
 # Samuel Argueta - 211024
 
-<i><u>[GRAMATICA](./program/ConfRoomScheduler.g4)</u></i>
+<i>[GRAMMAR.g4](./program/ConfRoomScheduler.g4)</i>
 
-<i><u>[LISTENER](./program/ConfRoomSchedulerListener.py)</u></i>
-
-<i><u>[TEST](./program/program_test_confroom.txt)</u></i>
+<i>[LISTENER.py](./program/ConfRoomSchedulerListener.py)</i>
 
 ```
 antlr -Dlanguage=Python3 ConfRoomScheduler.g4 
 python3 DriverConfroom.py program_test_confroom.txt
 ```
+
+## Results
+<i>[TEST.txt](./program/program_test_confroom.txt)</i>
 
 ![alt text](image.png)
 
