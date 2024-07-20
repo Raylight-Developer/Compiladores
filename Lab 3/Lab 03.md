@@ -18,38 +18,38 @@ python3 DriverConfroom.py program_test_confroom.txt
 ## 1. Cree un programa que reserve una sala de conferencias.
 Modificacion
 **ya existia, no es necesario modificar*
-```bash
+```python
 reserve: 'RESERVAR' ID 'PARA' DATE 'DE' TIME 'A' TIME ;
 ```
 Test
-```bash
+```python
 RESERVAR sala101 PARA 12/12/2024 DE 07:00 A 08:00
 ```
 ## 2. Cree un programa que cancele una reserva de sala de conferencias.
 Modificacion
 **ya existia, no es necesario modificar*
-```bash
+```python
 cancel: 'CANCELAR' ID 'PARA' DATE 'DE' TIME 'A' TIME ;
 ```
 Test
-```bash
+```python
 CANCELAR sala101 PARA 12/12/2024 DE 07:00 A 08:00
 ```
 ## 3. Experimente con varias reservas y cancelaciones en un mismo programa.
 Test
-```bash
+```python
 RESERVAR sala101 PARA 12/12/2024 DE 07:00 A 08:00
 CANCELAR sala101 PARA 12/12/2024 DE 07:00 A 08:00
 RESERVAR sala102 PARA 01/10/2023 DE 10:00 A 12:00
 ```
 ## 4. Modifique el DSL para incluir el nombre del solicitante de la reserva.
 Modificacion
-```bash
+```python
 reserve: 'RESERVAR' ID 'PARA' DATE 'DE' TIME 'A' TIME 'POR' NAME ; 
 NAME: [a-zA-Z]+ ; 
 ```
 Test
-```bash
+```python
 RESERVAR sala101 PARA 12/12/2024 DE 07:00 A 08:00 POR Alejandro
 ```
 ## 5. Agregue manejo de errores para detectar fechas u horas invalidas.
@@ -130,7 +130,7 @@ def enterReserve(self, ctx:ConfRoomSchedulerParser.ReserveContext):
 		})
 		print(f"Reserved {room_type} with ID {res_id} on {date} from {start_time} to {end_time} by {applicant}" + (f" with description {description}" if description else ""))
 
-	except ValueError as e:
+	except ValueError as e:	
 		print(f"Error: Invalid date or time format in reservation {res_id}")
 
 def enterCancelStat(self, ctx:ConfRoomSchedulerParser.CancelStatContext):
@@ -145,12 +145,12 @@ def enterCancelStat(self, ctx:ConfRoomSchedulerParser.CancelStatContext):
 ```
 ## 7. Extienda el DSL para soportar descripciones de eventos.
 Modificacion
-```bash
+```python
 reserve: 'RESERVAR' ROOMTYPE ID 'PARA' DATE 'DE' TIME 'A' TIME 'POR' NAME ( 'DESCRIPCION' DESCRIPTION )? ; 
 DESCRIPTION: '"' .*? '"' ; 
 ```
 Test
-```bash
+```python
 RESERVAR sala_de_juntas R1 PARA 20/07/2024 DE 10:00 A 12:00 POR Juan DESCRIPCION "Meeting"
 ```
 ## 8. Agregue validaciones adicionales como restricciones de tiempo de uso maximo.
@@ -215,19 +215,19 @@ def enterList(self, ctx:ConfRoomSchedulerParser.ListContext):
 ```
 ## 10. Cree un programa que utilice todas las caracterısticas extendidas del DSL.
 Test
-```bash
+```python
 RESERVAR sala101 PARA 15/07/2024 DE 09:00 A 11:00 SOLICITADO_POR Juan DESCRIPCION Reunión de equipo
 RESERVAR sala102 PARA 16/07/2024 DE 10:00 A 12:00 SOLICITADO_POR María DESCRIPCION Taller de capacitación
 CANCELAR sala101 PARA 15/07/2024 DE 09:00 A 11:00 SOLICITADO_POR Juan
 ```
 ## 11. Añada soporte para diferentes tipos de salas (por ejemplo, sala de juntas, sala de capacitacion).
 Modificacion
-```bash
+```python
 reserve: 'RESERVAR' ROOMTYPE ID 'PARA' DATE 'DE' TIME 'A' TIME 'SOLICITADO_POR' NAME 'DESCRIPCION' DESCRIPTION ;
 ROOMTYPE: 'sala_de_juntas' | 'sala_de_capacitacion' ;
 ```
 Test
-```bash
+```python
 RESERVAR sala_de_capacitacion R2 PARA 20/07/2024 DE 14:00 A 16:00 POR Maria
 ```
 ## 12. Implemente un sistema de notificaciones para reservas proximas.
@@ -250,11 +250,11 @@ def enterNotify(self, ctx:ConfRoomSchedulerParser.NotifyContext):
 ```
 ## 13. Extienda el DSL para permitir la reprogramacion de reservas.
 Modificacion
-```bash
+```python
 reschedule: 'REPROGRAMAR' ID 'DE' DATE 'A' DATE 'DE' TIME 'A' TIME 'SOLICITADO_POR' NAME ;
 ```
 Test
-```bash
+```python
 RESERVAR sala_de_juntas R1 PARA 20/07/2024 DE 10:00 A 12:00 POR Juan DESCRIPCION "Reunion del proyecto A"
 REPROGRAMAR R1 DE 20/07/2024 A 21/07/2024 DE 10:00 A 12:00
 ```
