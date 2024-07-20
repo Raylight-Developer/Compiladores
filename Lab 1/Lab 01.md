@@ -12,7 +12,7 @@ inline void yyerror(const char *str) {
 ```
 ### 6. Experimente con la precedencia de operadores en el lenguaje y observe como afecta la generacion del arbol sintactico.
 [simple_language.y](./files/simple_language.y)
-```
+```python
 %left y %right en simple_language.y.
 
 Por ejemplo: %left '+' '-' indica que la suma y la resta tienen la misma precedencia y son asociativas de izquierda a derecha.
