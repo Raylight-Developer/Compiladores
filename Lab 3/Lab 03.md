@@ -15,7 +15,7 @@ reserve: 'RESERVAR' ID 'PARA' DATE 'DE' TIME 'A' TIME ;
 ```
 Test
 ```bash
-RESERVAR SALON3 PARA 12/12/2024 DE 07:00 A 08:00
+RESERVAR sala101 PARA 12/12/2024 DE 07:00 A 08:00
 ```
 ## 2. Cree un programa que cancele una reserva de sala de conferencias.
 Modificacion
@@ -25,14 +25,14 @@ cancel: 'CANCELAR' ID 'PARA' DATE 'DE' TIME 'A' TIME ;
 ```
 Test
 ```bash
-CANCELAR SALON3 PARA 12/12/2024 DE 07:00 A 08:00
+CANCELAR sala101 PARA 12/12/2024 DE 07:00 A 08:00
 ```
 ## 3. Experimente con varias reservas y cancelaciones en un mismo programa.
 Test
 ```bash
-RESERVAR SALON3 PARA 12/12/2024 DE 07:00 A 08:00
-CANCELAR SALON3 PARA 12/12/2024 DE 07:00 A 08:00
-RESERVAR SALON1 PARA 01/10/2023 DE 10:00 A 12:00
+RESERVAR sala101 PARA 12/12/2024 DE 07:00 A 08:00
+CANCELAR sala101 PARA 12/12/2024 DE 07:00 A 08:00
+RESERVAR sala102 PARA 01/10/2023 DE 10:00 A 12:00
 ```
 ## 4. Modifique el DSL para incluir el nombre del solicitante de la reserva.
 Modificacion
@@ -42,7 +42,7 @@ NAME: [a-zA-Z]+ ;
 ```
 Test
 ```bash
-RESERVAR SALON3 PARA 12/12/2024 DE 07:00 A 08:00 POR Alejandro
+RESERVAR sala101 PARA 12/12/2024 DE 07:00 A 08:00 POR Alejandro
 ```
 ## 5. Agregue manejo de errores para detectar fechas u horas invalidas.
 Modificacion
@@ -53,10 +53,40 @@ Test
 ```
 ## 6. Cree un programa que incluya reservas solapadas y verifique su manejo (para validar reservaciones traslapadas, use un listener de ANTLR en Python; el listener llevara la cuenta de las reservaciones y validara cada nueva reservacion en contra de las existentes).
 Modificacion
-```bash
-```
-Test
-```bash
+```python
+def enterReserveStat(self, ctx:ConfRoomSchedulerParser.ReserveStatContext):
+	room_id = ctx.ID().getText()
+	date = ctx.DATE().getText()
+	start_time = ctx.TIME(0).getText()
+	end_time = ctx.TIME(1).getText()
+	requester = ctx.NAME().getText()
+	description = ctx.DESCRIPTION().getText()
+
+	# Check for overlapping reservations
+	for res in self.reservations:
+		if res['room_id'] == room_id and res['date'] == date:
+			if (start_time < res['end_time'] and end_time > res['start_time']):
+				print(f"Error: Reservation for {room_id} on {date} from {start_time} to {end_time} overlaps with an existing reservation.")
+				return
+
+	self.reservations.append({
+		'room_id': room_id,
+		'date': date,
+		'start_time': start_time,
+		'end_time': end_time,
+		'requester': requester,
+		'description': description
+	})
+
+def enterCancelStat(self, ctx:ConfRoomSchedulerParser.CancelStatContext):
+	room_id = ctx.ID().getText()
+	date = ctx.DATE().getText()
+	start_time = ctx.TIME(0).getText()
+	end_time = ctx.TIME(1).getText()
+	requester = ctx.NAME().getText()
+
+	# Find and remove the reservation
+	self.reservations = [res for res in self.reservations if not (res['room_id'] == room_id and res['date'] == date and res['start_time'] == start_time and res['end_time'] == end_time and res['requester'] == requester)]
 ```
 ## 7. Extienda el DSL para soportar descripciones de eventos.
 Modificacion
@@ -109,6 +139,7 @@ reschedule: 'REPROGRAMAR' ID 'PARA' DATE 'DE' TIME 'A' TIME 'SOLICITADO_POR' NAM
 ```
 Test
 ```bash
+REPROGRAMAR sala101 PARA 20/07/2024 DE 14:00 A 16:00 SOLICITADO_POR Juan
 ```
 ## 14. Cree un programa que reprograme una reserva existente y valide el cambio (para validar reservaciones traslapadas, use un listener de ANTLR en Python que ya creo en una actividad anterior; el listener llevara la cuenta de las reservaciones y validara cada nueva reservacion en contra de las existentes).
 Modificacion
