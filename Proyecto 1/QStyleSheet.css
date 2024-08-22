@@ -1,0 +1,281 @@
+* {
+	background: rgb(50,50,50);
+	color: rgb(255,255,255);
+
+	font-family: 'Roboto Mono';
+	font-weight: normal;
+	font-size: 15px;
+
+	border-style: solid;
+	border-color: rgb(255, 135, 25);
+	border-width: 0px;
+	border-radius: 5px;
+	
+	padding: 0px;
+	margin: 0px;
+}
+
+QLineEdit {
+	background: rgb(25,25,25);
+	color: rgb(250,250,250);
+
+	border-width: 1px;
+	border-radius: 5px;
+
+	text-align: left;
+	padding-left: 10px;
+	height: 24px;
+	max-height: 24px;
+}
+
+QMainWindow {
+	background: rgb(75,75,75);
+}
+QMainWindow:separator:vertical {
+	background: rgb(255, 135, 25);
+	width: 2px;
+	border-width: 1px;
+	border-radius: 0px;
+	border-color: transparent rgb(150,150,150) transparent rgb(150,150,150);
+}
+QMainWindow:separator:horizontal {
+	background: rgb(255, 135, 25);
+	width: 2px;
+	border-width: 1px;
+	border-radius: 0px;
+	border-color: rgb(150,150,150) transparent rgb(150,150,150) transparent;
+}
+
+QPushButton {
+	border-color: rgb(255, 135, 25);
+	border-width: 1px;
+	border-radius: 5px;
+
+	padding-left: 5px;
+	padding-right: 5px;
+
+	background: rgb(75,75,75);
+	height: 25px;
+}
+QPushButton:hover {
+	background: rgb(100,100,100);
+}
+QPushButton:pressed {
+	background: rgb(255, 145, 20);
+}
+QPushButton:checked {
+	background: rgb(255, 135, 0);
+}
+QPushButton:checked:hover {
+	background: rgb(255, 145, 20);
+}
+QPushButton:checked:pressed {
+	background: rgb(100, 100, 100);
+}
+
+QScrollArea {
+	background: rgb(75,75,75);
+}
+
+QScrollBar:handle {
+	background: rgb(255, 135, 25);
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 0px;
+	border-color: rgb(0,0,0);
+}
+
+QScrollBar:vertical {
+	background: rgb(75, 75, 75);
+	width: 18px;
+	margin: 18px 0 18px 0;
+}
+QScrollBar:handle:vertical {
+	min-height: 24px;
+}
+QScrollBar:add-line:vertical {
+	background: rgb(100,100,100);
+	height: 18px;
+	border-style: solid;
+	border-width: 1px;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	border-color: rgb(0,0,0);
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+QScrollBar:sub-line:vertical {
+	background: rgb(100,100,100);
+	height: 18px;
+	border-style: solid;
+	border-width: 1px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-color: rgb(0,0,0);
+	subcontrol-position: top;
+	subcontrol-origin: margin;
+}
+QScrollBar:add-page:vertical, QScrollBar:sub-page:vertical {
+	background: transparent;
+	border-style: solid;
+	border-color: rgb(0,0,0);
+	border-width: 0px;
+	border-right-width: 1px;
+	border-left-width: 1px;
+}
+
+QScrollBar:horizontal {
+	background: rgb(75, 75, 75);
+	height: 18px;
+	margin: 0 18px 0 18px;
+}
+QScrollBar:handle:horizonal {
+	min-width: 24px;
+}
+QScrollBar:add-line:horizontal {
+	background: rgb(100,100,100);
+	width: 18px;
+	border-style: solid;
+	border-width: 1px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+	border-color: rgb(0,0,0);
+	subcontrol-position: right;
+	subcontrol-origin: margin;
+}
+QScrollBar:sub-line:horizontal {
+	background: rgb(100,100,100);
+	width: 18px;
+	border-style: solid;
+	border-width: 1px;
+	border-top-left-radius: 5px;
+	border-bottom-left-radius: 5px;
+	border-color: rgb(0,0,0);
+	subcontrol-position: left;
+	subcontrol-origin: margin;
+}
+QScrollBar:add-page:horizontal, QScrollBar:sub-page:horizontal {
+	background: transparent;
+	border-style: solid;
+	border-color: rgb(0,0,0);
+	border-width: 0px;
+	border-top-width: 1px;
+	border-bottom-width: 1px;
+}
+
+QSlider:vertical {
+	background: rgb(25,25,25);
+	border-width: 1px;
+	border-radius: 5px;
+
+	height: 24px;
+	min-width: 24px;
+}
+QSlider:horizontal {
+	background: rgb(25,25,25);
+	border-width: 1px;
+	border-radius: 5px;
+	width: 24px;
+	min-height: 24px;
+}
+QSlider:groove {
+	background: transparent;
+}
+QSlider:handle:horizontal {
+	background: rgb(255,135,0);
+	width:8px;
+	margin: 2px;
+	border-radius: 3px;
+}
+
+QSplitter {
+	background: rgb(25,25,25);
+}
+QSplitter:handle:vertical {
+	background: rgb(255, 135, 25);
+	height: 2px;
+}
+QSplitter:handle:horizontal {
+	background: rgb(255, 135, 25);
+	width: 2px;
+}
+
+QTextEdit, QPlainTextEdit {
+	background: rgb(15,15,15);
+	color: rgb(250,250,250);
+	border-width: 1px;
+	border-radius: 5px;
+	border-color: rgb(125,125,125);
+	font-family: 'Roboto Mono Medium';
+	font-size: 16px;
+}
+
+QTextBrowser {
+	background: rgb(30,30,30);
+	color: rgb(250,250,250);
+	border-width: 1px;
+	border-radius: 5px;
+	border-color: rgb(125,125,125);
+	font-family: 'Roboto Mono Medium';
+	font-size: 16px;
+}
+
+QToolTip {
+	color: rgb(150,150,150);
+	background: rgb(50,50,50);
+	border-width: 1px;
+	border-radius: 0px;
+	border-color: rgb(250,140,25);
+}
+
+QTableWidget {
+	background: rgb(30,30,30);
+	color: rgb(250,250,250);
+	border-width: 1px;
+	border-radius: 5px;
+	border-color: rgb(125,125,125);
+	font-family: 'Roboto Mono Medium';
+	font-size: 16px;
+}
+
+QTableWidget:item {
+	background:rgb(70,70,70);
+}
+QTableWidget:item:selected {
+	background:rgb(100,100,100);
+}
+QTableWidget:section {
+	background:rgb(25,25,25);
+	border-color:rgb(225,225,225);
+	padding: 0 5px 0 5px;
+	border-radius:0px;
+	border-width:1px;
+}
+
+QHeaderView::section {
+	background:rgb(25,25,25);
+	border-color:rgb(225,225,225);
+	padding: 0 5px 0 5px;
+}
+
+QTableCornerButton:section {
+	background: rgb(50,50,50);
+	border-style: solid;
+	border-color: rgb(200,200,200);
+	border-width: 1px 1px 1px 0;
+}
+
+QTreeWidget {
+	background: rgb(50,50,50);
+	color: rgb(250,250,250);
+	border-width: 2px;
+	border-radius: 5px;
+}
+QTreeWidget:branch:has-children:!has-siblings:closed, QTreeWidget:branch:closed:has-children:has-siblings {
+	border-image: none;
+	image: url(./Resources/Icons/Collapsed.png);
+}
+QTreeWidget:branch:open:has-children:!has-siblings, QTreeWidget:branch:open:has-children:has-siblings {
+	border-image: none;
+	image: url(./Resources/Icons/Expanded.png);
+}
