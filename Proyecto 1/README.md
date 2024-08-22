@@ -2,6 +2,21 @@ Alejandro Martinez - 21430
 
 Samuel Argueta - 211024
 
+# Run
+
+## Dependencies:
+```bash
+pip install antlr4-python3-runtime
+pip install graphviz
+pip install PyQt6
+```
+
+## Launch:
+```bash
+python3 Main.py
+```
+
+## Unnecesary:
 ```bash
 docker build --rm . -t proyecto
 ```

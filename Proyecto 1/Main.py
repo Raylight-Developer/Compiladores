@@ -5,50 +5,54 @@ class Display(QMainWindow):
 		super().__init__()
 		self.setWindowTitle("Semantic Compiler")
 
-		self.main_layout = QVBoxLayout()
 
-		self.text_input_code = QTextEdit()
-		self.text_input_code.setPlaceholderText("Code to compile...")
-		self.text_input_code.setText("""var suma = 1 + 2;
+		self.code_input = QTextEdit()
+		self.code_input.setPlaceholderText("Code to compile...")
+		self.code_input.setText("""var suma = 1 + 2;
 var resta = 5 - 3;
 var producto = 4 * 2;
 var division = 8 / 2;""")
-		self.main_layout.addWidget(self.text_input_code)
 
-		self.text_output_compiled_code = QTextBrowser()
-		self.text_output_compiled_code.setPlaceholderText("Compiled code")
-		self.main_layout.addWidget(self.text_output_compiled_code)
+		self.code_output = QTextBrowser()
+		self.code_output.setPlaceholderText("Compiled code")
 
 		self.log = QTextBrowser()
 		self.log.setPlaceholderText("Log")
 
 		self.table = QTableWidget()
-	
-		sub = QHBoxLayout()
+
+		sub = QSplitter(Qt.Orientation.Horizontal)
 		sub.addWidget(self.log)
 		sub.addWidget(self.table)
-		self.main_layout.addLayout(sub)
 
-		self.button_compile = QPushButton("Compile")
-		self.button_compile.clicked.connect(self.parse)
-		self.main_layout.addWidget(self.button_compile)
+		main_splitter = QSplitter(Qt.Orientation.Vertical)
+		main_splitter.addWidget(self.code_input)
+		main_splitter.addWidget(self.code_output)
+		main_splitter.addWidget(sub)
 
-		self.central_widget = QWidget()
-		self.central_widget.setLayout(self.main_layout)
+		button_compile = QPushButton("Compile")
+		button_compile.clicked.connect(self.parse)
 
-		self.setCentralWidget(self.central_widget)
+		main_layout = QVBoxLayout()
+		main_layout.addWidget(main_splitter)
+		main_layout.addWidget(button_compile)
+
+		widget = QWidget()
+		widget.setLayout(main_layout)
+
+		self.setCentralWidget(widget)
 
 	def parse(self):
-		codigo = self.text_input_code.toPlainText()
-		self.text_output_compiled_code.clear()
+		codigo = self.code_input.toPlainText()
+		self.code_output.clear()
 		self.log.clear()
 		try:
 			resultado = self.compile(codigo)
 			self.log.append(G + "Comiplation Succesful" + RESET)
-			self.text_output_compiled_code.setText(f"{resultado[0]}")
+			self.code_output.setText(f"{resultado[0]}")
 		except Exception as e:
 			self.log.append(R + "Compilation Failed" + RESET)
-			self.text_output_compiled_code.setText(str(e))
+			self.code_output.setText(str(e))
 
 	def compile(self, code: str):
 		try:
@@ -74,6 +78,8 @@ var division = 8 / 2;""")
 			raise Exception(f"Compilation Error {e}")
 
 def main():
+	QApplication.setAttribute(Qt.ApplicationAttribute.AA_NativeWindows)
+
 	app = QApplication(sys.argv)
 	app.setStyleSheet(open("./QStyleSheet.css", "r").read())
 	Window = Display()

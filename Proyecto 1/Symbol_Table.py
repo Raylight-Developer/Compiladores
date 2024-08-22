@@ -7,7 +7,8 @@ class Symbol_Table:
 		self.table = table
 
 	def init(self):
-		labels = ['Type', 'ID', 'Scope', 'Value', 'Position', 'Address', 'IsParameter', 'IsInherited']
+		labels = ['Type', 'ID', 'Scope', 'Value', 'Position', 'Address']
 		self.table.setColumnCount(len(labels))
-		self.table.setRowCount(len(self.symbols) + 1)
+		self.table.setRowCount(len(self.symbols))
 		self.table.setHorizontalHeaderLabels(labels)
+		self.table.resizeColumnsToContents()

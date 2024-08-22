@@ -31,46 +31,23 @@ QLineEdit {
 QMainWindow {
 	background: rgb(75,75,75);
 }
-QMainWindow:separator:vertical {
-	background: rgb(255, 135, 25);
-	width: 2px;
-	border-width: 1px;
-	border-radius: 0px;
-	border-color: transparent rgb(150,150,150) transparent rgb(150,150,150);
-}
-QMainWindow:separator:horizontal {
-	background: rgb(255, 135, 25);
-	width: 2px;
-	border-width: 1px;
-	border-radius: 0px;
-	border-color: rgb(150,150,150) transparent rgb(150,150,150) transparent;
-}
 
 QPushButton {
-	border-color: rgb(255, 135, 25);
+	border-color: rgb(175,175,175);
 	border-width: 1px;
 	border-radius: 5px;
 
 	padding-left: 5px;
 	padding-right: 5px;
 
-	background: rgb(75,75,75);
+	background: rgb(30,30,30);
 	height: 25px;
 }
 QPushButton:hover {
 	background: rgb(100,100,100);
 }
 QPushButton:pressed {
-	background: rgb(255, 145, 20);
-}
-QPushButton:checked {
-	background: rgb(255, 135, 0);
-}
-QPushButton:checked:hover {
-	background: rgb(255, 145, 20);
-}
-QPushButton:checked:pressed {
-	background: rgb(100, 100, 100);
+	background: rgb(150, 150, 150);
 }
 
 QScrollArea {
@@ -175,6 +152,7 @@ QSlider:horizontal {
 	background: rgb(25,25,25);
 	border-width: 1px;
 	border-radius: 5px;
+
 	width: 24px;
 	min-height: 24px;
 }
@@ -189,15 +167,21 @@ QSlider:handle:horizontal {
 }
 
 QSplitter {
-	background: rgb(25,25,25);
-}
-QSplitter:handle:vertical {
-	background: rgb(255, 135, 25);
-	height: 2px;
+	background: rgb(5,5,5);
 }
 QSplitter:handle:horizontal {
 	background: rgb(255, 135, 25);
 	width: 2px;
+	margin: 1px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+QSplitter:handle:vertical {
+	background: rgb(255, 135, 25);
+	width: 2px;
+	margin: 1px;
+	margin-left: 10px;
+	margin-right: 10px;
 }
 
 QTextEdit, QPlainTextEdit {
@@ -205,9 +189,11 @@ QTextEdit, QPlainTextEdit {
 	color: rgb(250,250,250);
 	border-width: 1px;
 	border-radius: 5px;
-	border-color: rgb(125,125,125);
+	border-color: rgb(175,175,175);
 	font-family: 'Roboto Mono Medium';
 	font-size: 16px;
+	padding: 5px;
+	margin: 10px;
 }
 
 QTextBrowser {
@@ -215,9 +201,11 @@ QTextBrowser {
 	color: rgb(250,250,250);
 	border-width: 1px;
 	border-radius: 5px;
-	border-color: rgb(125,125,125);
+	border-color: rgb(175,175,175);
 	font-family: 'Roboto Mono Medium';
 	font-size: 16px;
+	padding: 5px;
+	margin: 10px;
 }
 
 QToolTip {
@@ -233,11 +221,12 @@ QTableWidget {
 	color: rgb(250,250,250);
 	border-width: 1px;
 	border-radius: 5px;
-	border-color: rgb(125,125,125);
+	border-color: rgb(175,175,175);
 	font-family: 'Roboto Mono Medium';
 	font-size: 16px;
+	padding: 5px;
+	margin: 10px;
 }
-
 QTableWidget:item {
 	background:rgb(70,70,70);
 }
@@ -246,7 +235,7 @@ QTableWidget:item:selected {
 }
 QTableWidget:section {
 	background:rgb(25,25,25);
-	border-color:rgb(225,225,225);
+	border-color: rgb(175,175,175);
 	padding: 0 5px 0 5px;
 	border-radius:0px;
 	border-width:1px;
@@ -254,14 +243,14 @@ QTableWidget:section {
 
 QHeaderView::section {
 	background:rgb(25,25,25);
-	border-color:rgb(225,225,225);
+	border-color: rgb(175,175,175);
 	padding: 0 5px 0 5px;
 }
 
 QTableCornerButton:section {
 	background: rgb(50,50,50);
 	border-style: solid;
-	border-color: rgb(200,200,200);
+	border-color: rgb(175,175,175);
 	border-width: 1px 1px 1px 0;
 }
 
