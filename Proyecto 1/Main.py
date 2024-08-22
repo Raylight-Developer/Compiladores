@@ -55,24 +55,23 @@ var division = 8 / 2;""")
 			input_stream = InputStream(code)
 			lexer = CompiscriptLexer(input_stream)
 			self.log.append("Lexer")
-			stream = CommonTokenStream(lexer)
+			token_stream = CommonTokenStream(lexer)
 			self.log.append("Token Stream")
-			parser = CompiscriptParser(stream)
+			parser = CompiscriptParser(token_stream)
 			self.log.append("Parser")
 			tree = parser.program()
-			tree_str = tree.toStringTree(recog=parser)
 
 			visitor = Semantic_Analyzer(self.log, self.table, parser)
 			visitor.visit(tree)
 			visitor.nodeTree(tree)
-			visitor.symbol_table.totable()
+			visitor.symbol_table.init()
 			if not os.path.exists("./Output"): os.makedirs("Output")
 			visitor.graph.render("Syntax Graph","./Output", False, True, "png")
 
-			return tree_str, visitor.symbol_table
+			return tree.toStringTree(recog=parser), visitor.symbol_table
 
 		except Exception as e:
-			raise Exception(f"Error de compilación {e}")
+			raise Exception(f"Compilation Error {e}")
 
 def main():
 	app = QApplication(sys.argv)
