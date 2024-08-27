@@ -96,6 +96,10 @@ class Display(QMainWindow):
 			visitor.nodeTree(tree)
 			visitor.graph.render("Syntax Graph","./Output", False, True, "png")
 
+			self.table_classes.resizeColumnsToContents()
+			self.table_functions.resizeColumnsToContents()
+			self.table_variables.resizeColumnsToContents()
+
 			return tree.toStringTree(recog=parser)
 
 		#except Exception as e:
