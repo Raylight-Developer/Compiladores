@@ -61,7 +61,7 @@ class Display(QMainWindow):
 		try:
 			resultado = self.compile(codigo)
 			self.log.append(G + "Comiplation Succesful" + RESET)
-			self.code_output.setText(f"{resultado[0]}")
+			self.code_output.setText(f"{resultado}")
 		except Exception as e:
 			self.log.append(R + "Compilation Failed" + RESET)
 			self.code_output.setText(str(e))
