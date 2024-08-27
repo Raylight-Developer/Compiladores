@@ -1,4 +1,5 @@
 from Semantic_Analyzer import *
+from SyntaxErrorListener import *
 
 class Display(QMainWindow):
 	def __init__(self):
@@ -57,13 +58,13 @@ class Display(QMainWindow):
 		codigo = self.code_input.toPlainText()
 		self.code_output.clear()
 		self.log.clear()
-		#try:
-		resultado = self.compile(codigo)
-		self.log.append(G + "Comiplation Succesful" + RESET)
-		self.code_output.setText(f"{resultado}")
-		#except Exception as e:
-		#	self.log.append(R + "Compilation Failed" + RESET)
-		#	self.code_output.setText(str(e))
+		try:
+			resultado = self.compile(codigo)
+			self.log.append(G + "Comiplation Succesful" + RESET)
+			self.code_output.setText(f"{resultado[0]}")
+		except Exception as e:
+			self.log.append(R + "Compilation Failed" + RESET)
+			self.code_output.setText(str(e))
 
 	def compile(self, code: str):
 		#try:
@@ -75,7 +76,17 @@ class Display(QMainWindow):
 
 			parser = CompiscriptParser(token_stream)
 			self.log.append("Parser")
+
+			# Añadir el ErrorListener personalizado
+			error_listener = SyntaxErrorListener(self.log)
+			parser.removeErrorListeners()  # Quitar el listener de errores por defecto
+			parser.addErrorListener(error_listener)
+			
 			tree = parser.program()
+
+			# Si hubo errores de sintaxis, lanzar una excepción
+			if error_listener.has_error:
+				raise Exception("Error de sintaxis detectado durante la compilación.")
 
 			visitor = Semantic_Analyzer(self.log, self.table_functions, self.table_variables, self.table_classes, parser)
 			visitor.visit(tree)
