@@ -90,6 +90,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		return node_id
 
+
+
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		return self.visitChildren(ctx)
 
