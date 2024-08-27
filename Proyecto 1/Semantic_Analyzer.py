@@ -26,17 +26,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.functions[fun_name] = ctx
 
 		# Construir los datos del símbolo
-		symbol_data = [
-			fun_name,                    # ID
-			"function",                  # Data_Type
-			"-",                         # Size (no aplica a funciones)
-			"-",                         # Offset (no aplica a funciones)
-			"global",                    # Scope (asumiendo que las funciones son globales)
-			"function"                   # Structure
-		]
+		symbol_data = Symbol_Property()
+		symbol_data.id = fun_name                    # ID
+		symbol_data.type = "function"                  # Data_Type
+		symbol_data.size = "-"                         # Size (no aplica a funciones)
+		symbol_data.offset = "-"                         # Offset (no aplica a funciones)
+		symbol_data.scope = "global"                    # Scope (asumiendo que las funciones son globales)
+		#symbol_data. = "function"                   # Structure ????????????????????????????????????????????????????????????????????????????????????????????
 
 		# Agregar el símbolo a la tabla
-		self.symbol_table.add_symbol(symbol_data)
+		# self.table_functions.add(symbol_data)???????????????????????????????????????????????????????????????????????????????????????????????????????
 
 		# Construir el AST
 		node_id = self.nodeTree(ctx)
@@ -68,17 +67,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		# Construir los datos del símbolo
 		scope = "local" if self.local_variables is not None else "global"
-		symbol_data = [
-			var_name,         # ID
-			var_type,         # Type
-			scope,            # Scope
-			"-",              # Value (puedes inicializarlo a '-' si aún no hay valor)
-			"-",              # Position (esto depende de cómo definas la posición)
-			"-",              # Address (esto depende de cómo manejes las direcciones)
-		]
+		symbol_data = Symbol_Property()
+		symbol_data.id =	var_name         # ID
+		symbol_data.type =	var_type         # Type
+		symbol_data.scope =	scope            # Scope
+		symbol_data.value =	"-"              # Value (puedes inicializarlo a '-' si aún no hay valor)
+		symbol_data.offset =	"-"              # Position (esto depende de cómo definas la posición)
+		symbol_data.address =	"-"              # Address (esto depende de cómo manejes las direcciones)
 
 		# Agregar el símbolo a la tabla de símbolos
-		self.symbol_table.add_symbol(symbol_data)
+		self.table_variables.add(symbol_data)
 
 		# Construir el AST
 		node_id = self.nodeTree(ctx)
@@ -101,9 +99,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				value = self.visit(ctx.expression())
 				property.scope = "None"
 				property.value = value
-			self.table_variables.add(self.varCount(), "ID"   , property.id )
-			self.table_variables.add(self.varCount(), "Scope", property.scope)
-			self.table_variables.add(self.varCount(), "Value", property.value)
+			self.table_variables.add(property)
 		else:
 			self.log.append(f"Variable redefinition error: {name}")
 		return self.visitChildren(ctx)
@@ -222,9 +218,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		return self.visitChildren(ctx)
-
-	def varCount(self):
-		return len(self.table_global_variables)
 
 	def __init__(self, log: QTextBrowser, table_functions: Symbol_Table, table_variables: Symbol_Table, table_classes: Symbol_Table, parser: CompiscriptParser):
 		super().__init__()
