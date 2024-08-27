@@ -16,7 +16,7 @@ pip install PyQt6
 python3 Main.py
 ```
 
-## Unnecesary:
+## Compile Compiscript python Files:
 ```bash
 docker build --rm . -t proyecto
 ```
@@ -27,5 +27,5 @@ docker run --name proyecto-1 --rm -ti -v "${PWD}/program:/program" proyecto
 docker attach proyecto-1
 ```
 ```bash
-antlr -Dlanguage=Python3 -visitor Compiscript.g4
+antlr -Dlanguage=Python3 -visitor -o ../ Compiscript.g4
 ```

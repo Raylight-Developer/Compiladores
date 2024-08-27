@@ -1,9 +1,5 @@
-# Generated from Compiscript.g4 by ANTLR 4.13.1
 from antlr4 import *
-if "." in __name__:
-	from .CompiscriptParser import CompiscriptParser
-else:
-	from CompiscriptParser import CompiscriptParser
+from CompiscriptParser import CompiscriptParser
 
 # This class defines a complete listener for a parse tree produced by CompiscriptParser.
 class CompiscriptListener(ParseTreeListener):

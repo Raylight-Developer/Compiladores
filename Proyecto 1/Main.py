@@ -56,20 +56,23 @@ var division = 8 / 2;""")
 
 	def compile(self, code: str):
 		try:
-			input_stream = InputStream(code)
-			lexer = CompiscriptLexer(input_stream)
+			lexer = CompiscriptLexer(InputStream(code))
 			self.log.append("Lexer")
+
 			token_stream = CommonTokenStream(lexer)
 			self.log.append("Token Stream")
+
 			parser = CompiscriptParser(token_stream)
 			self.log.append("Parser")
 			tree = parser.program()
 
 			visitor = Semantic_Analyzer(self.log, self.table, parser)
 			visitor.visit(tree)
-			visitor.nodeTree(tree)
 			visitor.symbol_table.init()
-			if not os.path.exists("./Output"): os.makedirs("Output")
+
+			if not os.path.exists("./Output"):
+				os.makedirs("Output")
+			visitor.nodeTree(tree)
 			visitor.graph.render("Syntax Graph","./Output", False, True, "png")
 
 			return tree.toStringTree(recog=parser), visitor.symbol_table
@@ -77,14 +80,10 @@ var division = 8 / 2;""")
 		except Exception as e:
 			raise Exception(f"Compilation Error {e}")
 
-def main():
-	QApplication.setAttribute(Qt.ApplicationAttribute.AA_NativeWindows)
 
-	app = QApplication(sys.argv)
-	app.setStyleSheet(open("./QStyleSheet.css", "r").read())
-	Window = Display()
-	Window.showMaximized()
-	app.exec()
-
-if __name__ == "__main__":
-	main()
+#QApplication.setAttribute(Qt.ApplicationAttribute.AA_NativeWindows)
+app = QApplication(sys.argv)
+app.setStyleSheet(open("./QStyleSheet.css", "r").read())
+Window = Display()
+Window.showMaximized()
+app.exec()
