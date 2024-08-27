@@ -54,29 +54,31 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if ctx.getChild(0):  # Suponiendo que el tipo es el primer hijo
 			var_type = ctx.getChild(0).getText()
 
-		# Verificar si la variable ya está declarada en el ámbito actual
-		if self.local_variables is not None:
-			if var_name in self.local_variables:
-				raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito local.")
-			else:
-				self.local_variables[var_name] = None
-		elif var_name in self.global_variables:
+		# Verificar si la variable ya está declarada en el ámbito global
+		if var_name in self.global_variables:
 			raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito global.")
 		else:
 			self.global_variables[var_name] = None
 
-		# Construir los datos del símbolo
-		scope = "local" if self.local_variables is not None else "global"
-		symbol_data = Symbol_Property()
-		symbol_data.id =	var_name         # ID
-		symbol_data.type =	var_type         # Type
-		symbol_data.scope =	scope            # Scope
-		symbol_data.value =	"-"              # Value (puedes inicializarlo a '-' si aún no hay valor)
-		symbol_data.offset =	"-"              # Position (esto depende de cómo definas la posición)
-		symbol_data.address =	"-"              # Address (esto depende de cómo manejes las direcciones)
+		# Almacenar la información en la tabla de símbolos
+		if var_name not in self.table_global_variables.keys():
+			property = Symbol_Property()
+			property.id = var_name
+			property.scope = "global"
+			property.value = None
 
-		# Agregar el símbolo a la tabla de símbolos
-		self.table_variables.add(symbol_data)
+			if ctx.expression():
+				expression_value = self.visit(ctx.expression())
+				property.value = expression_value
+
+			self.table_global_variables[var_name] = property
+
+			# Añadir a la tabla de variables
+			self.table_variables.add(self.varCount(), "ID", property.id)
+			self.table_variables.add(self.varCount(), "Scope", property.scope)
+			self.table_variables.add(self.varCount(), "Value", property.value)
+		else:
+			self.log.append(f"Variable redefinition error: {var_name}")
 
 		# Construir el AST
 		node_id = self.nodeTree(ctx)
@@ -87,22 +89,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			print(expression_value)
 
 		return node_id
-
-
-	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
-		name = str(ctx.IDENTIFIER())
-		if (name not in self.table_global_variables.keys()):
-			self.table_global_variables[name] = ctx
-			property = Symbol_Property()
-			property.id = name
-			if (ctx.expression() != None):
-				value = self.visit(ctx.expression())
-				property.scope = "None"
-				property.value = value
-			self.table_variables.add(property)
-		else:
-			self.log.append(f"Variable redefinition error: {name}")
-		return self.visitChildren(ctx)
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		return self.visitChildren(ctx)
