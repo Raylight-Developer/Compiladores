@@ -16,10 +16,74 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext):
-		return self.visitChildren(ctx)
+		fun_name = ctx.function().IDENTIFIER().getText()
 
+<<<<<<< HEAD
 	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
 		return self.visitChildren(ctx)
+=======
+		# Verifica si la función ya está declarada
+		if fun_name in self.functions:
+			raise Exception(f"Error: Función '{fun_name}' ya declarada.")
+
+		# Registra la función en la tabla de símbolos
+		self.functions[fun_name] = ctx
+
+		# Construye el AST
+		node_id = self.nodeTree(ctx)
+
+		# Visita el cuerpo de la función
+		self.visit(ctx.function().block())
+
+		return node_id
+	
+
+	# Visit a parse tree produced by CompiscriptParser#varDecl.
+# Visit a parse tree produced by CompiscriptParser#varDecl.
+	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
+		var_name = ctx.IDENTIFIER().getText()
+
+		# Intentar obtener el tipo de la variable desde el contexto
+		var_type = "unknown"
+		if ctx.getChild(0):  # Suponiendo que el tipo es el primer hijo
+			var_type = ctx.getChild(0).getText()
+
+		# Verificar si la variable ya está declarada en el ámbito actual
+		if self.local_variables is not None:
+			if var_name in self.local_variables:
+				raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito local.")
+			else:
+				self.local_variables[var_name] = None
+		elif var_name in self.global_variables:
+			raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito global.")
+		else:
+			self.global_variables[var_name] = None
+
+		# Construir los datos del símbolo
+		scope = "local" if self.local_variables is not None else "global"
+		symbol_data = [
+			var_name,         # ID
+			var_type,         # Type
+			scope,            # Scope
+			"-",              # Value (puedes inicializarlo a '-' si aún no hay valor)
+			"-",              # Position (esto depende de cómo definas la posición)
+			"-",              # Address (esto depende de cómo manejes las direcciones)
+		]
+
+		# Agregar el símbolo a la tabla de símbolos
+		self.symbol_table.add_symbol(symbol_data)
+
+		# Construir el AST
+		node_id = self.nodeTree(ctx)
+
+		# Visitar la expresión asociada si existe
+		if ctx.expression():
+			expression_value = self.visit(ctx.expression())
+			print(expression_value)
+
+		return node_id
+
+>>>>>>> 26f1dcc (Modificaciones para las tablas, funciona para variables, flata para mucho mas)
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		return self.visitChildren(ctx)
@@ -67,10 +131,30 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
-		return self.visitChildren(ctx)
+		if ctx.getChildCount() == 1:
+			return self.visit(ctx.factor(0))  # Retorna el único factor si no hay operación
+
+		left = self.visit(ctx.factor(0))
+		right = self.visit(ctx.factor(1))
+
+		if ctx.getChild(1).getText() == '+':
+			return left + right
+		elif ctx.getChild(1).getText() == '-':
+			return left - right
 
 	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
-		return self.visitChildren(ctx)
+		if ctx.getChildCount() == 1:
+			return self.visit(ctx.unary(0))  # Retorna el único unary si no hay operación
+
+		left = self.visit(ctx.unary(0))
+		right = self.visit(ctx.unary(1))
+
+		if ctx.getChild(1).getText() == '*':
+			return left * right
+		elif ctx.getChild(1).getText() == '/':
+			return left / right
+		elif ctx.getChild(1).getText() == '%':
+			return left % right
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext):
 		return self.visitChildren(ctx)
@@ -85,7 +169,26 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
-		return self.visitChildren(ctx)
+		if ctx.NUMBER():
+			# Retorna el valor numérico
+			return int(ctx.NUMBER().getText())
+		elif ctx.IDENTIFIER():
+			# Retorna el valor de la variable si existe
+			var_name = ctx.IDENTIFIER().getText()
+			if self.local_variables and var_name in self.local_variables:
+				return self.local_variables[var_name]
+			elif var_name in self.global_variables:
+				return self.global_variables[var_name]
+			else:
+				raise Exception(f"Error: Variable '{var_name}' no declarada.")
+		elif ctx.STRING():
+			return ctx.STRING().getText().strip('"')
+		elif ctx.getText() == "true":
+			return True
+		elif ctx.getText() == "false":
+			return False
+		elif ctx.getText() == "nil":
+			return None
 
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
 		return self.visitChildren(ctx)
