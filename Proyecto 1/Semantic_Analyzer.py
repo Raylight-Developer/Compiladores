@@ -1,7 +1,7 @@
 from CompiscriptVisitor import CompiscriptVisitor
 from CompiscriptParser import CompiscriptParser
 from CompiscriptLexer import CompiscriptLexer
-from Symbol_Table import Symbol_Table
+from Symbol_Table import Symbol_Table, Symbol_Property
 
 from Include import *
 
@@ -19,6 +19,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
+		name = str(ctx.IDENTIFIER())
+		if (name not in self.table_global_variables.keys()):
+			self.table_global_variables[name] = ctx
+			property = Symbol_Property()
+			property.id = name
+			if (ctx.expression() != None):
+				value = self.visit(ctx.expression())
+				property.scope = "None"
+				property.value = value
+			self.table_variables.add(self.varCount(), "ID"   , property.id )
+			self.table_variables.add(self.varCount(), "Scope", property.scope)
+			self.table_variables.add(self.varCount(), "Value", property.value)
+		else:
+			self.log.append(f"Variable redefinition error: {name}")
 		return self.visitChildren(ctx)
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
@@ -82,6 +96,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitCall(self, ctx:CompiscriptParser.CallContext):
+		name = str(ctx.IDENTIFIER())
 		return self.visitChildren(ctx)
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
@@ -96,16 +111,22 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		return self.visitChildren(ctx)
 
-	def __init__(self, log: QTextBrowser, table: QTableWidget, parser: CompiscriptParser):
+	def varCount(self):
+		return len(self.table_global_variables)
+
+	def __init__(self, log: QTextBrowser, table_functions: Symbol_Table, table_variables: Symbol_Table, table_classes: Symbol_Table, parser: CompiscriptParser):
 		super().__init__()
-		self.graph = Digraph(comment='AST')
 		self.counter = 1
 		self.parser = parser
-		self.symbol_table = Symbol_Table(log, table)
+		self.graph = Digraph()
+		self.log = log
+		self.table_functions = table_functions
+		self.table_variables = table_variables
+		self.table_classes = table_classes
 
-		self.global_variables = {}
-		self.local_variables = None
-		self.functions = {}
+		self.table_global_variables: Dict[str, ParserRuleContext] = {}
+		self.table_functions: Dict[str, ParserRuleContext] = {}
+		self.local_variables: Dict[str, ParserRuleContext] = {}
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
 		node_id = f"node{self.counter}"
