@@ -67,28 +67,6 @@ var division = 8 / 2;""")
         """
         Analiza el código Compiscript ingresado por el usuario.
 
-<<<<<<< HEAD
-	def compile(self, code: str):
-		try:
-			lexer = CompiscriptLexer(InputStream(code))
-			self.log.append("Lexer")
-
-			token_stream = CommonTokenStream(lexer)
-			self.log.append("Token Stream")
-
-			parser = CompiscriptParser(token_stream)
-			self.log.append("Parser")
-			tree = parser.program()
-
-			visitor = Semantic_Analyzer(self.log, self.table, parser)
-			visitor.visit(tree)
-			visitor.symbol_table.init()
-
-			if not os.path.exists("./Output"):
-				os.makedirs("Output")
-			visitor.nodeTree(tree)
-			visitor.graph.render("Syntax Graph","./Output", False, True, "png")
-=======
         Este método limpia la salida y los logs anteriores, luego intenta compilar el código.
         Si tiene éxito, muestra los resultados en las áreas de log y salida.
         """
@@ -102,8 +80,6 @@ var division = 8 / 2;""")
         except Exception as e:
             self.log.append(R + "Compilación fallida" + RESET)
             self.code_output.setText(str(e))
-
->>>>>>> 26f1dcc (Modificaciones para las tablas, funciona para variables, flata para mucho mas)
 
     def compile(self, code: str):
         """
@@ -152,15 +128,7 @@ var division = 8 / 2;""")
         except Exception as e:
             raise Exception(f"Error de compilación: {e}")
 
-<<<<<<< HEAD
 
-#QApplication.setAttribute(Qt.ApplicationAttribute.AA_NativeWindows)
-app = QApplication(sys.argv)
-app.setStyleSheet(open("./QStyleSheet.css", "r").read())
-Window = Display()
-Window.showMaximized()
-app.exec()
-=======
 def main():
     """
     Punto de entrada principal de la aplicación.
@@ -177,4 +145,3 @@ def main():
 
 if __name__ == "__main__":
     main()
->>>>>>> 26f1dcc (Modificaciones para las tablas, funciona para variables, flata para mucho mas)

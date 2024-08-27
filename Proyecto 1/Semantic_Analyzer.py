@@ -15,13 +15,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitClassDecl(self, ctx:CompiscriptParser.ClassDeclContext):
 		return self.visitChildren(ctx)
 
-	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext):
+	def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
 		fun_name = ctx.function().IDENTIFIER().getText()
 
-<<<<<<< HEAD
-	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
-		return self.visitChildren(ctx)
-=======
 		# Verifica si la función ya está declarada
 		if fun_name in self.functions:
 			raise Exception(f"Error: Función '{fun_name}' ya declarada.")
@@ -29,17 +25,28 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Registra la función en la tabla de símbolos
 		self.functions[fun_name] = ctx
 
-		# Construye el AST
+		# Construir los datos del símbolo
+		symbol_data = [
+			fun_name,                    # ID
+			"function",                  # Data_Type
+			"-",                         # Size (no aplica a funciones)
+			"-",                         # Offset (no aplica a funciones)
+			"global",                    # Scope (asumiendo que las funciones son globales)
+			"function"                   # Structure
+		]
+
+		# Agregar el símbolo a la tabla
+		self.symbol_table.add_symbol(symbol_data)
+
+		# Construir el AST
 		node_id = self.nodeTree(ctx)
 
 		# Visita el cuerpo de la función
 		self.visit(ctx.function().block())
 
 		return node_id
-	
 
 	# Visit a parse tree produced by CompiscriptParser#varDecl.
-# Visit a parse tree produced by CompiscriptParser#varDecl.
 	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
 		var_name = ctx.IDENTIFIER().getText()
 
@@ -82,8 +89,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			print(expression_value)
 
 		return node_id
-
->>>>>>> 26f1dcc (Modificaciones para las tablas, funciona para variables, flata para mucho mas)
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		return self.visitChildren(ctx)

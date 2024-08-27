@@ -8,7 +8,6 @@ class Symbol_Table:
 		self.table = table
 
 	def init(self):
-<<<<<<< HEAD
 		self.columns = ['ID', 'Type', 'Scope', 'Value', 'Position', 'Address']
 		self.table.setColumnCount(len(self.columns))
 		self.table.setRowCount(0)
@@ -22,7 +21,6 @@ class Symbol_Table:
 			self.table.setItem(row, self.columns.index(column), QTableWidgetItem(value))
 		else:
 			self.table.setItem(row, column, QTableWidgetItem(value))
-=======
 		labels = ['ID','Type', 'Scope', 'Value', 'Position', 'Address']
 		self.table.setColumnCount(len(labels))
 		self.table.setRowCount(len(self.symbols))
@@ -44,4 +42,3 @@ class Symbol_Table:
 			# item = QTableWidgetItem(str(data))  # Asegúrate de convertir todos los datos a string
 			item = QTableWidgetItem(f"Test {column}")
 			self.table.setItem(row_position, column, item)
->>>>>>> 26f1dcc (Modificaciones para las tablas, funciona para variables, flata para mucho mas)
