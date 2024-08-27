@@ -1,6 +1,14 @@
 # Generated from Compiscript.g4 by ANTLR 4.13.1
 from antlr4 import *
 from CompiscriptParser import CompiscriptParser
+# from ExprLexer import ExprLexer
+# from ExprParser import ExprParser
+# from ExprVisitor import ExprVisitor
+
+if "." in __name__:
+	from .CompiscriptParser import CompiscriptParser
+else:
+	from CompiscriptParser import CompiscriptParser
 
 # This class defines a complete generic visitor for a parse tree produced by CompiscriptParser.
 
