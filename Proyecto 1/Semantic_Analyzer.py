@@ -19,8 +19,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
 		self.table_functions: Dict[str, ParserRuleContext] = {}
-		self.global_variables: Dict[str, ParserRuleContext] = {}
-		self.local_variables: Dict[str, ParserRuleContext] = {}
 	
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
@@ -32,14 +30,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
-		fun_name = ctx.function().IDENTIFIER().getText()
+		fun_name = str(ctx.function().IDENTIFIER())
 
 		# Verifica si la función ya está declarada
-		if fun_name in self.functions:
+		if fun_name in self.table_functions:
 			raise Exception(f"Error: Función '{fun_name}' ya declarada.")
 
 		# Registra la función en la tabla de símbolos
-		self.functions[fun_name] = ctx
+		self.table_functions[fun_name] = ctx
 
 		# Construir los datos del símbolo
 		symbol_data = Symbol_Property()

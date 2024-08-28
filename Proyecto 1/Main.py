@@ -9,7 +9,56 @@ class Display(QMainWindow):
 		self.code_input = QTextEdit()
 		self.code_input.setPlaceholderText("Code to compile...")
 		self.code_input.setText(
-"""var test = 10;
+"""
+fun suma (a , b ) {
+	return a + b ;
+}
+print suma (3 , 4) ; // Salida : 7
+
+fun esPar ( num ) {
+	return num % 2 == 0;
+}
+for ( var i = 1; i <= 10; i = i + 1) {
+	if ( esPar ( i ) ) {
+		print i + " ␣ es ␣ par " ;
+	} else {
+		print i + " ␣ es ␣ impar " ;
+	}
+}
+
+class Persona {
+	init ( nombre , edad ) {
+		this . nombre = nombre ;
+		this . edad = edad ;
+	}
+	saludar () {
+		print " Hola , ␣ mi ␣ nombre ␣ es ␣ " + this . nombre ;
+	}
+}
+class Estudiante extends Persona {
+	init ( nombre , edad , grado ) {
+		super . init ( nombre , edad ) ;
+		this . grado = grado ;
+	}
+	estudiar () {
+		print this . nombre + " ␣ esta ␣ estudiando ␣ en ␣ " + this . grado + " ␣ grado . " ;
+	}
+}
+var juan = Estudiante ( " Juan " , 20 , 3) ;
+juan . saludar () ; // Salida : Hola , mi nombre es Juan
+juan . estudiar () ; // Salida : Juan esta estudiando en 3 grado
+for ( var i = 1; i <= 5; i = i + 1) {
+	if ( i % 2 == 0) {
+		print i + " ␣ es ␣ par " ;
+	} else {
+		print i + " ␣ es ␣ impar " ;
+	}
+}
+while ( juan . edad < 25) {
+	juan . edad = juan . edad + 1;
+	print " Edad ␣ de ␣ Juan : ␣ " + juan . edad ;
+}
+
 """)
 
 		self.code_output = QTextBrowser()
