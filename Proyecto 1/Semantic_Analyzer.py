@@ -18,7 +18,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
-
+		self.table_functions: Dict[str, ParserRuleContext] = {}
+		self.global_variables: Dict[str, ParserRuleContext] = {}
+		self.local_variables: Dict[str, ParserRuleContext] = {}
+	
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
 
@@ -123,8 +126,33 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
 		return self.visitChildren(ctx)
 
-	def visitExpression(self, ctx:CompiscriptParser.ExpressionContext):
-		return self.visitChildren(ctx)
+	def visitExpression(self, ctx: CompiscriptParser.ExpressionContext):
+		# Verificamos si la expresión tiene múltiples términos (por ejemplo, con operadores lógicos o aritméticos)
+		if ctx.getChildCount() == 1:
+			return self.visit(ctx.getChild(0))
+
+		left = self.visit(ctx.getChild(0))
+		operator = ctx.getChild(1).getText()
+		right = self.visit(ctx.getChild(2))
+
+		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
+		if left is None or right is None:
+			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
+
+		if operator == '+':
+			return left + right
+		elif operator == '-':
+			return left - right
+		elif operator == '*':
+			return left * right
+		elif operator == '/':
+			return left / right
+		elif operator == '%':
+			return left % right
+		# Si el operador no es reconocido, lanza una excepción
+		else:
+			raise Exception(f"Operador desconocido: {operator}")
+
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
 		return self.visitChildren(ctx)
@@ -141,24 +169,32 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		return self.visitChildren(ctx)
 
-	def visitTerm(self, ctx:CompiscriptParser.TermContext):
+	def visitTerm(self, ctx: CompiscriptParser.TermContext):
 		if ctx.getChildCount() == 1:
 			return self.visit(ctx.factor(0))  # Retorna el único factor si no hay operación
 
 		left = self.visit(ctx.factor(0))
 		right = self.visit(ctx.factor(1))
 
+		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
+		if left is None or right is None:
+			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
+
 		if ctx.getChild(1).getText() == '+':
 			return left + right
 		elif ctx.getChild(1).getText() == '-':
 			return left - right
 
-	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
+	def visitFactor(self, ctx: CompiscriptParser.FactorContext):
 		if ctx.getChildCount() == 1:
 			return self.visit(ctx.unary(0))  # Retorna el único unary si no hay operación
 
 		left = self.visit(ctx.unary(0))
 		right = self.visit(ctx.unary(1))
+
+		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
+		if left is None or right is None:
+			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
 
 		if ctx.getChild(1).getText() == '*':
 			return left * right
@@ -173,21 +209,31 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitInstantiation(self, ctx:CompiscriptParser.InstantiationContext):
 		return self.visitChildren(ctx)
 
-	def visitUnary(self, ctx:CompiscriptParser.UnaryContext):
-		return self.visitChildren(ctx)
+	def visitUnary(self, ctx: CompiscriptParser.UnaryContext):
+		if ctx.getChildCount() == 2:
+			# Caso donde tenemos un operador unario (como '-' o '!')
+			operator = ctx.getChild(0).getText()
+			operand = self.visit(ctx.getChild(1))  # El operando es el siguiente hijo
+			if operator == '-':
+				return -operand
+			elif operator == '!':
+				return not operand
+			# Puedes manejar otros operadores unarios aquí si existen en tu lenguaje
+		else:
+			# Caso donde no hay operador unario, simplemente se delega al siguiente nodo
+			return self.visit(ctx.getChild(0))  # El primer hijo debe ser el siguiente nivel de expresión (por ejemplo, `primary`)
+
 
 	def visitCall(self, ctx:CompiscriptParser.CallContext):
 		name = str(ctx.IDENTIFIER())
 		return self.visitChildren(ctx)
 
-	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
+	def visitPrimary(self, ctx: CompiscriptParser.PrimaryContext):
 		if ctx.NUMBER():
-			# Retorna el valor numérico
 			return int(ctx.NUMBER().getText())
 		elif ctx.IDENTIFIER():
-			# Retorna el valor de la variable si existe
 			var_name = ctx.IDENTIFIER().getText()
-			if self.local_variables and var_name in self.local_variables:
+			if var_name in self.local_variables:
 				return self.local_variables[var_name]
 			elif var_name in self.global_variables:
 				return self.global_variables[var_name]
@@ -201,6 +247,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return False
 		elif ctx.getText() == "nil":
 			return None
+		elif ctx.expression():
+			return self.visit(ctx.expression())
 
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
 		return self.visitChildren(ctx)
@@ -210,20 +258,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		return self.visitChildren(ctx)
-
-	def __init__(self, log: QTextBrowser, table_functions: Symbol_Table, table_variables: Symbol_Table, table_classes: Symbol_Table, parser: CompiscriptParser):
-		super().__init__()
-		self.counter = 1
-		self.parser = parser
-		self.graph = Digraph()
-		self.log = log
-		self.table_functions = table_functions
-		self.table_variables = table_variables
-		self.table_classes = table_classes
-
-		self.table_functions: Dict[str, ParserRuleContext] = {}
-		self.global_variables: Dict[str, ParserRuleContext] = {}
-		self.local_variables: Dict[str, ParserRuleContext] = {}
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
 		node_id = f"node{self.counter}"
