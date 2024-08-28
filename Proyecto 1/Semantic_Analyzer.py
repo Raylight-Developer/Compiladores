@@ -6,6 +6,18 @@ from Symbol_Table import Symbol_Table, Symbol_Property
 from Include import *
 
 class Semantic_Analyzer(CompiscriptVisitor):
+	def __init__(self, log: QTextBrowser, table_functions: Symbol_Table, table_variables: Symbol_Table, table_classes: Symbol_Table, parser: CompiscriptParser):
+		super().__init__()
+		self.counter = 1
+		self.parser = parser
+		self.graph = Digraph()
+		self.log = log
+		self.table_functions = table_functions
+		self.table_variables = table_variables
+		self.table_classes = table_classes
+
+		self.global_variables: Dict[str, ParserRuleContext] = {}
+		self.local_variables: Dict[str, ParserRuleContext] = {}
 
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
@@ -62,24 +74,17 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.global_variables[var_name] = None
 
 		# Almacenar la información en la tabla de símbolos
-		if var_name not in self.table_global_variables.keys():
-			property = Symbol_Property()
-			property.id = var_name
-			property.scope = "global"
-			property.value = None
+		property = Symbol_Property()
+		property.id = var_name
+		property.scope = "global"
+		property.value = None
 
-			if ctx.expression():
-				expression_value = self.visit(ctx.expression())
-				property.value = expression_value
+		if ctx.expression():
+			expression_value = self.visit(ctx.expression())
+			property.value = expression_value
 
-			self.table_global_variables[var_name] = property
-
-			# Añadir a la tabla de variables
-			self.table_variables.add(self.varCount(), "ID", property.id)
-			self.table_variables.add(self.varCount(), "Scope", property.scope)
-			self.table_variables.add(self.varCount(), "Value", property.value)
-		else:
-			self.log.append(f"Variable redefinition error: {var_name}")
+		# Añadir el símbolo a la tabla de variables
+		self.table_variables.add(property)
 
 		# Construir el AST
 		node_id = self.nodeTree(ctx)
@@ -216,28 +221,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.table_variables = table_variables
 		self.table_classes = table_classes
 
-		self.table_global_variables: Dict[str, ParserRuleContext] = {}
 		self.table_functions: Dict[str, ParserRuleContext] = {}
+		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
-
-	def nodeTree(self, ctx: Union[ParserRuleContext]):
-		node_id = f"node{self.counter}"
-		self.counter += 1
-
-		if isinstance(ctx, ParserRuleContext):
-			rule_name = self.parser.ruleNames[ctx.getRuleIndex()]
-			label = f"{rule_name}: {ctx.getText()}"
-		else:
-			label = f"Terminal: {ctx.getText()}"
-
-		self.graph.node(node_id, label)
-
-		for i in range(ctx.getChildCount()):
-			child = ctx.getChild(i)
-			child_id = self.nodeTree(child)
-			self.graph.edge(node_id, child_id)
-
-		return node_id
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
 		node_id = f"node{self.counter}"
