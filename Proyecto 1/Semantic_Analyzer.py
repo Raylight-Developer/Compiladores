@@ -164,11 +164,43 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
-		return self.visitChildren(ctx)
+		# left = self.visit(ctx.getChild(0))
+		# operator1 = ctx.getChild(1).getText()
+		# operator2 = ctx.getChild(2).getText()
+		# right = self.visit(ctx.getChild(3))
+
+		# # Verificar que los operandos no sean None
+		# if left is None or right is None:
+		# 	raise Exception("Error en la evaluacion de la igualdad: uno de los operandos es None.")
+		
+		# if operator1 == "=" and operator2 == "=":
+		# 	return left == right
+		# elif operator1 == "!" and operator2 == "=":
+		# 	return left != right
+		# else:
+		# 	raise Exception(f"Operador de igualdad descnocido: {operator1+operator2}")
+		pass
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
-		return self.visitChildren(ctx)
+		left = self.visit(ctx.getChild(0))
+		operator = ctx.getChild(1).getText()
+		right = self.visit(ctx.getChild(2))
 
+		# Verificar que los operandos no sean None
+		if left is None or right is None:
+			raise Exception("Error en la evaluacion de la comparacion: uno de los operandos en None")
+		
+		if operator == "<":
+			return left < right
+		elif operator == "<=":
+			return left <= right
+		elif operator == ">":
+			return left > right
+		elif operator == ">=":
+			return left >= right
+		else:
+			raise Exception(f"Operador de comparacion desconocido: {operator}")
+		
 	def visitTerm(self, ctx: CompiscriptParser.TermContext):
 		if ctx.getChildCount() == 1:
 			return self.visit(ctx.factor(0))  # Retorna el único factor si no hay operación
