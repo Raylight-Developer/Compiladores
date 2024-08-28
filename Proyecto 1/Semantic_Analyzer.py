@@ -163,23 +163,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitLogic_and(self, ctx:CompiscriptParser.Logic_andContext):
 		return self.visitChildren(ctx)
 
-	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
-		# left = self.visit(ctx.getChild(0))
-		# operator1 = ctx.getChild(1).getText()
-		# operator2 = ctx.getChild(2).getText()
-		# right = self.visit(ctx.getChild(3))
-
-		# # Verificar que los operandos no sean None
-		# if left is None or right is None:
-		# 	raise Exception("Error en la evaluacion de la igualdad: uno de los operandos es None.")
-		
-		# if operator1 == "=" and operator2 == "=":
-		# 	return left == right
-		# elif operator1 == "!" and operator2 == "=":
-		# 	return left != right
-		# else:
-		# 	raise Exception(f"Operador de igualdad descnocido: {operator1+operator2}")
-		pass
+	def visitEquality(self, ctx: CompiscriptParser.EqualityContext):
+		print(f"{ctx.getText()}")
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		left = self.visit(ctx.getChild(0))
