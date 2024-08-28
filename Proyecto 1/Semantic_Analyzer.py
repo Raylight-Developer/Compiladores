@@ -5,6 +5,8 @@ from Symbol_Table import Symbol_Table, Symbol_Property
 
 from Include import *
 
+DEBUG = False
+
 class Semantic_Analyzer(CompiscriptVisitor):
 	def __init__(self, log: QTextBrowser, table_functions: Symbol_Table, table_variables: Symbol_Table, table_classes: Symbol_Table, parser: CompiscriptParser):
 		super().__init__()
@@ -93,7 +95,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Visitar la expresión asociada si existe
 		if ctx.expression():
 			expression_value = self.visit(ctx.expression())
-			print(expression_value)
+			if DEBUG: print(f"Variable: {var_name} | Espresión: {expression_value}")
 
 		return node_id
 
@@ -162,7 +164,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitEquality(self, ctx: CompiscriptParser.EqualityContext):
-		print(f"{ctx.getText()}")
+		if DEBUG: print(f"Equality Op: {ctx.getText()}")
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		left = self.visit(ctx.getChild(0))
