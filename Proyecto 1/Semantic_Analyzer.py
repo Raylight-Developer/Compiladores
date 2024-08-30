@@ -181,7 +181,25 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
-		return self.visitChildren(ctx)
+		left = self.visit(ctx.getChild(0))
+		operator = ctx.getChild(1).getText()
+		right = self.visit(ctx.getChild(2))
+
+		# Verificar que los operandos no sean None
+		if left is None or right is None:
+			raise Exception("Error en la evaluacion de la comparacion: uno de los operandos en None")
+		
+		if operator == "<":
+			return left < right
+		elif operator == "<=":
+			return left <= right
+		elif operator == ">":
+			return left > right
+		elif operator == ">=":
+			return left >= right
+		else:
+			return self.visitChildren(ctx)
+		
 
 	def visitTerm(self, ctx: CompiscriptParser.TermContext):
 		if ctx.getChildCount() == 1:
