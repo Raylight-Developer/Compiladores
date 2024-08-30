@@ -42,11 +42,11 @@ class Estudiante extends Persona {
 		this.grado = grado;
 	}
 	estudiar() {
-		print this.nombre + " esta estudiando en " + this . grado + " grado.";
+		print this.nombre + " esta estudiando en " + this.grado + " grado.";
 	}
 }
 var juan = Estudiante ( " Juan " , 20 , 3);
-juan.saludar(); // Salida : Hola , mi nombre es Juan
+juan.saludar(); // Salida : Hola, mi nombre es Juan
 juan.estudiar(); // Salida : Juan esta estudiando en 3 grado
 for ( var j = 1; j <= 5; j = j + 1) { // TODO; si es si tiene confilcto
 	if ( j % 2 == 0) {
@@ -81,14 +81,15 @@ while ( juan.edad < 25) {
 		tabcontainer = QWidget()
 		tabcontainer.setLayout(tablayout)
 
-		sub = QSplitter(Qt.Orientation.Horizontal)
+		sub = QSplitter(Qt.Orientation.Vertical)
 		sub.addWidget(self.log)
 		sub.addWidget(tabcontainer)
 
-		main_splitter = QSplitter(Qt.Orientation.Vertical)
+		main_splitter = QSplitter(Qt.Orientation.Horizontal)
 		main_splitter.addWidget(self.code_input)
-		main_splitter.addWidget(self.code_output)
 		main_splitter.addWidget(sub)
+		main_splitter.addWidget(self.code_output)
+		main_splitter.setSizes([500,500,200])
 
 		button_compile = QPushButton("Compile")
 		button_compile.clicked.connect(self.parse)
@@ -115,6 +116,13 @@ while ( juan.edad < 25) {
 			self.code_output.setText(str(e))
 
 	def compile(self, code: str):
+			self.table_functions.clearContents()
+			self.table_variables.clearContents()
+			self.table_classes.clearContents()
+			self.table_functions.setRowCount(0)
+			self.table_variables.setRowCount(0)
+			self.table_classes.setRowCount(0)
+
 		#try:
 			lexer = CompiscriptLexer(InputStream(code))
 			self.log.append("Lexer")
@@ -142,7 +150,7 @@ while ( juan.edad < 25) {
 			if not os.path.exists("./Output"):
 				os.makedirs("Output")
 			visitor.nodeTree(tree)
-			visitor.graph.render("Syntax Graph","./Output", False, True, "png")
+			#visitor.graph.render("Syntax Graph","./Output", False, True, "png")
 
 			self.table_classes.resizeColumnsToContents()
 			self.table_functions.resizeColumnsToContents()

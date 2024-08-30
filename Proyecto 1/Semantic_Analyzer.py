@@ -5,7 +5,7 @@ from Symbol_Table import Symbol_Table, Symbol_Property
 
 from Include import *
 
-DEBUG = False
+DEBUG = True
 
 class Semantic_Analyzer(CompiscriptVisitor):
 	def __init__(self, log: QTextBrowser, table_functions: Symbol_Table, table_variables: Symbol_Table, table_classes: Symbol_Table, parser: CompiscriptParser):
