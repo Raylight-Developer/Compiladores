@@ -207,7 +207,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif operator == ">=":
 			return left >= right
 		else:
-			return self.visitChildren(ctx)
+		return self.visitChildren(ctx)
 		
 
 	def visitTerm(self, ctx: CompiscriptParser.TermContext):
@@ -288,9 +288,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			else:
 				raise Exception(f"Error: Variable '{var_name}' not declared.")
 		elif ctx.getText() == "true":
-			return bool(ctx.getText())
+			return True
 		elif ctx.getText() == "false":
-			return bool(ctx.getText())
+			return False
 		elif ctx.getText() == "nil":
 			return None
 		elif ctx.expression():
