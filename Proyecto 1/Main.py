@@ -11,7 +11,8 @@ class Display(QMainWindow):
 		self.code_input.setPlaceholderText("Code to compile...")
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
 		self.code_input.setText(
-"""""")
+"""var test = 10 + (3*5);
+""")
 
 		self.code_output = QTextBrowser()
 		self.code_output.setPlaceholderText("Compiled code")
@@ -21,9 +22,9 @@ class Display(QMainWindow):
 
 		self.tables = QTabWidget()
 
-		self.table_functions = Symbol_Table(self.log)
-		self.table_variables = Symbol_Table(self.log)
-		self.table_classes = Symbol_Table(self.log)
+		self.table_functions = Symbol_Table(self.log, "Fun")
+		self.table_variables = Symbol_Table(self.log, "Var")
+		self.table_classes   = Symbol_Table(self.log, "Cla")
 
 		self.tables.addTab(self.table_functions, QIcon(), "Functions")
 		self.tables.addTab(self.table_variables, QIcon(), "Variables")

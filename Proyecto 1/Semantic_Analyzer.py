@@ -20,8 +20,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
 		self.table_functions: Dict[str, ParserRuleContext] = {}
-		self.global_variables: Dict[str, ParserRuleContext] = {}
-		self.local_variables: Dict[str, ParserRuleContext] = {}
 	
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
