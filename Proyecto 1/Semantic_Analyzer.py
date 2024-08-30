@@ -1,4 +1,3 @@
-import string
 from CompiscriptVisitor import CompiscriptVisitor
 from CompiscriptParser import CompiscriptParser
 from CompiscriptLexer import CompiscriptLexer
@@ -176,7 +175,19 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
-		return self.visitChildren(ctx)
+		text = ctx.getText()
+		if "==" in text:
+			data = text.split("==")
+			left = data[0]
+			right = data[1]
+			return left == right
+		elif "!=" in text:
+			data = text.split("!=")
+			left = data[0]
+			right = data[1]
+			return left != right
+		else:
+			return self.visitChildren(ctx)
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		left = self.visit(ctx.getChild(0))
