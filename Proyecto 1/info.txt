@@ -1,3 +1,5 @@
 Semantic_Analyzer.py:
 Tomar en cuenta que crashea de manera inesperada. En este caso, se notó que cuando se tiene visitComparison y visitEquality
-activos, estos funcionan, pero la precedencia falla. Cuando estos se desactvida, la precedencia funciona
+activos, estos funcionan, pero la precedencia falla. Cuando estos se desactvida, la precedencia funciona.
+
+En caso de no quere comentar tales metodos, hacerlo manual. Justo como esta ahora.
