@@ -8,7 +8,6 @@ class Symbol_Property:
 	address: int = 0
 	scope: Union[str , None] = ""
 	value: str | Any = ""
-	
 
 class Symbol_Table(QTableWidget):
 	def __init__(self, log: QTextBrowser):

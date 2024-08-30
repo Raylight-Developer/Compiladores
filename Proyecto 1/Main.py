@@ -11,54 +11,7 @@ class Display(QMainWindow):
 		self.code_input.setPlaceholderText("Code to compile...")
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
 		self.code_input.setText(
-"""fun suma(a , b) {
-	return a + b ;
-}
-print suma(3 , 4) ; // Salida : 7
-
-fun esPar(num) {
-	return num % 2 == 0;
-}
-for (var i = 1; i <= 10; i = i + 1) {
-	if (esPar( i )) {
-		print i + " es par";
-	} else {
-		print i + " es impar";
-	}
-}
-
-class Persona {
-	init(nombre , edad) {
-		this.nombre = nombre ;
-		this.edad = edad ;
-	}
-	saludar () {
-		print "Hola , mi nombre es: " + this.nombre ;
-	}
-}
-class Estudiante extends Persona {
-	init(nombre , edad , grado) {
-		super.init(nombre , edad);
-		this.grado = grado;
-	}
-	estudiar() {
-		print this.nombre + " esta estudiando en " + this.grado + " grado.";
-	}
-}
-var juan = Estudiante ( " Juan " , 20 , 3);
-juan.saludar(); // Salida : Hola, mi nombre es Juan
-juan.estudiar(); // Salida : Juan esta estudiando en 3 grado
-for ( var j = 1; j <= 5; j = j + 1) { // TODO; si es si tiene confilcto
-	if ( j % 2 == 0) {
-		print j + " es par";
-	} else {
-		print j + " es impar";
-	}
-}
-while ( juan.edad < 25) {
-	juan.edad = juan.edad + 1;
-	print "Edad de Juan: " + juan.edad ;
-}""")
+"""""")
 
 		self.code_output = QTextBrowser()
 		self.code_output.setPlaceholderText("Compiled code")
@@ -150,7 +103,7 @@ while ( juan.edad < 25) {
 			if not os.path.exists("./Output"):
 				os.makedirs("Output")
 			visitor.nodeTree(tree)
-			#visitor.graph.render("Syntax Graph","./Output", False, True, "png")
+			visitor.graph.render("Syntax Graph","./Output", False, True, "png")
 
 			self.table_classes.resizeColumnsToContents()
 			self.table_functions.resizeColumnsToContents()
