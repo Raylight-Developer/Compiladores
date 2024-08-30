@@ -10,18 +10,20 @@ DEBUG = True
 class Semantic_Analyzer(CompiscriptVisitor):
 	def __init__(self, log: QTextBrowser, table_functions: Symbol_Table, table_variables: Symbol_Table, table_classes: Symbol_Table, parser: CompiscriptParser):
 		super().__init__()
-		self.counter = 1
-		self.parser = parser
 		self.graph = Digraph()
+		self.parser = parser
 		self.log = log
 		self.table_functions = table_functions
 		self.table_variables = table_variables
-		self.table_classes = table_classes
+		self.table_classes   = table_classes
 
 		self.global_variables: Dict[str, ParserRuleContext] = {}
-		self.local_variables: Dict[str, ParserRuleContext] = {}
-		self.table_functions: Dict[str, ParserRuleContext] = {}
-	
+		self.global_functions: Dict[str, ParserRuleContext] = {}
+		self.local_variables : Dict[str, ParserRuleContext] = {}
+
+		self.counter = 1
+		self.current_scope = "global"
+
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
 
@@ -35,11 +37,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		fun_name = str(ctx.function().IDENTIFIER())
 
 		# Verifica si la función ya está declarada
-		if fun_name in self.table_functions:
+		if fun_name in self.global_functions:
 			raise Exception(f"Error: Función '{fun_name}' ya declarada.")
 
 		# Registra la función en la tabla de símbolos
-		self.table_functions[fun_name] = ctx
+		self.global_functions[fun_name] = ctx
 
 		# Construir los datos del símbolo
 		symbol_data = Symbol_Property()
@@ -79,23 +81,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Almacenar la información en la tabla de símbolos
 		property = Symbol_Property()
 		property.id = var_name
+		property.type = "variable"
 		property.scope = "global"
 		property.value = None
 
 		if ctx.expression():
 			expression_value = self.visit(ctx.expression())
 			property.value = expression_value
+			if DEBUG: print(f"Variable: {var_name} | Expresión: {expression_value}")
 
 		# Añadir el símbolo a la tabla de variables
 		self.table_variables.add(property)
 
 		# Construir el AST
 		node_id = self.nodeTree(ctx)
-
-		# Visitar la expresión asociada si existe
-		if ctx.expression():
-			expression_value = self.visit(ctx.expression())
-			if DEBUG: print(f"Variable: {var_name} | Espresión: {expression_value}")
 
 		return node_id
 
