@@ -134,8 +134,35 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 
-	def visitIfStmt(self, ctx:CompiscriptParser.IfStmtContext):
-		return self.visitChildren(ctx)
+	def visitIfStmt(self, ctx: CompiscriptParser.IfStmtContext):
+		# Evaluar la condición del 'if'
+		condition_result = self.visit(ctx.expression())
+		
+		# Crear un nuevo scope para el bloque 'if'
+		self.table_variables.enter_scope()
+		
+		# Evaluar el bloque del 'if'
+		if_block = ctx.statement(0)
+		if_block_result = self.visit(if_block)
+		
+		# Salir del scope del bloque 'if'
+		self.table_variables.exit_scope()
+
+		# Verificar si existe un bloque 'else'
+		if ctx.getChildCount() > 5:  # 'if' '(' expression ')' statement 'else' statement
+			# Crear un nuevo scope para el bloque 'else'
+			self.table_variables.enter_scope()
+			
+			# Evaluar el bloque 'else'
+			else_block = ctx.statement(1)
+			else_block_result = self.visit(else_block)
+			
+			# Salir del scope del bloque 'else'
+			self.table_variables.exit_scope()
+
+		return None  # No hay un resultado específico para la evaluación de 'if' o 'else'
+
+		# return self.visitChildren(ctx)
 
 
 	def visitPrintStmt(self, ctx: CompiscriptParser.PrintStmtContext):
