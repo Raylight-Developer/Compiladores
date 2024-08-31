@@ -22,6 +22,7 @@ class Symbol_Table(QTableWidget):
 		self.columns = []
 		self.log = log
 		self.type = type
+		self.scopes = [{}]  # Stack de scopes, iniciando con el scope global
 
 		self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
 
@@ -64,3 +65,24 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row - 1, self.columns.index(column), QTableWidgetItem(value))
 		else:
 			self.setItem(row - 1, column, QTableWidgetItem(value))
+	
+	def enter_scope(self):
+		# Empuja un nuevo diccionario al stack de scopes
+		self.scopes.append({})
+
+	def exit_scope(self):
+		# Elimina el scope actual del stack
+		if len(self.scopes) > 1:  # Asegúrate de no eliminar el scope global
+			self.scopes.pop()
+
+	def add_scope(self, symbol_property):
+		# Añade una nueva variable al scope actual (el de la cima del stack)
+		current_scope = self.scopes[-1]
+		current_scope[symbol_property.id] = symbol_property
+
+	def lookup(self, var_name):
+		# Busca una variable en los scopes, empezando desde el más local
+		for scope in reversed(self.scopes):
+			if var_name in scope:
+				return scope[var_name]
+		return None  # Si no se encuentra, retorna None

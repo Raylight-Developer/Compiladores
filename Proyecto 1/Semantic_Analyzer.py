@@ -64,7 +64,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	# Visit a parse tree produced by CompiscriptParser#varDecl.
 	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
-		var_name = ctx.IDENTIFIER().getText()		
+		var_name = ctx.IDENTIFIER().getText()
 
 		# Intentar obtener el tipo de la variable desde el contexto
 		var_type = "unknown"
@@ -83,25 +83,33 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			elif isinstance(var_value, float):
 				var_type = "float"
 
-		# Verificar si la variable ya está declarada en el ámbito global
-		if var_name in self.global_variables:
-			raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito global.")
+		# Verificar si estamos dentro de un bloque (entonces la variable es local)
+		if len(self.table_variables.scopes) > 1:  # Más de un scope indica que estamos en un bloque
+			# Verificar si la variable ya está declarada en el scope local actual
+			if self.table_variables.lookup(var_name) is not None:
+				raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito local.")
+			else:
+				# Almacenar la información en la tabla de símbolos como variable local
+				property = Symbol_Property()
+				property.id = var_name
+				property.scope = "local"
+				property.value = var_value
+				property.type = var_type
+				self.table_variables.add(property)
 		else:
-			self.global_variables[var_name] = None
+			# Verificar si la variable ya está declarada en el ámbito global
+			if var_name in self.global_variables:
+				raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito global.")
+			else:
+				self.global_variables[var_name] = None
 
-		# Almacenar la información en la tabla de símbolos
-		property = Symbol_Property()
-		property.id = var_name
-		property.scope = "global"
-		property.value = var_value
-		property.type = var_type
-
-		if ctx.expression():
-			expression_value = self.visit(ctx.expression())
-			property.value = expression_value
-
-		# Añadir el símbolo a la tabla de variables
-		self.table_variables.add(property)
+				# Almacenar la información en la tabla de símbolos como variable global
+				property = Symbol_Property()
+				property.id = var_name
+				property.scope = "global"
+				property.value = var_value
+				property.type = var_type
+				self.table_variables.add(property)
 
 		# Construir el AST
 		node_id = self.nodeTree(ctx)
@@ -169,8 +177,19 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 
-	def visitBlock(self, ctx:CompiscriptParser.BlockContext):
-		return self.visitChildren(ctx)
+	def visitBlock(self, ctx: CompiscriptParser.BlockContext):
+		# Crear un nuevo entorno de variables si es necesario para soportar scope
+		self.table_variables.enter_scope()
+
+		# Evaluar todas las declaraciones dentro del bloque
+		result = None
+		for declaration in ctx.declaration():
+			result = self.visit(declaration)
+
+		# Salir del scope al final del bloque
+		self.table_variables.exit_scope()
+
+		return result
 
 
 	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
