@@ -1,5 +1,11 @@
 from Include import *
 
+class Scope:
+    def __init__(self, id: str):
+        self.id = id  # Identificador del scope
+        self.symbols = {}  # Diccionario de símbolos dentro del scope
+
+	
 class Symbol_Property:
 	id: str = ""
 
@@ -22,7 +28,9 @@ class Symbol_Table(QTableWidget):
 		self.columns = []
 		self.log = log
 		self.type = type
-		self.scopes = [{}]  # Stack de scopes, iniciando con el scope global
+		self.scope_counter = 0  # Contador para enumerar los scopes
+		self.scopes = [Scope(f"global_{self.scope_counter}")]  # Stack de scopes, iniciando con el scope global
+
 
 		self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
 
@@ -67,31 +75,30 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row - 1, column, QTableWidgetItem(value))
 	
 	def enter_scope(self):
-		# Empuja un nuevo diccionario al stack de scopes
-		self.scopes.append({})
+		# Incrementa el contador y añade un nuevo scope con un ID único
+		self.scope_counter += 1
+		new_scope_id = f"scope{self.scope_counter}"
+		self.scopes.append(Scope(new_scope_id))
 
 	def exit_scope(self):
 		# Elimina el scope actual del stack
 		if len(self.scopes) > 1:  # Asegúrate de no eliminar el scope global
 			self.scopes.pop()
 
-	def add_scope(self, symbol_property):
-		# Añade una nueva variable al scope actual (el de la cima del stack)
+	def add_scope(self, symbol_property: Symbol_Property):
+		# Añade una nueva variable al scope actual
 		current_scope = self.scopes[-1]
-		current_scope[symbol_property.id] = symbol_property
+		current_scope.symbols[symbol_property.id] = symbol_property
+		symbol_property.scope = current_scope.id  # Asigna el ID del scope a la propiedad del símbolo
 
 
 	def lookup(self, var_name):
 		"""Buscar una variable en los scopes locales y globales."""
 		# Primero busca en los scopes locales, desde el más interno hacia afuera.
-		for scope in reversed(self.local_variables_stack):
-			if var_name in scope:
-				return scope[var_name]
-		
-		# Si no se encuentra en los scopes locales, busca en el global.
-		if var_name in self.global_variables:
-			return self.global_variables[var_name]
-		
+		for scope in reversed(self.scopes):
+			if var_name in scope.symbols:
+				return scope.symbols[var_name]
+
 		# Si no se encuentra, lanza una excepción.
 		raise Exception(f"Error: Variable '{var_name}' no declarada.")
 	

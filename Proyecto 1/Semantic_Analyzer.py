@@ -16,6 +16,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.table_variables = table_variables
 		self.table_classes = table_classes
 		self.variables_control = {}
+		self.global_variables = {}
+		self.current_scope = ""
 
 		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
@@ -64,9 +66,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return node_id
 
 	
+	# Visit a parse tree produced by CompiscriptParser#varDecl.
 	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
 		var_name = ctx.IDENTIFIER().getText()
-		print(var_name)
 
 		# Intentar obtener el tipo de la variable desde el contexto
 		var_type = "unknown"
@@ -85,26 +87,31 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			elif isinstance(var_value, float):
 				var_type = "float"
 
+		# TENER MUCHO CUIDADO AQUI, PUES LOS VALORES SE ALMACENAN MEDIO RARO
 		# Verificar si estamos en un scope local
 		is_local_scope = len(self.table_variables.scopes) > 1
+		print(self.current_scope)
+		if self.current_scope == "global_0":
+			# Verifica si la variable ya está en el ámbito global
+			if var_name in self.global_variables:
+				raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito global.")
+			# Si no existe, agrega la variable al diccionario global
+			self.global_variables[var_name] = "global"
 
+
+		print(self.variables_control, self.global_variables)
 		# Primero, verificar si la variable ya existe en el scope actual
 		if var_name in self.variables_control:
 			if is_local_scope:
-				if self.variables_control[var_name] == "local":
-					raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito local.")
-				elif self.variables_control[var_name] == "global":
-					raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito global, no se puede redefinir en el ámbito local.")
+				if self.variables_control[var_name] == self.current_scope:
+					raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito local '{self.current_scope}'.")
 			else:
 				if self.variables_control[var_name] == "global":
 					raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito global.")
-
+		# TENER MUCHO CUIDADO AQUI, PUES LOS VALORES SE ALMACENAN MEDIO RARO
 		# Si no hay conflictos, almacenar la variable en el scope correspondiente
 		# Actualizar el diccionario solo después de haber verificado que no hay duplicados
-		self.variables_control[var_name] = "local" if is_local_scope else "global"
-
-		# Imprimir el control de variables para debugging
-		print(self.variables_control)
+		self.variables_control[var_name] = self.current_scope if is_local_scope else "global"
 
 		# Crear la propiedad de la variable y agregarla al scope y a la tabla
 		property = Symbol_Property()
@@ -211,17 +218,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 
 	def visitBlock(self, ctx: CompiscriptParser.BlockContext):
-		# Crear un nuevo entorno de variables si es necesario para soportar scope
+		# Entrar en un nuevo scope, lo que automáticamente incrementa el contador de scopes
 		self.table_variables.enter_scope()
-
+		# Imprimir el identificador del nuevo scope para debugging
+		print(f"Entering scope: {self.table_variables.scopes[-1].id}")
+		self.current_scope = self.table_variables.scopes[-1].id
 		# Evaluar todas las declaraciones dentro del bloque
 		result = None
 		for declaration in ctx.declaration():
 			result = self.visit(declaration)
 
-		# Salir del scope al final del bloque
+		# Salir del scope al final del bloque, lo que también elimina el scope del stack
+		print(f"Exiting scope: {self.table_variables.scopes[-1].id}")
 		self.table_variables.exit_scope()
-
+		self.current_scope = "global_0"
 		return result
 
 
