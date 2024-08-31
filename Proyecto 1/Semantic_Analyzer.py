@@ -18,16 +18,19 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
-		self.table_functions: Dict[str, ParserRuleContext] = {}
+		self.declared_functions: Set[str] = set()
 	
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
 
+
 	def visitDeclaration(self, ctx:CompiscriptParser.DeclarationContext):
 		return self.visitChildren(ctx)
 
+
 	def visitClassDecl(self, ctx:CompiscriptParser.ClassDeclContext):
 		return self.visitChildren(ctx)
+
 
 	def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
 		fun_name = ctx.function().IDENTIFIER().getText()
@@ -110,32 +113,69 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		return node_id
 
+
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		return self.visitChildren(ctx)
+
 
 	def visitExprStmt(self, ctx:CompiscriptParser.ExprStmtContext):
 		return self.visitChildren(ctx)
 
+
 	def visitForStmt(self, ctx:CompiscriptParser.ForStmtContext):
 		return self.visitChildren(ctx)
+
 
 	def visitIfStmt(self, ctx:CompiscriptParser.IfStmtContext):
 		return self.visitChildren(ctx)
 
-	def visitPrintStmt(self, ctx:CompiscriptParser.PrintStmtContext):
-		return self.visitChildren(ctx)
+
+	def visitPrintStmt(self, ctx: CompiscriptParser.PrintStmtContext):
+		# Obtener la info del nodo
+		text = ctx.getText()
+		# En caso de tener un print, procesarlo
+		if "print" in text:
+			# Verificar si la función 'print' ya ha sido declarada
+			if "print" not in self.declared_functions:
+				# Si 'print' no está declarada, agregarla a la tabla de funciones
+				print_function = Symbol_Property()
+				print_function.id = "print"
+				print_function.parameters = "any"  # 'any', ya que acepta cualquier cosa
+				print_function.return_type = "void"
+				
+				# Agregar a la tabla de funciones
+				self.table_functions.add(print_function)
+
+				# Marcar 'print' como declarada
+				self.declared_functions.add("print")
+
+			# Obtener y visitar la expresión dentro de la instrucción print
+			expression_value = self.visit(ctx.expression())
+
+			# Imprimir la expresión (esto es solo un ejemplo de cómo podrías manejarlo)
+			print(f'Print statement: {expression_value}')
+
+			return None
+		else:
+			# Delegar al siguiente metodo
+			return self.visitChildren(ctx)
+
 
 	def visitReturnStmt(self, ctx:CompiscriptParser.ReturnStmtContext):
 		return self.visitChildren(ctx)
 
+
 	def visitWhileStmt(self, ctx:CompiscriptParser.WhileStmtContext):
 		return self.visitChildren(ctx)
+
 
 	def visitBlock(self, ctx:CompiscriptParser.BlockContext):
 		return self.visitChildren(ctx)
 
+
 	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
 		return self.visitChildren(ctx)
+
 
 	def visitExpression(self, ctx: CompiscriptParser.ExpressionContext):
 		# Verificamos si la expresión tiene múltiples términos (por ejemplo, con operadores lógicos o aritméticos)
@@ -168,12 +208,48 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
 		return self.visitChildren(ctx)
 
+
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext):
-		return self.visitChildren(ctx)
+		text = ctx.getText()
+		if "or" in text:
+			result = self.visit(ctx.getChild(0))
+
+			# Recorremos los otros términos en la expresión
+			for i in range(1, ctx.getChildCount(), 2):
+				operator = ctx.getChild(i).getText()
+				right = self.visit(ctx.getChild(i + 1))
+
+				# Evaluamos el operador `or`
+				if operator == 'or':
+					result = result or right
+
+			return result
+		else:
+			return self.visitChildren(ctx)
+
 
 	def visitLogic_and(self, ctx:CompiscriptParser.Logic_andContext):
-		return self.visitChildren(ctx)
+		text = ctx.getText()
+		if 'and' in text:
+			# Empezamos evaluando el primer término
+			result = self.visit(ctx.getChild(0))
 
+			# Recorremos los otros términos en la expresión
+			for i in range(2, ctx.getChildCount(), 2):  # Saltamos el operador 'and' para obtener el siguiente término
+				right = self.visit(ctx.getChild(i))
+
+				# Evaluamos la expresión utilizando el operador `and`
+				result = result and right
+
+				# Si result es False, podemos devolverlo inmediatamente
+				if not result:
+					return False
+
+			return result
+		else:
+			return self.visitChildren(ctx)
+	
+	
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
 		text = ctx.getText()
 		if "==" in text:
@@ -188,6 +264,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return left != right
 		else:
 			return self.visitChildren(ctx)
+
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		text = ctx.getText()
@@ -233,6 +310,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.getChild(1).getText() == '-':
 			return left - right
 
+
 	def visitFactor(self, ctx: CompiscriptParser.FactorContext):
 		if ctx.getChildCount() == 1:
 			return self.visit(ctx.unary(0))  # Retorna el único unary si no hay operación
@@ -251,11 +329,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.getChild(1).getText() == '%':
 			return left % right
 
+
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext):
 		return self.visitChildren(ctx)
 
+
 	def visitInstantiation(self, ctx:CompiscriptParser.InstantiationContext):
 		return self.visitChildren(ctx)
+
 
 	def visitUnary(self, ctx: CompiscriptParser.UnaryContext):
 		if ctx.getChildCount() == 2:
@@ -307,11 +388,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
 		return self.visitChildren(ctx)
 
+
 	def visitParameters(self, ctx:CompiscriptParser.ParametersContext):
 		return self.visitChildren(ctx)
 
+
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		return self.visitChildren(ctx)
+
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
 		node_id = f"node{self.counter}"
