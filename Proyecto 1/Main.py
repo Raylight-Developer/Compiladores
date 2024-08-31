@@ -68,6 +68,7 @@ class Display(QMainWindow):
 		except Exception as e:
 			self.log.append(R + "Compilation Failed" + RESET)
 			self.code_output.setText(str(e))
+		# self.log.append("Iniciando compilación...")
 
 	def compile(self, code: str):
 			self.table_functions.clearContents()
