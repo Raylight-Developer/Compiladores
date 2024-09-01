@@ -373,63 +373,49 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		data = []
 		left, right = "", ""
 
-		if "<" in text:
-			data = text.split("<")
-			try:
-				left = int(data[0])
-				right = int(data[1])
-			except TypeError:
-				raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
-			data = self.depuracion_numeros_para_vistiComparison(data)
+		if "<=" in text:
+			data = text.split("<=")
+			# print(f"Datos después de split por '<': {data}")
+			self.depuracion_numeros_para_visitComparison(data)
 			left = data[0]
 			right = data[1]
 			return left < right
 		
-		elif "<=" in text:
-			data = text.split("<=")
-			try:
-				left = int(data[0])
-				right = int(data[1])
-			except TypeError:
-				raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
-			data = self.depuracion_numeros_para_vistiComparison(data)
+		elif ">=" in text:
+			data = text.split(">=")
+			# print(f"Datos después de split por '<=': {data}")
+			self.depuracion_numeros_para_visitComparison(data)
 			left = data[0]
 			right = data[1]
 			return left[0] <= right[0]
 		
 		elif ">" in text:
 			data = text.split(">")
-			try:
-				left = int(data[0])
-				right = int(data[1])
-			except TypeError:
-				raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
-			data = self.depuracion_numeros_para_vistiComparison(data)
+			# print(f"Datos después de split por '>': {data}")
+			self.depuracion_numeros_para_visitComparison(data)
 			left = data[0]
 			right = data[1]
 			return left > right
 		
-		elif ">=" in text:
-			data = text.split(">=")
-			try:
-				left = int(data[0])
-				right = int(data[1])
-			except TypeError:
-				raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
-			data = self.depuracion_numeros_para_vistiComparison(data)
+		elif "<" in text:
+			# print(f"Datos después de split por '>=': {data}")
+			data = text.split("<")
+			self.depuracion_numeros_para_visitComparison(data)
 			left = data[0]
 			right = data[1]
 			return left >= right
 		else:
 			return self.visitChildren(ctx)
 		
-	def depuracion_numeros_para_vistiComparison(self, data):
-		# procesar "4"
-		data[0] = data[0].split('"') # eliminar los ""
-		data[1] = data[1].split('"')
-		data[0] = ''.join(filter(None, data[0])) # hacer valor no tipo lista ["", "4", ""]
-		data[1] = ''.join(filter(None, data[1]))
-		return data
+	def depuracion_numeros_para_visitComparison(self, data):
+		# print(f"Datos antes de depurar: {data}")
+		try:
+			int(data[0].strip())
+			int(data[1].strip())
+		except TypeError:
+			raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(data[0]).__name__} y {type(data[1]).__name__}")
+		# print(f"Datos después de depurar: {data}")
+	
 
 	def visitTerm(self, ctx: CompiscriptParser.TermContext):
 		if ctx.getChildCount() == 1:
