@@ -18,6 +18,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.variables_control = {}
 		self.global_variables = {}
 		self.current_scope = ""
+		self.variables_scope = {}
 
 		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
@@ -69,7 +70,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
 		var_name = ctx.IDENTIFIER().getText()
 
-		# Intentar obtener el tipo de la variable desde el contexto
+		# Try to get the variable's type from the context
 		var_type = "unknown"
 		var_value = None
 		if ctx.expression():
@@ -77,51 +78,66 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			if isinstance(var_value, bool):
 				var_type = "boolean"
 			elif isinstance(var_value, str):
-				if len(var_value) == 1:
-					var_type = "char"
-				else:
-					var_type = "string"
+				var_type = "char" if len(var_value) == 1 else "string"
 			elif isinstance(var_value, int):
 				var_type = "int"
 			elif isinstance(var_value, float):
 				var_type = "float"
 
-		# Determinar si estamos en un scope local o global
+		# Determine if we are in a local or global scope
 		is_local_scope = len(self.table_variables.scopes) > 1
 		current_scope_id = self.current_scope if is_local_scope else "global_0"
 
-		# Verificar si la variable ya está declarada en el scope actual
-		if var_name in self.variables_control:
-			if self.variables_control[var_name] == current_scope_id:
-				raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito '{current_scope_id}'.")
+		# Initialize the scope in variables_scope if it doesn't exist
+		if current_scope_id not in self.variables_scope:
+			self.variables_scope[current_scope_id] = {}
 
-		# Almacenar la variable en el scope correspondiente
-		self.variables_control[var_name] = current_scope_id
+		# Check if the variable is already declared in the current scope
+		if var_name in self.variables_scope[current_scope_id]:
+			raise Exception(f"Error: Variable '{var_name}' already declared in scope '{current_scope_id}'.")
 
-		# Crear la propiedad de la variable y agregarla al scope y a la tabla
+		# Store the variable in the current scope's dictionary in variables_scope
+		self.variables_scope[current_scope_id][var_name] = {"type": var_type, "value": var_value}
+
+		print(f"variables_scope: {self.variables_scope}")
+
+		# Create the variable's property and add it to the scope and symbol table
 		property = Symbol_Property()
 		property.id = var_name
 		property.scope = "local" if is_local_scope else "global"
 		property.value = var_value
 		property.type = var_type
 
-		# Agregar la variable a la tabla de variables en el scope actual
+		# Add the variable to the table of variables in the current scope
 		self.table_variables.add_and_scope(property)
 
-		# Si es una variable global, también agregarla al diccionario global
+		# If it's a global variable, also add it to the global dictionary
 		if not is_local_scope:
 			self.global_variables[var_name] = var_value
 
-		# Construir el AST
+		# Construct the AST node
 		node_id = self.nodeTree(ctx)
 
-		# Visitar la expresión asociada si existe
+		# Visit the associated expression if it exists
 		if ctx.expression():
 			expression_value = self.visit(ctx.expression())
-			print(f"Valor de la expresión asignada a {var_name}: {expression_value}")
+			print(f"Value of the expression assigned to {var_name}: {expression_value}")
 
 		return node_id
 
+	# Example of visiting a new scope (like a block or function)
+	def enterNewScope(self, scope_id: str):
+		# When entering a new scope, set the current scope
+		self.current_scope = scope_id
+		if scope_id not in self.variables_scope:
+			self.variables_scope[scope_id] = {}
+		print(f"Entered new scope: {scope_id}")
+
+	def exitScope(self):
+		# When exiting the scope, pop the scope stack and return to the parent scope
+		print(f"Exiting scope: {self.current_scope}")
+		self.current_scope = "global_0" if len(self.table_variables.scopes) == 1 else self.table_variables.scopes[-1].id
+		print(f"Returned to scope: {self.current_scope}")
 
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
