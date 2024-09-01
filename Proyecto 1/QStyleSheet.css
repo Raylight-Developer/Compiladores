@@ -229,26 +229,30 @@ QTableCornerButton:section {
 	border-width: 0px;
 }
 
-QTabBar:tab {
-	background: rgb(75,75,75);
-	border-style: solid;
-	border-width: 1px;
-	border-color: rgb(0,0,0);
-	color: rgb(255,255,255);
-	border-radius: 0px;
-}
 QTabBar:tab:top {
 	height: 24px;
-	border-width: 2px 1 2px 0;
+	border-width: 2px;
 	padding: 0px 10px 0px 10px;
 }
-QTabBar:tab:selected {
+QTabBar:tab {
+	margin: 2px;
 	border-width: 2px;
-	border-color: rgb(0,0,0);
-	border-radius: 5px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-color: transparent;
+	background: rgb(75,75,75);
+	color: rgb(255,255,255);
+}
+QTabBar:tab:hover {
+	background: rgb(100,100,100);
+}
+QTabBar:tab:selected {
+	border-color: transparent;
 	background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgb(200, 255, 255), stop:1 rgb(50, 255, 255));
 	color: rgb(0, 0, 0);
-	border-color: transparent;
+}
+QTabBar:tab:selected:hover {
+	background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgb(150, 255, 255), stop:1 rgb(50, 200, 200));
 }
 
 QTabWidget:pane {
@@ -276,8 +280,8 @@ QTableWidget:section {
 	background:rgb(25,25,25);
 	border-color: rgb(175,175,175);
 	padding: 0 5px 0 5px;
-	border-radius:0px;
-	border-width:1px;
+	border-radius: 0px;
+	border-width: 1px;
 }
 QWidget#Table {
 	margin: 10px;

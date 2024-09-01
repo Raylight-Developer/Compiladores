@@ -31,7 +31,7 @@ class Display(QMainWindow):
 		self.tables.addTab(self.table_classes, QIcon(), "Classes")
 
 		tablayout = QHBoxLayout()
-		tablayout.setContentsMargins(11,11,11,14)
+		tablayout.setContentsMargins(12,12,12,14)
 		tablayout.addWidget(self.tables)
 		tabcontainer = QWidget()
 		tabcontainer.setObjectName("Table")
