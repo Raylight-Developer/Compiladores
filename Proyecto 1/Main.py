@@ -2,6 +2,8 @@ from Editor import *
 from Semantic_Analyzer import *
 from SyntaxErrorListener import *
 
+RENDER_TREE = False
+
 class Display(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -10,9 +12,7 @@ class Display(QMainWindow):
 		self.code_input = QTextEdit()
 		self.code_input.setPlaceholderText("Code to compile...")
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
-		self.code_input.setText(
-"""var test = 10 + (3*5);
-""")
+		self.code_input.setText("var test = 10 + (3*5);")
 
 		self.code_output = QTextBrowser()
 		self.code_output.setPlaceholderText("Compiled code")
@@ -71,18 +71,17 @@ class Display(QMainWindow):
 		except Exception as e:
 			self.log.append(R + "Compilation Failed" + RESET)
 			self.code_output.setText(str(e))
-		# self.log.append("Iniciando compilación...")
 
 	def compile(self, code: str):
-			self.log.append("Compiling...")
-			self.table_functions.clearContents()
-			self.table_variables.clearContents()
-			self.table_classes.clearContents()
-			self.table_functions.setRowCount(0)
-			self.table_variables.setRowCount(0)
-			self.table_classes.setRowCount(0)
+		self.log.append("Compiling...")
+		self.table_functions.clearContents()
+		self.table_variables.clearContents()
+		self.table_classes.clearContents()
+		self.table_functions.setRowCount(0)
+		self.table_variables.setRowCount(0)
+		self.table_classes.setRowCount(0)
 
-		#try:
+		try:
 			lexer = CompiscriptLexer(InputStream(code))
 			token_stream = CommonTokenStream(lexer)
 			parser = CompiscriptParser(token_stream)
@@ -104,7 +103,7 @@ class Display(QMainWindow):
 			if not os.path.exists("./Output"):
 				os.makedirs("Output")
 			visitor.nodeTree(tree)
-			visitor.graph.render("Syntax Graph","./Output", False, True, "png")
+			if RENDER_TREE: visitor.graph.render("Syntax Graph","./Output", False, True, "png")
 
 			self.table_classes.resizeColumnsToContents()
 			self.table_functions.resizeColumnsToContents()
@@ -112,8 +111,8 @@ class Display(QMainWindow):
 
 			return tree.toStringTree(recog=parser)
 
-		#except Exception as e:
-		#	raise Exception(f"Compilation Error {e}")
+		except Exception as e:
+			raise Exception(f"Compilation Error {e}")
 
 
 #QApplication.setAttribute(Qt.ApplicationAttribute.AA_NativeWindows)
