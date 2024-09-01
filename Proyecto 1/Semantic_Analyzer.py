@@ -134,7 +134,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return node_id
 
 
-
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		return self.visitChildren(ctx)
 
@@ -150,11 +149,29 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitIfStmt(self, ctx: CompiscriptParser.IfStmtContext):
 		# Evaluar la condición del 'if'
 		condition_value = self.visit(ctx.expression())
+		text = ctx.getText()
 		print(f"condicion valor: {condition_value}")
 		
 		# Verificar que la condición sea de tipo booleano
 		if not isinstance(condition_value, bool):
 			raise TypeError(f"Error: La condición en la sentencia 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+				# Obtener la info del nodo
+		# En caso de tener un print, procesarlo
+		if "if" in text:
+			# Verificar si la función 'print' ya ha sido declarada
+			if "if" not in self.declared_functions:
+				# Si 'print' no está declarada, agregarla a la tabla de funciones
+				print_function = Symbol_Property()
+				print_function.id = "if"
+				print_function.parameters = "boolean"  # 'any', ya que acepta cualquier cosa
+				print_function.return_type = "void"
+				
+				# Agregar a la tabla de funciones
+				self.table_functions.add(print_function)
+
+				# Marcar 'print' como declarada
+				self.declared_functions.add("if")
+
 		
 		# Crear un nuevo scope para el bloque 'if'
 		self.table_variables.enter_scope()
@@ -234,9 +251,50 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitReturnStmt(self, ctx:CompiscriptParser.ReturnStmtContext):
 		return self.visitChildren(ctx)
 
-
 	def visitWhileStmt(self, ctx:CompiscriptParser.WhileStmtContext):
-		return self.visitChildren(ctx)
+		# Evaluar la condición del 'while'
+		condition_value = self.visit(ctx.expression())
+		text = ctx.getText()
+		print(f"condición valor: {condition_value}")
+		
+		# Verificar que la condición sea de tipo booleano
+		if not isinstance(condition_value, bool):
+			raise TypeError(f"Error: La condición en la sentencia 'while' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+		
+		# Verificar si la función 'while' ya ha sido declarada (este bloque parece innecesario pero lo dejo por si lo necesitas)
+		if "while" in text:
+			if "while" not in self.declared_functions:
+				while_function = Symbol_Property()
+				while_function.id = "while"
+				while_function.parameters = "boolean"  # 'boolean', ya que la condición debe ser booleana
+				while_function.return_type = "void"
+				
+				# Agregar a la tabla de funciones
+				self.table_functions.add(while_function)
+
+				# Marcar 'while' como declarada
+				self.declared_functions.add("while")
+		
+		# Crear un nuevo scope para el bloque 'while'
+		self.table_variables.enter_scope()
+		self.current_scope = self.table_variables.scopes[-1].id
+		print(f"Entering 'while' scope: {self.current_scope}")
+		
+		# Mientras la condición sea True, ejecutar el bloque 'while'
+		# while condition_value:
+		# 	# Iterar sobre todas las declaraciones dentro del bloque 'while'
+		# 	for stmt in ctx.statement():
+		# 		self.visit(stmt)
+			
+			# Re-evaluar la condición después de cada iteración
+			# condition_value = self.visit(ctx.expression())
+		
+		# Salir del scope del bloque 'while'
+		print(f"Exiting 'while' scope: {self.current_scope}")
+		self.table_variables.exit_scope()
+		self.current_scope = self.table_variables.scopes[-1].id if self.table_variables.scopes else "global_0"
+		
+		return None
 
 
 	def visitBlock(self, ctx: CompiscriptParser.BlockContext):
@@ -297,16 +355,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		text = ctx.getText()
 		if "or" in text:
 			result = self.visit(ctx.getChild(0))
+			print(f"Valor inicial para or: {result}")
 
-			# Recorremos los otros términos en la expresión
 			for i in range(1, ctx.getChildCount(), 2):
 				operator = ctx.getChild(i).getText()
 				right = self.visit(ctx.getChild(i + 1))
-
-				# Evaluamos el operador `or`
+				print(f"Evaluando: {result} or {right}")
 				if operator == 'or':
 					result = result or right
-
 			return result
 		else:
 			return self.visitChildren(ctx)
@@ -317,12 +373,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if 'and' in text:
 			# Empezamos evaluando el primer término
 			result = self.visit(ctx.getChild(0))
-
+			print(f"Valor inicial para and: {result}")
+			
 			# Recorremos los otros términos en la expresión
 			for i in range(2, ctx.getChildCount(), 2):  # Saltamos el operador 'and' para obtener el siguiente término
 				right = self.visit(ctx.getChild(i))
-
-				# Evaluamos la expresión utilizando el operador `and`
+				print(f"Evaluando: {result} and {right}")
 				result = result and right
 
 				# Si result es False, podemos devolverlo inmediatamente
@@ -332,37 +388,35 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return result
 		else:
 			return self.visitChildren(ctx)
-	
+
 	
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
 		text = ctx.getText()
-		left = ""
-		right = ""
+		data = []
+		left, right = "", ""
 		if "==" in text:
 			data = text.split("==")
-
-			if data[0].lower() == "true" or left == True or data[1].lower() == "false" or data == False:
-				left = bool(data[0])
-				right = bool(data[1])
+			print(f"Datos después del split por '==': {data}")
+			data = self.depuracion_elemntos_con_detalles_extra(data)
+			if data[0].lower() == "true" or data[0].lower() == "false":  # Verifica correctamente los booleanos
+				left = data[0].lower() == "true"
+				right = data[1].lower() == "true"
 			else:
-				try:
-					left = int(data[0]) 
-					right = int(data[1])
-				except TypeError:
-					raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
+				left = data[0]
+				right = data[1]
+				self.validacion_numeros_mediante_casteo([left, right])
 			return left == right
 		elif "!=" in text:
 			data = text.split("!=")
-			if data[0].lower() == "true" or left == True or data[1].lower() == "false" or data == False:
-				left = bool(data[0])
-				right = bool(data[1])
+			print(f"Datos después del split por '!=': {data}")
+			data = self.depuracion_elemntos_con_detalles_extra(data)
+			if data[0].lower() == "true" or data[0].lower() == "false":
+				left = data[0].lower() == "true"
+				right = data[1].lower() == "true"
 			else:
-				try:
-					left = int(data[0]) 
-					right = int(data[1])
-				except TypeError:
-					raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
-	
+				left = data[0]
+				right = data[1]
+				self.validacion_numeros_mediante_casteo([left, right])
 			return left != right
 		else:
 			return self.visitChildren(ctx)
@@ -376,7 +430,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if "<=" in text:
 			data = text.split("<=")
 			# print(f"Datos después de split por '<': {data}")
-			self.depuracion_numeros_para_visitComparison(data)
+			data = self.depuracion_elemntos_con_detalles_extra(data)
+			self.validacion_numeros_mediante_casteo(data)
 			left = data[0]
 			right = data[1]
 			return left < right
@@ -384,7 +439,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ">=" in text:
 			data = text.split(">=")
 			# print(f"Datos después de split por '<=': {data}")
-			self.depuracion_numeros_para_visitComparison(data)
+			data = self.depuracion_elemntos_con_detalles_extra(data)
+			self.validacion_numeros_mediante_casteo(data)
 			left = data[0]
 			right = data[1]
 			return left[0] <= right[0]
@@ -392,7 +448,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ">" in text:
 			data = text.split(">")
 			# print(f"Datos después de split por '>': {data}")
-			self.depuracion_numeros_para_visitComparison(data)
+			data = self.depuracion_elemntos_con_detalles_extra(data)
+			self.validacion_numeros_mediante_casteo(data)
 			left = data[0]
 			right = data[1]
 			return left > right
@@ -400,14 +457,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif "<" in text:
 			# print(f"Datos después de split por '>=': {data}")
 			data = text.split("<")
-			self.depuracion_numeros_para_visitComparison(data)
+			data = self.depuracion_elemntos_con_detalles_extra(data)
+			self.validacion_numeros_mediante_casteo(data)
 			left = data[0]
 			right = data[1]
 			return left >= right
 		else:
 			return self.visitChildren(ctx)
 		
-	def depuracion_numeros_para_visitComparison(self, data):
+
+	def validacion_numeros_mediante_casteo(self, data):
 		# print(f"Datos antes de depurar: {data}")
 		try:
 			int(data[0].strip())
@@ -415,6 +474,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		except TypeError:
 			raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(data[0]).__name__} y {type(data[1]).__name__}")
 		# print(f"Datos después de depurar: {data}")
+
+
+	def depuracion_elemntos_con_detalles_extra(self, data):
+		data[0] = data[0].strip('()')
+		data[1] = data[1].strip('()')
+		print(f"Datos después de eliminar paréntesis: {data}")
+		return data
 	
 
 	def visitTerm(self, ctx: CompiscriptParser.TermContext):
