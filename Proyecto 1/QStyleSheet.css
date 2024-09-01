@@ -174,14 +174,14 @@ QSplitter {
 	background: rgb(5,5,5);
 }
 QSplitter:handle:horizontal {
-	background: rgb(255, 255, 255);
+	background: rgb(255, 170, 90);
 	width: 2px;
 	margin: 1px;
 	margin-top: 10px;
 	margin-bottom: 10px;
 }
 QSplitter:handle:vertical {
-	background: rgb(255, 255, 255);
+	background: rgb(255, 170, 90);
 	width: 2px;
 	margin: 1px;
 	margin-left: 10px;
@@ -231,10 +231,10 @@ QTableCornerButton:section {
 
 QTabBar:tab {
 	background: rgb(75,75,75);
-	color: rgb(255,100,100);
 	border-style: solid;
 	border-width: 1px;
 	border-color: rgb(0,0,0);
+	color: rgb(255,255,255);
 	border-radius: 0px;
 }
 QTabBar:tab:top {
@@ -246,15 +246,15 @@ QTabBar:tab:selected {
 	border-width: 2px;
 	border-color: rgb(0,0,0);
 	border-radius: 5px;
-	background: rgb(200,255,255);
-	color: rgb(0,0,0);
+	background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgb(200, 255, 255), stop:1 rgb(50, 255, 255));
+	color: rgb(0, 0, 0);
 	border-color: transparent;
 }
 
 QTabWidget:pane {
 	border-style: solid;
-	border-color: rgb(255,255,255);
-	border-width: 1px;
+	border-color: transparent;
+	border-width: 0;
 	border-radius: 5px;
 }
 
@@ -278,4 +278,14 @@ QTableWidget:section {
 	padding: 0 5px 0 5px;
 	border-radius:0px;
 	border-width:1px;
+}
+QWidget#Table {
+	margin: 10px;
+	border-color: rgb(255,255,255);
+	border-width: 1px;
+	border-radius: 5px;
+}
+QWidget#Background {
+	background:rgb(25,25,25);
+	border-radius: 0;
 }

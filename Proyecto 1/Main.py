@@ -31,8 +31,10 @@ class Display(QMainWindow):
 		self.tables.addTab(self.table_classes, QIcon(), "Classes")
 
 		tablayout = QHBoxLayout()
+		tablayout.setContentsMargins(11,11,11,14)
 		tablayout.addWidget(self.tables)
 		tabcontainer = QWidget()
+		tabcontainer.setObjectName("Table")
 		tabcontainer.setLayout(tablayout)
 
 		sub = QSplitter(Qt.Orientation.Vertical)
@@ -53,6 +55,7 @@ class Display(QMainWindow):
 		main_layout.addWidget(button_compile)
 
 		widget = QWidget()
+		widget.setObjectName("Background")
 		widget.setLayout(main_layout)
 
 		self.setCentralWidget(widget)

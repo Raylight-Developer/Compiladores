@@ -1,9 +1,9 @@
 from Include import *
 
 class Scope:
-    def __init__(self, id: str):
-        self.id = id  # Identificador del scope
-        self.symbols = {}  # Diccionario de símbolos dentro del scope
+	def __init__(self, id: str):
+		self.id = id  # Identificador del scope
+		self.symbols = {}  # Diccionario de símbolos dentro del scope
 
 	
 class Symbol_Property:
