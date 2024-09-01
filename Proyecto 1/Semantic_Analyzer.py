@@ -2,6 +2,7 @@ from CompiscriptVisitor import CompiscriptVisitor
 from CompiscriptParser import CompiscriptParser
 from CompiscriptLexer import CompiscriptLexer
 from Symbol_Table import Symbol_Table, Symbol_Property
+import copy
 
 from Include import *
 
@@ -15,15 +16,19 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.table_functions = table_functions
 		self.table_variables = table_variables
 		self.table_classes = table_classes
-		self.variables_control = {}
 		self.global_variables = {}
 		self.current_scope = ""
 		self.variables_scope = {}
+		self.variables_globals = {}
 
 		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
 		self.declared_functions: Set[str] = set()
 	
+	def raise_semantic_error(self, message: str):
+		# Centraliza la generación de errores semánticos
+		raise Exception(f"Semantic Error: {message}")
+
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
 
@@ -70,60 +75,69 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
 		var_name = ctx.IDENTIFIER().getText()
 
+		# Determina si estamos en un scope local o global
+		is_local_scope = len(self.table_variables.scopes) > 1
+		current_scope_id = self.current_scope if is_local_scope else "global_0"
+
+		# print(f"ATENTO: {current_scope_id, self.current_scope, is_local_scope}")
+		if current_scope_id == '':
+			current_scope_id = "global_0"
+
+		# Inicializa el scope en variables_scope si no existe
+		if current_scope_id not in self.variables_scope:
+			self.variables_scope[current_scope_id] = {}
+
+		# Verifica si la variable ya está declarada en el scope actual
+		if var_name in self.variables_scope[current_scope_id]:
+			raise Exception(f"Error: Variable '{var_name}' ya declarada en el scope '{current_scope_id}'.")
+
 		# Try to get the variable's type from the context
 		var_type = "unknown"
 		var_value = None
 		if ctx.expression():
 			var_value = self.visit(ctx.expression())
-			if isinstance(var_value, bool):
-				var_type = "boolean"
-			elif isinstance(var_value, str):
-				var_type = "char" if len(var_value) == 1 else "string"
-			elif isinstance(var_value, int):
-				var_type = "int"
-			elif isinstance(var_value, float):
-				var_type = "float"
+			var_type = self.determine_type(var_value)
 
-		# Determine if we are in a local or global scope
-		is_local_scope = len(self.table_variables.scopes) > 1
-		current_scope_id = self.current_scope if is_local_scope else "global_0"
-
-		# Initialize the scope in variables_scope if it doesn't exist
-		if current_scope_id not in self.variables_scope:
-			self.variables_scope[current_scope_id] = {}
-
-		# Check if the variable is already declared in the current scope
-		if var_name in self.variables_scope[current_scope_id]:
-			raise Exception(f"Error: Variable '{var_name}' already declared in scope '{current_scope_id}'.")
-
-		# Store the variable in the current scope's dictionary in variables_scope
+		# Guarda la variable en el diccionario del scope actual en variables_scope
 		self.variables_scope[current_scope_id][var_name] = {"type": var_type, "value": var_value}
-
 		print(f"variables_scope: {self.variables_scope}")
 
-		# Create the variable's property and add it to the scope and symbol table
+		# Crea la propiedad de la variable y la agrega a la tabla de símbolos
 		property = Symbol_Property()
 		property.id = var_name
 		property.scope = "local" if is_local_scope else "global"
 		property.value = var_value
 		property.type = var_type
 
-		# Add the variable to the table of variables in the current scope
+		# Agrega la variable a la tabla de variables en el scope actual
 		self.table_variables.add_and_scope(property)
 
-		# If it's a global variable, also add it to the global dictionary
+		# Si es una variable global, también se agrega al diccionario global
 		if not is_local_scope:
 			self.global_variables[var_name] = var_value
 
-		# Construct the AST node
+		# Construye el nodo del AST
 		node_id = self.nodeTree(ctx)
 
-		# Visit the associated expression if it exists
+		# Visita la expresión asociada si existe
 		if ctx.expression():
 			expression_value = self.visit(ctx.expression())
 			print(f"Value of the expression assigned to {var_name}: {expression_value}")
 
 		return node_id
+	
+	
+	def determine_type(self, value):
+		if isinstance(value, bool):
+			return "boolean"
+		elif isinstance(value, str):
+			return "char" if len(value) == 1 else "string"
+		elif isinstance(value, int):
+			return "int"
+		elif isinstance(value, float):
+			return "float"
+		else:
+			return "unknown"
 
 	# Example of visiting a new scope (like a block or function)
 	def enterNewScope(self, scope_id: str):
@@ -392,6 +406,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
+		""" Este sirve para poder hacer la asignacion de valores"""
 		return self.visitChildren(ctx)
 
 
