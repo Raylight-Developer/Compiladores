@@ -149,30 +149,52 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitIfStmt(self, ctx: CompiscriptParser.IfStmtContext):
 		# Evaluar la condición del 'if'
-		condition_result = self.visit(ctx.expression())
+		condition_value = self.visit(ctx.expression())
+		print(f"condicion valor: {condition_value}")
+		
+		# Verificar que la condición sea de tipo booleano
+		if not isinstance(condition_value, bool):
+			raise TypeError(f"Error: La condición en la sentencia 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 		
 		# Crear un nuevo scope para el bloque 'if'
 		self.table_variables.enter_scope()
+		self.current_scope = self.table_variables.scopes[-1].id
+		print(f"Entering 'if' scope: {self.current_scope}")
 		
-		# Evaluar el bloque del 'if'
-		if_block = ctx.statement(0)
-		if_block_result = self.visit(if_block)
+		# Si la condición es True, ejecutar el bloque 'if'
+		if condition_value:
+			self.visit(ctx.statement(0))
 		
 		# Salir del scope del bloque 'if'
+		print(f"Exiting 'if' scope: {self.current_scope}")
 		self.table_variables.exit_scope()
+		self.current_scope = self.table_variables.scopes[-1].id if self.table_variables.scopes else "global_0"
+		
 
-		# Verificar si existe un bloque 'else'
 		if ctx.getChildCount() > 5:  # 'if' '(' expression ')' statement 'else' statement
 			# Crear un nuevo scope para el bloque 'else'
 			self.table_variables.enter_scope()
+			# Crear un nuevo scope para el bloque 'else'
+			self.current_scope = self.table_variables.scopes[-1].id
+			print(f"Entering 'else' scope: {self.current_scope}")
 			
 			# Evaluar el bloque 'else'
 			else_block = ctx.statement(1)
 			else_block_result = self.visit(else_block)
 			
 			# Salir del scope del bloque 'else'
+			print(f"Exiting 'else' scope: {self.current_scope}")
+			# Salir del scope del bloque 'else'
 			self.table_variables.exit_scope()
 
+			# Si la condición es False, ejecutar el bloque 'else'
+			if not condition_value:
+				self.visit(ctx.statement(1))
+			
+			self.current_scope = self.table_variables.scopes[-1].id if self.table_variables.scopes else "global_0"
+		
+				# Verificar si existe un bloque 'else'
+		
 		return None  # No hay un resultado específico para la evaluación de 'if' o 'else'
 
 		# return self.visitChildren(ctx)
@@ -314,15 +336,33 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
 		text = ctx.getText()
+		left = ""
+		right = ""
 		if "==" in text:
 			data = text.split("==")
-			left = data[0]
-			right = data[1]
+
+			if data[0].lower() == "true" or left == True or data[1].lower() == "false" or data == False:
+				left = bool(data[0])
+				right = bool(data[1])
+			else:
+				try:
+					left = int(data[0]) 
+					right = int(data[1])
+				except TypeError:
+					raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
 			return left == right
 		elif "!=" in text:
 			data = text.split("!=")
-			left = data[0]
-			right = data[1]
+			if data[0].lower() == "true" or left == True or data[1].lower() == "false" or data == False:
+				left = bool(data[0])
+				right = bool(data[1])
+			else:
+				try:
+					left = int(data[0]) 
+					right = int(data[1])
+				except TypeError:
+					raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
+	
 			return left != right
 		else:
 			return self.visitChildren(ctx)
@@ -332,29 +372,64 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		text = ctx.getText()
 		data = []
 		left, right = "", ""
+
 		if "<" in text:
 			data = text.split("<")
+			try:
+				left = int(data[0])
+				right = int(data[1])
+			except TypeError:
+				raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
+			data = self.depuracion_numeros_para_vistiComparison(data)
 			left = data[0]
 			right = data[1]
 			return left < right
+		
 		elif "<=" in text:
 			data = text.split("<=")
+			try:
+				left = int(data[0])
+				right = int(data[1])
+			except TypeError:
+				raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
+			data = self.depuracion_numeros_para_vistiComparison(data)
 			left = data[0]
 			right = data[1]
-			return left <= right
+			return left[0] <= right[0]
+		
 		elif ">" in text:
 			data = text.split(">")
+			try:
+				left = int(data[0])
+				right = int(data[1])
+			except TypeError:
+				raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
+			data = self.depuracion_numeros_para_vistiComparison(data)
 			left = data[0]
 			right = data[1]
 			return left > right
+		
 		elif ">=" in text:
 			data = text.split(">=")
+			try:
+				left = int(data[0])
+				right = int(data[1])
+			except TypeError:
+				raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(left).__name__} y {type(right).__name__}")
+			data = self.depuracion_numeros_para_vistiComparison(data)
 			left = data[0]
 			right = data[1]
 			return left >= right
 		else:
 			return self.visitChildren(ctx)
 		
+	def depuracion_numeros_para_vistiComparison(self, data):
+		# procesar "4"
+		data[0] = data[0].split('"') # eliminar los ""
+		data[1] = data[1].split('"')
+		data[0] = ''.join(filter(None, data[0])) # hacer valor no tipo lista ["", "4", ""]
+		data[1] = ''.join(filter(None, data[1]))
+		return data
 
 	def visitTerm(self, ctx: CompiscriptParser.TermContext):
 		if ctx.getChildCount() == 1:
