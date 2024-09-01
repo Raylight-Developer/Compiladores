@@ -74,6 +74,7 @@ class Display(QMainWindow):
 		# self.log.append("Iniciando compilación...")
 
 	def compile(self, code: str):
+			self.log.append("Compiling...")
 			self.table_functions.clearContents()
 			self.table_variables.clearContents()
 			self.table_classes.clearContents()
@@ -83,13 +84,8 @@ class Display(QMainWindow):
 
 		#try:
 			lexer = CompiscriptLexer(InputStream(code))
-			self.log.append("Lexer")
-
 			token_stream = CommonTokenStream(lexer)
-			self.log.append("Token Stream")
-
 			parser = CompiscriptParser(token_stream)
-			self.log.append("Parser")
 
 			# Añadir el ErrorListener personalizado
 			error_listener = SyntaxErrorListener(self.log)
