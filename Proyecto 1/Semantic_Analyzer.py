@@ -66,7 +66,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return node_id
 
 	
-	# Visit a parse tree produced by CompiscriptParser#varDecl.
 	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
 		var_name = ctx.IDENTIFIER().getText()
 
@@ -87,31 +86,17 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			elif isinstance(var_value, float):
 				var_type = "float"
 
-		# TENER MUCHO CUIDADO AQUI, PUES LOS VALORES SE ALMACENAN MEDIO RARO
-		# Verificar si estamos en un scope local
+		# Determinar si estamos en un scope local o global
 		is_local_scope = len(self.table_variables.scopes) > 1
-		print(self.current_scope)
-		if self.current_scope == "global_0":
-			# Verifica si la variable ya está en el ámbito global
-			if var_name in self.global_variables:
-				raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito global.")
-			# Si no existe, agrega la variable al diccionario global
-			self.global_variables[var_name] = "global"
+		current_scope_id = self.current_scope if is_local_scope else "global_0"
 
-
-		print(self.variables_control, self.global_variables)
-		# Primero, verificar si la variable ya existe en el scope actual
+		# Verificar si la variable ya está declarada en el scope actual
 		if var_name in self.variables_control:
-			if is_local_scope:
-				if self.variables_control[var_name] == self.current_scope:
-					raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito local '{self.current_scope}'.")
-			else:
-				if self.variables_control[var_name] == "global":
-					raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito global.")
-		# TENER MUCHO CUIDADO AQUI, PUES LOS VALORES SE ALMACENAN MEDIO RARO
-		# Si no hay conflictos, almacenar la variable en el scope correspondiente
-		# Actualizar el diccionario solo después de haber verificado que no hay duplicados
-		self.variables_control[var_name] = self.current_scope if is_local_scope else "global"
+			if self.variables_control[var_name] == current_scope_id:
+				raise Exception(f"Error: Variable '{var_name}' ya declarada en el ámbito '{current_scope_id}'.")
+
+		# Almacenar la variable en el scope correspondiente
+		self.variables_control[var_name] = current_scope_id
 
 		# Crear la propiedad de la variable y agregarla al scope y a la tabla
 		property = Symbol_Property()
@@ -120,8 +105,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		property.value = var_value
 		property.type = var_type
 
-		# Solo agrega la variable una vez al scope y a la tabla
+		# Agregar la variable a la tabla de variables en el scope actual
 		self.table_variables.add_and_scope(property)
+
+		# Si es una variable global, también agregarla al diccionario global
+		if not is_local_scope:
+			self.global_variables[var_name] = var_value
 
 		# Construir el AST
 		node_id = self.nodeTree(ctx)
@@ -129,9 +118,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Visitar la expresión asociada si existe
 		if ctx.expression():
 			expression_value = self.visit(ctx.expression())
-			print(expression_value)
+			print(f"Valor de la expresión asignada a {var_name}: {expression_value}")
 
 		return node_id
+
 
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
@@ -142,8 +132,46 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 
-	def visitForStmt(self, ctx:CompiscriptParser.ForStmtContext):
-		return self.visitChildren(ctx)
+	def visitForStmt(self, ctx: CompiscriptParser.ForStmtContext):
+		# Crear un nuevo scope para el ciclo 'for'
+		self.table_variables.enter_scope()
+		self.current_scope = self.table_variables.scopes[-1].id
+		print(f"Entering 'for' scope: {self.current_scope}")
+
+		# 1. Inicialización: Ejecutar la inicialización del ciclo, si existe
+		if ctx.varDecl():
+			self.visit(ctx.varDecl())
+		elif ctx.exprStmt():
+			self.visit(ctx.exprStmt())
+		
+		# 2. Condición: Evaluar la condición del 'for' si existe
+		condition_value = True
+		if ctx.expression(0):
+			condition_value = self.visit(ctx.expression(0))
+			
+			# Verificar que la condición sea de tipo booleano
+			if not isinstance(condition_value, bool):
+				raise TypeError(f"Error: La condición en la sentencia 'for' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+
+		# 3. Ciclo 'for': Continuar mientras la condición sea verdadera
+		while condition_value:
+			# 4. Ejecutar el cuerpo del ciclo
+			self.visit(ctx.statement())
+
+			# 5. Actualización: Ejecutar la actualización del ciclo, si existe
+			if ctx.expression(1):
+				self.visit(ctx.expression(1))
+
+			# Re-evaluar la condición después de cada iteración si existe
+			if ctx.expression(0):
+				condition_value = self.visit(ctx.expression(0))
+
+		# Salir del scope del bloque 'for'
+		print(f"Exiting 'for' scope: {self.current_scope}")
+		self.table_variables.exit_scope()
+		self.current_scope = self.table_variables.scopes[-1].id if self.table_variables.scopes else "global_0"
+
+		return None
 
 
 	def visitIfStmt(self, ctx: CompiscriptParser.IfStmtContext):
