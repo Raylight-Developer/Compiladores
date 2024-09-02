@@ -28,7 +28,17 @@ var nice1;
 var test = 10 + (3*5);
 var x = 0;
 var miau = test * x;
-FALLA miau, no infiere tipo y valor
+
+
+
+
+
+fun crearSumador ( n ) { return fun ( x ) { return x + n ; }; }
+var suma5 = crearSumador (5) ;
+print suma5 (10) ; // "15".
+print suma5 (20) ; // "25".
+VARIOS errores
+
 
 
 {} {}
