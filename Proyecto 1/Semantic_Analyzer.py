@@ -54,12 +54,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(data[0]).__name__} y {type(data[1]).__name__}")
 		# print(f"Datos después de depurar: {data}")
 
-	def depuracion_elemntos_con_detalles_extra(self, data):
-		data[0] = data[0].strip('()')
-		data[1] = data[1].strip('()')
-		self.log.debug(f"Datos después de eliminar paréntesis: {data}")
-		return data
-
 
 	def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
 		fun_name = ctx.function().IDENTIFIER().getText()
@@ -287,7 +281,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		condition_value = self.visit(ctx.expression())
 		text = ctx.getText()
 		self.log.debug(f"condicion valor: {condition_value}")
-		self.log.debug(f"CONDICION IF: {condition_value}")
+		print(f"CONDICION IF: {condition_value}")
 		if isinstance(condition_value, tuple):
 			if not isinstance(condition_value[0], bool):
 				raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
@@ -377,7 +371,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.log.debug(f'Evaluated expression: {expression_value}')
 
 			# Aquí deberías recibir el valor real de "hola" en lugar de 'global_0'
-			self.log.debug(f'Print statement: {expression_value}')
+			print(f'Print statement: {expression_value}')
 
 			return None
 		else:
@@ -498,7 +492,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.log.debug(f"VARNAME: {var_name}")
 
 			current_scope_vars = self.variables_scope.get(self.current_scope)
-			self.log.debug(current_scope_vars)
+			print(current_scope_vars)
 			if var_name not in current_scope_vars:
 				raise Exception(f"Error: La variable '{var_name}' no esta en el scope actual.")
 
@@ -720,6 +714,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 
 	def visitCall(self, ctx: CompiscriptParser.CallContext):
+		# function_name = ctx.primary().IDENTIFIER().getText()
+		# # print(function_name)
+		
+		# # Verificar si la función ha sido declarada
+		# if function_name not in self.declared_functions:
+		# 	raise Exception(f"Error: La función '{function_name}' no está definida.")
+		
+		# # Verificar los argumentos de la función (opcionalmente)
+		# expected_params = self.table_functions.lookup(function_name).parameters.split(", ")
+		# passed_params = ctx.arguments().expression()
+		
+		# if len(expected_params) != len(passed_params):
+		# 	raise Exception(f"Error: La función '{function_name}' espera {len(expected_params)} argumentos, pero se pasaron {len(passed_params)}.")
+		
 		# Visitar los hijos (por si hay más cosas que procesar en la llamada)
 		return self.visitChildren(ctx)
 
