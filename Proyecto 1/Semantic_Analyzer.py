@@ -52,7 +52,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			raise Exception(f"Error: Función '{fun_name}' ya declarada.")
 		# Obtencion de los parametros
 		parametros = [param.getText() for param in ctx.function().parameters().IDENTIFIER()] 
-		# print(f"PARAMETAIOSJDF {parametros}")
+		params = ctx.function().parameters()
+		if params:
+			for param in params.IDENTIFIER():
+				self.declare_variable(param.getText(), param)
 
 		# Registrar la función
 		self.declared_functions.add(fun_name)
@@ -65,7 +68,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		symbol_data.return_type = "void"
 		# Agregar a la tabla de funciones
 		self.table_functions.add(symbol_data)
-
 
 		# Delegar al siguiente método (por si hay más cosas que procesar dentro de la función)
 		return self.visitChildren(ctx)
@@ -597,22 +599,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return self.visitChildren(ctx)
 		
 
-	def validacion_numeros_mediante_casteo(self, data):
-		# print(f"Datos antes de depurar: {data}")
-		try:
-			int(data[0].strip())
-			int(data[1].strip())
-		except TypeError:
-			raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(data[0]).__name__} y {type(data[1]).__name__}")
-		# print(f"Datos después de depurar: {data}")
-
-
-	def depuracion_elemntos_con_detalles_extra(self, data):
-		data[0] = data[0].strip('()')
-		data[1] = data[1].strip('()')
-		self.log.debug(f"Datos después de eliminar paréntesis: {data}")
-		return data
-	
 
 	def visitTerm(self, ctx: CompiscriptParser.TermContext):
 		if ctx.getChildCount() == 1:
@@ -747,6 +733,27 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		return self.visitChildren(ctx)
 
+
+	def declare_variable(self, name: str, ctx: ParserRuleContext):
+		"""Declare a variable in the current scope."""
+		if name in self.local_variables:
+			self.log.error(f"Variable '{name}' is already declared in the current scope.")
+		self.local_variables[name] = ctx
+
+	def validacion_numeros_mediante_casteo(self, data):
+		# print(f"Datos antes de depurar: {data}")
+		try:
+			int(data[0].strip())
+			int(data[1].strip())
+		except TypeError:
+			raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(data[0]).__name__} y {type(data[1]).__name__}")
+		# print(f"Datos después de depurar: {data}")
+
+	def depuracion_elemntos_con_detalles_extra(self, data):
+		data[0] = data[0].strip('()')
+		data[1] = data[1].strip('()')
+		self.log.debug(f"Datos después de eliminar paréntesis: {data}")
+		return data
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
 		node_id = f"node{self.counter}"
