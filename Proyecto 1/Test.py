@@ -9,10 +9,10 @@ class Tester(QMainWindow):
 		super().__init__()
 		self.setWindowTitle("Semantic Compiler")
 
-		self.code_output = Logger()
+		self.code_output = Logger(False)
 		self.code_output.setPlaceholderText("Compiled code")
 
-		self.log = Logger()
+		self.log = Logger(False)
 		self.log.setPlaceholderText("Log")
 
 		self.table_functions : List[Symbol_Table] = []
@@ -20,6 +20,7 @@ class Tester(QMainWindow):
 		self.table_classes   : List[Symbol_Table] = []
 
 		self.tabs = QTabWidget()
+		self.tabs.currentChanged.connect(self.on_tab_changed)
 		splitter = QSplitter()
 		splitter.addWidget(self.code_output)
 		splitter.addWidget(self.log)
@@ -47,15 +48,21 @@ class Tester(QMainWindow):
 			except Exception as e:
 				if should_pass == False:
 					self.succeses += 1
-					self.log.append(f"{G}[{i}] Compilation ''Succesful''{RESET}{Y}(Should fail){RESET}<br>&nbsp;&nbsp;{e}<br><br>")
+					self.log.append(f"{G}[{i}] Compilation ''Succesful''{RESET}{Y}(Should fail){RESET} {{<br>&nbsp;&nbsp;{e}<br>}}<br>")
 					self.code_output.insertPlainText(f"[{i}] {e}\n\n")
 				else:
-					self.log.append(f"{R}[{i}] Compilation Failed{RESET}<br>&nbsp;&nbsp;{e}<br><br>")
+					self.log.append(f"{R}[{i}] Compilation Failed{RESET} {{<br>&nbsp;&nbsp;{e}<br>}}<br>")
 					self.code_output.insertPlainText(f"[{i}] {e}\n\n")
 
 		self.log.append(f"TESTS:  {len(self.code)}")
 		self.log.append(f"{G}PASSED:{RESET} {self.succeses}")
 		self.log.append(f"{R}FAILED:{RESET} {len(self.code) - self.succeses}")
+
+	def on_tab_changed(self):
+		if self.tabs.currentIndex() != 0:
+			self.tabs.currentWidget().widget(0).resizeColumnsToContents()
+			self.tabs.currentWidget().widget(1).resizeColumnsToContents()
+			self.tabs.currentWidget().widget(2).resizeColumnsToContents()
 
 	def compile(self, i: int, code: str) -> str:
 		self.table_functions.append(Symbol_Table(self.log, "Fun"))
@@ -95,7 +102,7 @@ class Tester(QMainWindow):
 			return tree.toStringTree(recog=parser)
 
 		except Exception as e:
-			raise Exception(f"Error {e}")
+			raise Exception(str(e))
 
 
 app = QApplication(sys.argv)

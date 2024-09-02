@@ -32,7 +32,6 @@ class Symbol_Table(QTableWidget):
 		self.scope_counter = 0  # Contador para enumerar los scopes
 		self.scopes = [Scope(f"global_{self.scope_counter}")]  # Stack de scopes, iniciando con el scope global
 
-
 		self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
 
 		if self.type == "Var":

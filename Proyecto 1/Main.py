@@ -63,6 +63,12 @@ var miau = test * x;""")
 		widget.setLayout(main_layout)
 
 		self.setCentralWidget(widget)
+		
+		QTimer.singleShot(200, lambda: (
+			self.table_classes.resizeColumnsToContents(),
+			self.table_functions.resizeColumnsToContents(),
+			self.table_variables.resizeColumnsToContents()
+		))
 
 	def parse(self):
 		codigo = self.code_input.toPlainText()
