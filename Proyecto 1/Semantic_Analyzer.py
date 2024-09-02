@@ -3,12 +3,13 @@ from CompiscriptVisitor import CompiscriptVisitor
 from CompiscriptParser import CompiscriptParser
 from CompiscriptLexer import CompiscriptLexer
 from Symbol_Table import Symbol_Table, Symbol_Property
+from Logger import *
 import re
 
 from Include import *
 
 class Semantic_Analyzer(CompiscriptVisitor):
-	def __init__(self, log: QTextBrowser, table_functions: Symbol_Table, table_variables: Symbol_Table, table_classes: Symbol_Table, parser: CompiscriptParser):
+	def __init__(self, log: Logger, table_functions: Symbol_Table, table_variables: Symbol_Table, table_classes: Symbol_Table, parser: CompiscriptParser):
 		super().__init__()
 		self.counter = 1
 		self.inside_loop = False
@@ -44,7 +45,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
 		fun_name = ctx.function().IDENTIFIER().getText()
-		# print(f"TEXTO: {ctx.getText()} -- {fun_name}")
+		#self.log.debug(f"TEXTO: {ctx.getText()} -- {fun_name}")
 		# fun_declard = ctx.function().call()
 		# Verifica si la función ya está declarada
 		if fun_name in self.declared_functions:
@@ -120,8 +121,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.variables_scope[current_scope_id][var_name] = {"type": var_type, "value": var_value}
 
 
-		print(f"variables_scope: {self.variables_scope}")
-		
+		self.log.debug(f"variables_scope: {self.variables_scope}")
+
 		property = Symbol_Property()
 		# Enviarlo en tipo array
 		if var_type == "array":
@@ -174,14 +175,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.current_scope = scope_id
 		if scope_id not in self.variables_scope:
 			self.variables_scope[scope_id] = {}
-		print(f"Entered new scope: {scope_id}")
+		self.log.debug(f"Entered new scope: {scope_id}")
 
 
 	def exitScope(self):
 		# When exiting the scope, pop the scope stack and return to the parent scope
-		print(f"Exiting scope: {self.current_scope}")
+		self.log.debug(f"Exiting scope: {self.current_scope}")
 		self.current_scope = "global_0" if len(self.table_variables.scopes) == 1 else self.table_variables.scopes[-1].id
-		print(f"Returned to scope: {self.current_scope}")
+		self.log.debug(f"Returned to scope: {self.current_scope}")
 
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
@@ -191,14 +192,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if text == "break;":
 			if not self.inside_loop:
 				raise Exception("Error: La declaracion 'break' no esta dentro de un bucle.")
-			print("Declaracion Break encontrada, saliendo del bucle.")
+			self.log.debug("Declaracion Break encontrada, saliendo del bucle.")
 			return "break"  # Indica al bucle que debe terminar
 		
 		# Detectar 'continue'
 		elif text == "continue;":
 			if not self.inside_loop:
 				raise Exception("Error: La declaracion 'continue' no esta dentro de un bucle.")
-			print("Declaracion Continue encontrada, continuando el bucle.")
+			self.log.debug("Declaracion Continue encontrada, continuando el bucle.")
 			return "continue"  # Indica al bucle que debe saltar a la siguiente iteración
 		
 		elif text == "return":
@@ -219,7 +220,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.table_variables.enter_scope()
 		new_scope_id = self.table_variables.scopes[-1].id
 		self.current_scope = new_scope_id
-		print(f"Entering 'for' scope: {self.current_scope}")
+		self.log.debug(f"Entering 'for' scope: {self.current_scope}")
 
 		# Inicialización, condición y actualización
 		if ctx.varDecl():  # Manejo de la declaración de variable dentro del for
@@ -245,7 +246,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# 	condition_value = self.visit(ctx.expression(0)) if ctx.expression(0) else True
 
 		# Salir del scope después de terminar el bucle
-		print(f"Exiting 'for' scope: {self.current_scope}")
+		self.log.debug(f"Exiting 'for' scope: {self.current_scope}")
 		self.table_variables.exit_scope()
 		self.current_scope = self.table_variables.scopes[-1].id if self.table_variables.scopes else "global_0"
 
@@ -256,7 +257,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Evaluar la condición del 'if'
 		condition_value = self.visit(ctx.expression())
 		text = ctx.getText()
-		print(f"condicion valor: {condition_value}")
+		self.log.debug(f"condicion valor: {condition_value}")
 		
 		# Verificar que la condición sea de tipo booleano
 		if not isinstance(condition_value, bool):
@@ -282,14 +283,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Crear un nuevo scope para el bloque 'if'
 		self.table_variables.enter_scope()
 		self.current_scope = self.table_variables.scopes[-1].id
-		print(f"Entering 'if' scope: {self.current_scope}")
+		self.log.debug(f"Entering 'if' scope: {self.current_scope}")
 		
 		# Si la condición es True, ejecutar el bloque 'if'
 		if condition_value:
 			self.visit(ctx.statement(0))
 		
 		# Salir del scope del bloque 'if'
-		print(f"Exiting 'if' scope: {self.current_scope}")
+		self.log.debug(f"Exiting 'if' scope: {self.current_scope}")
 		self.table_variables.exit_scope()
 		self.current_scope = self.table_variables.scopes[-1].id if self.table_variables.scopes else "global_0"
 		
@@ -299,14 +300,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.table_variables.enter_scope()
 			# Crear un nuevo scope para el bloque 'else'
 			self.current_scope = self.table_variables.scopes[-1].id
-			print(f"Entering 'else' scope: {self.current_scope}")
+			self.log.debug(f"Entering 'else' scope: {self.current_scope}")
 			
 			# Evaluar el bloque 'else'
 			else_block = ctx.statement(1)
 			else_block_result = self.visit(else_block)
 			
 			# Salir del scope del bloque 'else'
-			print(f"Exiting 'else' scope: {self.current_scope}")
+			self.log.debug(f"Exiting 'else' scope: {self.current_scope}")
 			# Salir del scope del bloque 'else'
 			self.table_variables.exit_scope()
 
@@ -346,7 +347,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			expression_value = self.visit(ctx.expression())
 
 			# Imprimir la expresión (esto es solo un ejemplo de cómo podrías manejarlo)
-			print(f'Print statement: {expression_value}')
+			self.log.debug(f'Print statement: {expression_value}')
 
 			return None
 		else:
@@ -362,7 +363,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Evaluar la condición del 'while'
 		condition_value = self.visit(ctx.expression())
 		text = ctx.getText()
-		print(f"condición valor: {condition_value}")
+		self.log.debug(f"Condición valor: {condition_value}")
 		
 		# Verificar que la condición sea de tipo booleano
 		if not isinstance(condition_value, bool):
@@ -386,7 +387,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Crear un nuevo scope para el bloque 'while'
 		self.table_variables.enter_scope()
 		self.current_scope = self.table_variables.scopes[-1].id
-		print(f"Entering 'while' scope: {self.current_scope}")
+		self.log.debug(f"Entering 'while' scope: {self.current_scope}")
 		
 		# Mientras la condición sea True, ejecutar el bloque 'while'
 		# while condition_value:
@@ -398,7 +399,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			# condition_value = self.visit(ctx.expression())
 		
 		# Salir del scope del bloque 'while'
-		print(f"Exiting 'while' scope: {self.current_scope}")
+		self.log.debug(f"Exiting 'while' scope: {self.current_scope}")
 		self.table_variables.exit_scope()
 		self.current_scope = self.table_variables.scopes[-1].id if self.table_variables.scopes else "global_0"
 		self.inside_loop = False
@@ -409,7 +410,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Entrar en un nuevo scope, lo que automáticamente incrementa el contador de scopes
 		self.table_variables.enter_scope()
 		# Imprimir el identificador del nuevo scope para debugging
-		print(f"Entering scope: {self.table_variables.scopes[-1].id}")
+		self.log.debug(f"Entering scope: {self.table_variables.scopes[-1].id}")
 		self.current_scope = self.table_variables.scopes[-1].id
 		# Evaluar todas las declaraciones dentro del bloque
 		result = None
@@ -417,7 +418,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			result = self.visit(declaration)
 
 		# Salir del scope al final del bloque, lo que también elimina el scope del stack
-		print(f"Exiting scope: {self.table_variables.scopes[-1].id}")
+		self.log.debug(f"Exiting scope: {self.table_variables.scopes[-1].id}")
 		self.table_variables.exit_scope()
 		self.current_scope = "global_0"
 		return result
@@ -460,7 +461,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		""" Este sirve para poder hacer la asignacion de valores"""
 		if ctx.IDENTIFIER() is not None:
 			var_name = str(ctx.IDENTIFIER())
-			print(var_name)
+			self.log.debug(var_name)
 
 			current_scope_vars = self.variables_scope.get(self.current_scope, {})
 			if var_name not in current_scope_vars:
@@ -477,12 +478,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		text = ctx.getText()
 		if "or" in text:
 			result = self.visit(ctx.getChild(0))
-			print(f"Valor inicial para or: {result}")
+			self.log.debug(f"Valor inicial para or: {result}")
 
 			for i in range(1, ctx.getChildCount(), 2):
 				operator = ctx.getChild(i).getText()
 				right = self.visit(ctx.getChild(i + 1))
-				print(f"Evaluando: {result} or {right}")
+				self.log.debug(f"Evaluando: {result} or {right}")
 				if operator == 'or':
 					result = result or right
 			return result
@@ -495,12 +496,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if 'and' in text:
 			# Empezamos evaluando el primer término
 			result = self.visit(ctx.getChild(0))
-			print(f"Valor inicial para and: {result}")
+			self.log.debug(f"Valor inicial para and: {result}")
 			
 			# Recorremos los otros términos en la expresión
 			for i in range(2, ctx.getChildCount(), 2):  # Saltamos el operador 'and' para obtener el siguiente término
 				right = self.visit(ctx.getChild(i))
-				print(f"Evaluando: {result} and {right}")
+				self.log.debug(f"Evaluando: {result} and {right}")
 				result = result and right
 
 				# Si result es False, podemos devolverlo inmediatamente
@@ -518,7 +519,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		left, right = "", ""
 		if "==" in text:
 			data = text.split("==")
-			print(f"Datos después del split por '==': {data}")
+			self.log.debug(f"Datos después del split por '==': {data}")
 			data = self.depuracion_elemntos_con_detalles_extra(data)
 			if data[0].lower() == "true" or data[0].lower() == "false":  # Verifica correctamente los booleanos
 				left = data[0].lower() == "true"
@@ -530,7 +531,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return left == right
 		elif "!=" in text:
 			data = text.split("!=")
-			print(f"Datos después del split por '!=': {data}")
+			self.log.debug(f"Datos después del split por '!=': {data}")
 			data = self.depuracion_elemntos_con_detalles_extra(data)
 			if data[0].lower() == "true" or data[0].lower() == "false":
 				left = data[0].lower() == "true"
@@ -601,7 +602,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def depuracion_elemntos_con_detalles_extra(self, data):
 		data[0] = data[0].strip('()')
 		data[1] = data[1].strip('()')
-		print(f"Datos después de eliminar paréntesis: {data}")
+		self.log.debug(f"Datos después de eliminar paréntesis: {data}")
 		return data
 	
 
@@ -629,12 +630,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		left = self.visit(ctx.unary(0))
 		right = self.visit(ctx.unary(1))
 
-		if type(left) == tuple:
-			left = left[0]
-		if type(right) == tuple:
-			right = right[0]
-		print(f"left: {left}, type: {type(left)}")
-		print(f"right: {right}, type: {type(right)}")
+		if type(left) == tuple: left = left[0]
+		if type(right) == tuple: right = right[0]
+		self.log.debug(f"left: {left}, type: {type(left)}")
+		self.log.debug(f"right: {right}, type: {type(right)}")
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")

@@ -1,3 +1,4 @@
+from Logger import*
 from Editor import *
 from Semantic_Analyzer import *
 from SyntaxErrorListener import *
@@ -10,16 +11,17 @@ class Display(QMainWindow):
 		self.setWindowTitle("Semantic Compiler")
 
 		self.code_input = QTextEdit()
+		self.code_input.setTabStopDistance(40)
 		self.code_input.setPlaceholderText("Code to compile...")
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
 		self.code_input.setText("""var test = 10 + (3*5);
 var x = 0;
 var miau = test * x;""")
 
-		self.code_output = QTextBrowser()
+		self.code_output = Logger()
 		self.code_output.setPlaceholderText("Compiled code")
 
-		self.log = QTextBrowser()
+		self.log = Logger()
 		self.log.setPlaceholderText("Log")
 
 		self.tables = QTabWidget()
