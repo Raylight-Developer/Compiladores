@@ -47,7 +47,7 @@ class Tester(QMainWindow):
 			self.log.addCode(code, 1)
 			self.log.append("}")
 			try:
-				resultado = self.compile(i, code)
+				resultado = self.compile(i, code, title)
 				self.log.append(f"{G}[{i}] Compilation Succesful{RESET}<br>")
 				self.code_output.insertPlainText(f"\n[{i}] {resultado}\n")
 				self.succeses += 1
@@ -77,13 +77,17 @@ class Tester(QMainWindow):
 		self.log.append(f"Passed:<br>{TAB}" + f"<br>{TAB}".join(self.title_succeses))
 		self.log.append(f"Failed:<br>{TAB}" + f"<br>{TAB}".join(self.title_failures))
 
+		QTimer.singleShot(200, lambda: (
+			self.log.verticalScrollBar().setValue(self.log.verticalScrollBar().maximum())
+		))
+
 	def on_tab_changed(self):
 		if self.tabs.currentIndex() != 0:
 			self.tabs.currentWidget().widget(0).resizeColumnsToContents()
 			self.tabs.currentWidget().widget(1).resizeColumnsToContents()
 			self.tabs.currentWidget().widget(2).resizeColumnsToContents()
 
-	def compile(self, i: int, code: str) -> str:
+	def compile(self, i: int, code: str, title:str) -> str:
 		self.table_functions.append(Symbol_Table(self.log, "Fun"))
 		self.table_variables.append(Symbol_Table(self.log, "Var"))
 		self.table_classes  .append(Symbol_Table(self.log, "Cla"))
@@ -92,7 +96,7 @@ class Tester(QMainWindow):
 		splitter.addWidget(self.table_classes  [-1])
 		splitter.addWidget(self.table_functions[-1])
 		splitter.addWidget(self.table_variables[-1])
-		self.tabs.addTab(splitter, f"Test [{i}]")
+		self.tabs.addTab(splitter, f"[{i}] - {title.split()[1]}")
 
 		try:
 			lexer = CompiscriptLexer(InputStream(code))
