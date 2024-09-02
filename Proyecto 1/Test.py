@@ -46,12 +46,13 @@ class Tester(QMainWindow):
 				self.code_output.insertPlainText(f"[{i}] {resultado}\n\n")
 				self.succeses += 1
 			except Exception as e:
+				output = f'<br>{TAB}{TAB}'.join(self.log.debug_output)
 				if should_pass == False:
 					self.succeses += 1
-					self.log.append(f"{G}[{i}] Compilation ''Succesful''{RESET}{Y}(Should fail){RESET} {{<br>&nbsp;&nbsp;{e}<br>}}<br>")
+					self.log.append(f"{G}[{i}] Compilation ''Succesful''{RESET}{Y}(Should fail){RESET} {{<br>{HTAB}{e}<br><br>{TAB}Debug View:<br>{TAB}{TAB}{output}<br>}}<br>")
 					self.code_output.insertPlainText(f"[{i}] {e}\n\n")
 				else:
-					self.log.append(f"{R}[{i}] Compilation Failed{RESET} {{<br>&nbsp;&nbsp;{e}<br>}}<br>")
+					self.log.append(f"{R}[{i}] Compilation Failed{RESET} {{<br>{HTAB}{e}<br><br>{TAB}Debug View:<br>{TAB}{TAB}{output}<br>}}<br>")
 					self.code_output.insertPlainText(f"[{i}] {e}\n\n")
 
 		self.log.append(f"TESTS:  {len(self.code)}")
