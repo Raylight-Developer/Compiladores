@@ -38,20 +38,26 @@ class Tester(QMainWindow):
 		self.parse()
 
 	def parse(self):
-		for i, codigo in enumerate(self.code):
+		for i, (codigo, should_pass) in enumerate(self.code):
 			try:
 				resultado = self.compile(i, codigo)
-				self.log.append(G + f"Comiplation Succesful [{i}]" + RESET + "<br><br>")
-				self.code_output.append(f"{resultado}")
+				self.log.append(f"{G}[{i}] Comiplation Succesful{RESET}<br><br>")
+				self.code_output.insertPlainText(f"[{i}] {resultado}\n\n")
 				self.succeses += 1
 			except Exception as e:
-				self.log.append(R + f"Compilation Failed [{i}]" + RESET + "<br><br>")
-				self.code_output.append(str(e))
-		self.log.append(f"TESTS:  {len(self.code)}")
-		self.log.append(G + "PASSED: " + RESET + f"{self.succeses}")
-		self.log.append(R + "FAILED: " + RESET + f"{len(self.code) - self.succeses}")
+				if should_pass == False:
+					self.succeses += 1
+					self.log.append(f"{G}[{i}] Compilation ''Succesful''{RESET}{Y}(Should fail){RESET}<br>&nbsp;&nbsp;{e}<br><br>")
+					self.code_output.insertPlainText(f"[{i}] {e}\n\n")
+				else:
+					self.log.append(f"{R}[{i}] Compilation Failed{RESET}<br>&nbsp;&nbsp;{e}<br><br>")
+					self.code_output.insertPlainText(f"[{i}] {e}\n\n")
 
-	def compile(self, i: int, code: str):
+		self.log.append(f"TESTS:  {len(self.code)}")
+		self.log.append(f"{G}PASSED:{RESET} {self.succeses}")
+		self.log.append(f"{R}FAILED:{RESET} {len(self.code) - self.succeses}")
+
+	def compile(self, i: int, code: str) -> str:
 		self.table_functions.append(Symbol_Table(self.log, "Fun"))
 		self.table_variables.append(Symbol_Table(self.log, "Var"))
 		self.table_classes  .append(Symbol_Table(self.log, "Cla"))
@@ -63,7 +69,7 @@ class Tester(QMainWindow):
 		self.tabs.addTab(splitter, f"Test [{i}]")
 
 		self.log.append(f"Compiling [{i}]...")
-		self.log.append(TEST + f"<pre>{code}</pre>" + RESET)
+		self.log.append(f"{TEST}<pre>{code}</pre>{RESET}")
 
 		try:
 			lexer = CompiscriptLexer(InputStream(code))
@@ -89,7 +95,7 @@ class Tester(QMainWindow):
 			return tree.toStringTree(recog=parser)
 
 		except Exception as e:
-			raise Exception(f"Compilation Error for [{i}] {e}")
+			raise Exception(f"Error {e}")
 
 
 app = QApplication(sys.argv)

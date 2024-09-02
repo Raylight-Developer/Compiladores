@@ -70,11 +70,11 @@ var miau = test * x;""")
 		self.log.clear()
 		try:
 			resultado = self.compile(codigo)
-			self.log.append(G + "Comiplation Succesful" + RESET)
-			self.code_output.setText(f"{resultado}")
+			self.log.append(f"{G}Comiplation Succesful{RESET}")
+			self.code_output.insertPlainText(resultado)
 		except Exception as e:
-			self.log.append(R + "Compilation Failed" + RESET)
-			self.code_output.setText(str(e))
+			self.log.append(f"{R}Compilation Failed{RESET}<br><br>{e}")
+			self.code_output.insertPlainText(str(e))
 
 	def compile(self, code: str):
 		self.log.append("Compiling...")
@@ -116,7 +116,7 @@ var miau = test * x;""")
 			return tree.toStringTree(recog=parser)
 
 		except Exception as e:
-			raise Exception(f"Compilation Error {e}")
+			raise Exception(str(e))
 
 
 #QApplication.setAttribute(Qt.ApplicationAttribute.AA_NativeWindows)
