@@ -230,7 +230,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		condition_value = self.visit(ctx.expression(0)) if ctx.expression(0) else True
 
 		# while condition_value:
-		# 	# Ejecutar las sentencias dentro del for
+		# 	# Ejecutar las oraciones dentro del for
 		# 	for stmt in ctx.statement():
 		# 		result = self.visit(stmt)
 		# 		if result == "break":
@@ -261,7 +261,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		
 		# Verificar que la condición sea de tipo booleano
 		if not isinstance(condition_value, bool):
-			raise TypeError(f"Error: La condición en la sentencia 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+			raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 				# Obtener la info del nodo
 		# En caso de tener un print, procesarlo
 		if "if" in text:
@@ -367,7 +367,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		
 		# Verificar que la condición sea de tipo booleano
 		if not isinstance(condition_value, bool):
-			raise TypeError(f"Error: La condición en la sentencia 'while' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+			raise TypeError(f"Error: La condición en 'while' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 		
 		# Verificar si la función 'while' ya ha sido declarada (este bloque parece innecesario pero lo dejo por si lo necesitas)
 		if "while" in text:

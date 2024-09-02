@@ -1,6 +1,7 @@
 from Logger import*
 from Editor import *
-from Test_Data import *
+from Tests.Large_Tests import *
+from Tests.Small_Tests import *
 from Semantic_Analyzer import *
 from SyntaxErrorListener import *
 
@@ -34,32 +35,41 @@ class Tester(QMainWindow):
 
 		self.setCentralWidget(widget)
 
-		self.code = getCode()
+		self.code = getSmallCode() + getFullCode() # Full Test
 		self.succeses = 0
+		self.title_failures = []
+		self.title_succeses = []
 		self.parse()
 
 	def parse(self):
-		for i, (code, should_pass, title) in enumerate(self.code):
-			self.log.append(f"Compiling [{i}] {title}...")
+		for i, (title, should_pass, code) in enumerate(self.code):
+			self.log.append(f"<h2>{title}</h2>")
+			self.log.append(f"Compiling [{i}]...")
 			self.log.append(f"{TEST}<pre>{code}</pre>{RESET}")
 			try:
 				resultado = self.compile(i, code)
 				self.log.append(f"{G}[{i}] Comiplation Succesful{RESET}<br><br>")
 				self.code_output.insertPlainText(f"[{i}] {resultado}\n\n")
 				self.succeses += 1
+				self.title_succeses.append(title)
 			except Exception as e:
 				output = f'<br>{TAB}{TAB}'.join(self.log.debug_output)
 				if should_pass == False:
 					self.succeses += 1
+					self.title_succeses.append(title)
 					self.log.append(f"{G}[{i}] Compilation ''Succesful''{RESET}{Y}(Should fail){RESET} {{<br>{HTAB}{e}<br><br>{TAB}Debug View:<br>{TAB}{TAB}{output}<br>}}<br>")
 					self.code_output.insertPlainText(f"[{i}] {e}\n\n")
 				else:
 					self.log.append(f"{R}[{i}] Compilation Failed{RESET} {{<br>{HTAB}{e}<br><br>{TAB}Debug View:<br>{TAB}{TAB}{output}<br>}}<br>")
 					self.code_output.insertPlainText(f"[{i}] {e}\n\n")
+					self.title_failures.append(title)
 
+		self.log.append("<h2># Summary</h2>")
 		self.log.append(f"TESTS:  {len(self.code)}")
 		self.log.append(f"{G}PASSED:{RESET} {self.succeses}")
 		self.log.append(f"{R}FAILED:{RESET} {len(self.code) - self.succeses}")
+		self.log.append(f"Passed:<br>{TAB}" + f"<br>{TAB}".join(self.title_succeses))
+		self.log.append(f"Failed:<br>{TAB}" + f"<br>{TAB}".join(self.title_failures))
 
 	def on_tab_changed(self):
 		if self.tabs.currentIndex() != 0:
