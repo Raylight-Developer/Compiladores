@@ -82,7 +82,7 @@ class Display(QMainWindow):
 			self.log.append(f"{G}Comiplation Succesful{RESET}")
 			self.code_output.insertPlainText(resultado)
 		except Exception as e:
-			self.log.append(f"{R}Compilation Failed{RESET}<br><br>{e}")
+			self.log.append(f"{R}Compilation Failed{RESET}<br><br>{e}<br>{traceback.format_exc()}")
 			self.code_output.insertPlainText(str(e))
 
 	def compile(self, code: str):

@@ -70,6 +70,7 @@ class Tester(QMainWindow):
 
 				self.log.append(f"{e}", 1)
 				self.log.append("}")
+				self.log.addCollapse("Traceback", f"{traceback.format_exc()}", 1)
 			debug = "\n".join(self.log.debug_output)
 			self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
 
