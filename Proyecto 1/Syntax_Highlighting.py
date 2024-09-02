@@ -34,9 +34,9 @@ class Syntax_Highlighter(QSyntaxHighlighter) :
 			self.highlightingRules.append(rule)
 
 		self.builtinFunctions = QTextCharFormat()
-		self.builtinFunctions.setForeground(QColor(214,211,161))
+		self.builtinFunctions.setForeground(QColor(225,225,120))
 		for pattern in [
-			"fun", "print", "init"
+			"fun", "print", "init", "var"
 		]:
 			rule = HighlightingRule(
 				QRegularExpression(r"\b" + pattern + r"\b"),

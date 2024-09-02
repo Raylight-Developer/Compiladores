@@ -1,5 +1,5 @@
 from Logger import*
-from Editor import *
+from Syntax_Highlighting import *
 from Tests.Large_Tests import *
 from Tests.Small_Tests import *
 from Semantic_Analyzer import *
@@ -10,11 +10,9 @@ class Tester(QMainWindow):
 		super().__init__()
 		self.setWindowTitle("Semantic Compiler")
 
-		self.code_output = Logger(False)
-		self.code_output.setPlaceholderText("Compiled code")
+		self.code_output = Test_Logger(False)
 
-		self.log = Logger(False)
-		self.log.setPlaceholderText("Log")
+		self.log = Test_Logger(False)
 
 		self.table_functions : List[Symbol_Table] = []
 		self.table_variables : List[Symbol_Table] = []
@@ -44,25 +42,33 @@ class Tester(QMainWindow):
 	def parse(self):
 		for i, (title, should_pass, code) in enumerate(self.code):
 			self.log.append(f"<h2>{title}</h2>")
-			self.log.append(f"Compiling [{i}]...")
-			self.log.append(f"{TEST}<pre>{code}</pre>{RESET}")
+			self.log.append(f"<h4>Compiling [{i}]</h4>")
+			self.log.append("CODE: {")
+			self.log.addCode(code, 1)
+			self.log.append("}")
 			try:
 				resultado = self.compile(i, code)
-				self.log.append(f"{G}[{i}] Comiplation Succesful{RESET}<br><br>")
-				self.code_output.insertPlainText(f"[{i}] {resultado}\n\n")
+				self.log.append(f"{G}[{i}] Compilation Succesful{RESET}<br>")
+				self.code_output.insertPlainText(f"\n[{i}] {resultado}\n")
 				self.succeses += 1
 				self.title_succeses.append(title)
 			except Exception as e:
-				output = f'<br>{TAB}{TAB}'.join(self.log.debug_output)
+				self.code_output.insertPlainText(f"\n[{i}] {e}\n")
 				if should_pass == False:
 					self.succeses += 1
 					self.title_succeses.append(title)
-					self.log.append(f"{G}[{i}] Compilation ''Succesful''{RESET}{Y}(Should fail){RESET} {{<br>{HTAB}{e}<br><br>{TAB}Debug View:<br>{TAB}{TAB}{output}<br>}}<br>")
-					self.code_output.insertPlainText(f"[{i}] {e}\n\n")
+					self.log.append(f"{G}[{i}] Compilation ''Succesful''{RESET}{Y}(Should fail){RESET}" + " {")
 				else:
-					self.log.append(f"{R}[{i}] Compilation Failed{RESET} {{<br>{HTAB}{e}<br><br>{TAB}Debug View:<br>{TAB}{TAB}{output}<br>}}<br>")
-					self.code_output.insertPlainText(f"[{i}] {e}\n\n")
 					self.title_failures.append(title)
+					self.log.append(f"{R}[{i}] Compilation Failed{RESET}" + " {")
+
+				self.log.append(f"{e}", 1)
+				self.log.append("Debug Output:", 1)
+				self.log.append("self.log.debug_output", 2)
+				self.log.append("}")
+
+			self.log.addSep()
+			self.code_output.addSep()
 
 		self.log.append("<h2># Summary</h2>")
 		self.log.append(f"TESTS:  {len(self.code)}")

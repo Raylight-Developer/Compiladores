@@ -1,5 +1,100 @@
+"""
+
+(
+	"# ",
+	True,
+"""
+"""
+),
+
+"""
+
 def getSmallCode():
 	return [
+(
+	"# 5.8 Artimeticas",
+	True,
+"""var suma = 1 + 2;
+var resta = 5 - 3;
+var producto = 4 * 2;
+var division = 8 / 2;
+"""
+),
+(
+	"# 5.9 Comparaciones",
+	True,
+"""var menor = 3 < 5; // true
+var mayorIgual = 10 >= 10; // true
+var igual = 1 == 1; // true
+var diferente = " a " != " b " ; // true
+"""
+),
+(
+	"# 5.10 Logicos",
+	True,
+"""var y = true and false ; // false
+var o = true or false ; // true
+var no = ! true ; // false
+"""
+),
+(
+	"# 5.11 Precedencia y agrupamiento",
+	True,
+"""var min = 0;
+var max = 10;
+var promedio = ( min + max ) / 2;
+"""
+),
+(
+	"# 6.2 Declaraciones de Impresion",
+	True,
+"""print " Hola , mundo ! " ;
+"""
+),
+(
+	"# 6.3 Bloques",
+	True,
+"""{
+	var a = " dentro del bloque " ;
+	print a ;
+}
+"""
+),
+(
+	"# 6.4 Declaraciones de Control de Flujo",
+	True,
+"""var condicion = true;
+// if
+if ( condicion ) {
+	print " Condicion verdadera " ;
+} else {
+	print " Condicion falsa " ;
+}
+// while
+while ( condicion ) {
+	print " Bucle while " ;
+}
+// for
+for ( var i = 0; i < 10; i = i + 1) {
+	print i ;
+}
+"""
+),
+(
+	"# 6.5 Declaraciones de Variables",
+	True,
+"""var nombre = " Compiscript " ;
+var edad ;
+"""
+),
+(
+	"# 6.6 Declaraciones de Funciones",
+	True,
+"""fun saludar ( nombre ) {
+	print " Hola, " + nombre ;
+}
+"""
+),
 (
 	"# 7.1 Declaracion y Asignacion",
 	True,

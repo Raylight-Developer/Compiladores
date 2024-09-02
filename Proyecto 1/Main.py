@@ -1,5 +1,5 @@
 from Logger import*
-from Editor import *
+from Syntax_Highlighting import *
 from Semantic_Analyzer import *
 from SyntaxErrorListener import *
 
