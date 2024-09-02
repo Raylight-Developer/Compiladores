@@ -29,17 +29,19 @@ class Tester(QMainWindow):
 
 		main_layout = QVBoxLayout()
 		main_layout.addWidget(self.tabs)
-		widget = QWidget()
-		widget.setObjectName("Background")
-		widget.setLayout(main_layout)
+		self.widget = QWidget()
+		self.widget.setObjectName("Background")
+		self.widget.setLayout(main_layout)
 
-		self.setCentralWidget(widget)
+		label = QLabel("Compiling...")
+		label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+		self.setCentralWidget(label)
 
 		self.code = getSmallCode() + getFullCode() # Full Test
 		self.succeses = 0
 		self.title_failures = []
 		self.title_succeses = []
-		self.parse()
+		QTimer.singleShot(50, lambda: self.parse())
 
 	def parse(self):
 		for i, (title, should_pass, code) in enumerate(self.code):
@@ -80,7 +82,8 @@ class Tester(QMainWindow):
 		self.log.append(f"Passed:<br>{TAB}" + f"<br>{TAB}".join(self.title_succeses))
 		self.log.append(f"Failed:<br>{TAB}" + f"<br>{TAB}".join(self.title_failures))
 
-		QTimer.singleShot(200, lambda: (
+		self.setCentralWidget(self.widget)
+		QTimer.singleShot(50, lambda: (
 			self.log.verticalScrollBar().setValue(self.log.verticalScrollBar().maximum())
 		))
 

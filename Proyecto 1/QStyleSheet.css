@@ -310,3 +310,9 @@ QWidget#Background {
 QScrollArea {
 	margin: 10px;
 }
+
+QLabel {
+	background-color: rgb(25,25,25);
+	text-align: center;
+	font-size: 48px;
+}
