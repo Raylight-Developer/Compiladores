@@ -44,7 +44,7 @@ class Tester(QMainWindow):
 			self.log.append(f"<h2>{title}</h2>")
 			self.log.append(f"<h4>Compiling [{i}] - ({title.split()[1]})...</h4>")
 			self.log.append("CODE: {")
-			self.log.addCode(code, 1)
+			self.log.addCode(code.strip(), 1)
 			self.log.append("}")
 			try:
 				resultado = self.compile(i, code, title)
@@ -57,7 +57,7 @@ class Tester(QMainWindow):
 				if should_pass == False:
 					self.succeses += 1
 					self.title_succeses.append(title)
-					self.log.append(f"{G}Compilation ''Succesful''{RESET}{Y}(Should fail){RESET}" + " {")
+					self.log.append(f"{G}Compilation ''Succesful''{RESET}{Y}(Should fail and did fail){RESET}" + " {")
 				else:
 					self.title_failures.append(title)
 					self.log.append(f"{R}Compilation Failed{RESET}" + " {")
