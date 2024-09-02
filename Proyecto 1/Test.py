@@ -10,6 +10,8 @@ RENDER_TREES = False
 class Tester(QMainWindow):
 	def __init__(self):
 		super().__init__()
+		args = sys.argv[1:]
+		self.options = parse_args(args)
 		self.setWindowTitle("Semantic Compiler")
 
 		self.code_output = Test_Logger(False)
@@ -121,7 +123,7 @@ class Tester(QMainWindow):
 			visitor = Semantic_Analyzer(self.log, self.table_functions[-1], self.table_variables[-1], self.table_classes[-1], parser)
 			visitor.visit(tree)
 
-			if RENDER_TREES: 
+			if self.options["render"]:
 				if not os.path.exists("./Output/Tests"):
 					os.makedirs("Output/Tests")
 				visitor.nodeTree(tree)

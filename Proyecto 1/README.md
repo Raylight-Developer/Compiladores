@@ -12,15 +12,20 @@ pip install PyQt6
 ```
 
 ## Launch:
-Compiler:
+#### IDE Compiler:
 ```bash
 python3 Main.py
 ```
-Tests:
+#### Pre-Made Tests:
 ```bash
 python3 Test.py
 ```
+Arguments:
+```python
+--render=<BOOL> Union [ True | False ] # (Optional) Whether to Save The Syntax Tree(s) to a png.
 
+Example: "python3 Test.py --render=False"
+```
 ## Re-Compile Compiscript Python Files:
 ```bash
 docker build --rm . -t proyecto

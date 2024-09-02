@@ -3,11 +3,13 @@ from Syntax_Highlighting import *
 from Semantic_Analyzer import *
 from SyntaxErrorListener import *
 
-RENDER_TREE = False
 
 class Display(QMainWindow):
 	def __init__(self):
 		super().__init__()
+		args = sys.argv[1:]
+		self.options = parse_args(args)
+
 		self.setWindowTitle("Semantic Compiler")
 
 		self.code_input = QTextEdit()
@@ -110,7 +112,7 @@ var miau = test * x;""")
 			visitor = Semantic_Analyzer(self.log, self.table_functions, self.table_variables, self.table_classes, parser)
 			visitor.visit(tree)
 
-			if RENDER_TREE: 
+			if self.options["render"]:
 				if not os.path.exists("./Output"):
 					os.makedirs("Output")
 				visitor.nodeTree(tree)

@@ -16,3 +16,11 @@ Y      = "<span style = 'color:rgb(250,250,50);' >"
 TEST   = "<span style = 'color:rgb(100,100,100);' >"
 TAB  = "&nbsp;&nbsp;&nbsp;&nbsp;"
 HTAB = "&nbsp;&nbsp;"
+
+def parse_args(args: str):
+	options = {"render" : False}
+	for arg in args:
+		if arg.startswith("--"):
+			key, value = arg[2:].split("=", 1) if "=" in arg[2:] else (arg[2:], None)
+			options[key] = value
+	return options

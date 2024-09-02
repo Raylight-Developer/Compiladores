@@ -16,7 +16,12 @@ python3 Main.py
 ```bash
 python3 Test.py
 ```
+Arguments:
+```python
+--render=BOOL: Union [ True | False ] # (Optional) Whether to Save The Syntax Tree(s) to a png.
 
+Example: "python3 Test.py --render=False"
+```
 # Architecture
 The [Semantic Analyzer](Semantic_Analyzer.py) Is the implementation of the ANTLR Visitor class. It contains all relevant data to track scopes, build maps and eventulally generate the [Symbol Table](Symbol_Table.py).
 
