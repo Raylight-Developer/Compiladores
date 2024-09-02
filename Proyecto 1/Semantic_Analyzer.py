@@ -281,7 +281,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		condition_value = self.visit(ctx.expression())
 		text = ctx.getText()
 		self.log.debug(f"condicion valor: {condition_value}")
-		print(f"CONDICION IF: {condition_value}")
+		self.log.debug(f"CONDICION IF: {condition_value}")
 		if isinstance(condition_value, tuple):
 			if not isinstance(condition_value[0], bool):
 				raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
@@ -371,7 +371,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.log.debug(f'Evaluated expression: {expression_value}')
 
 			# Aquí deberías recibir el valor real de "hola" en lugar de 'global_0'
-			print(f'Print statement: {expression_value}')
+			self.log.debug(f'Print statement: {expression_value}')
 
 			return None
 		else:
@@ -492,7 +492,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.log.debug(f"VARNAME: {var_name}")
 
 			current_scope_vars = self.variables_scope.get(self.current_scope)
-			print(current_scope_vars)
+			self.log.debug(current_scope_vars)
 			if var_name not in current_scope_vars:
 				raise Exception(f"Error: La variable '{var_name}' no esta en el scope actual.")
 
@@ -661,10 +661,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
 
-		if ctx.getChild(1).getText() == '+':
-			return f"{left} + {right}"
-		elif ctx.getChild(1).getText() == '-':
-			return f"{left} - {right}"
+		if is_num(str(left)) and is_num(str(right)):
+			if ctx.getChild(1).getText() == '+':
+				return left + right
+			elif ctx.getChild(1).getText() == '-':
+				return left - right
+		else:
+			if ctx.getChild(1).getText() == '+':
+				return f"({left} + {right})"
+			elif ctx.getChild(1).getText() == '-':
+				return f"({left} - {right})"
 
 
 	def visitFactor(self, ctx: CompiscriptParser.FactorContext):
@@ -681,13 +687,21 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
-
-		if ctx.getChild(1).getText() == '*':
-			return f"{left} * {right}"
-		elif ctx.getChild(1).getText() == '/':
-			return f"{left} / {right}"
-		elif ctx.getChild(1).getText() == '%':
-			return f"{left} % {right}"
+		
+		if is_num(str(left)) and is_num(str(right)):
+			if ctx.getChild(1).getText() == '*':
+				return left * right
+			elif ctx.getChild(1).getText() == '/':
+				return left / right
+			elif ctx.getChild(1).getText() == '%':
+				return left % right
+		else:
+			if ctx.getChild(1).getText() == '*':
+				return f"({left} * {right})"
+			elif ctx.getChild(1).getText() == '/':
+				return f"({left} / {right})"
+			elif ctx.getChild(1).getText() == '%':
+				return f"({left} % {right})"
 
 
 	def visitArray(self, ctx: CompiscriptParser.ArrayContext):
