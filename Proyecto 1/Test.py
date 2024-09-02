@@ -5,8 +5,6 @@ from Tests.Small_Tests import *
 from Semantic_Analyzer import *
 from SyntaxErrorListener import *
 
-RENDER_TREES = False
-
 class Tester(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -36,6 +34,7 @@ class Tester(QMainWindow):
 		self.widget.setLayout(main_layout)
 
 		label = QLabel("Compiling...")
+		label.setObjectName("FS")
 		label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.setCentralWidget(label)
 
@@ -91,19 +90,37 @@ class Tester(QMainWindow):
 
 	def on_tab_changed(self):
 		if self.tabs.currentIndex() != 0:
-			self.tabs.currentWidget().widget(0).resizeColumnsToContents()
-			self.tabs.currentWidget().widget(1).resizeColumnsToContents()
-			self.tabs.currentWidget().widget(2).resizeColumnsToContents()
+			self.tabs.currentWidget().widget(0).layout().itemAt(1).widget().resizeColumnsToContents()
+			self.tabs.currentWidget().widget(1).layout().itemAt(1).widget().resizeColumnsToContents()
+			self.tabs.currentWidget().widget(2).layout().itemAt(1).widget().resizeColumnsToContents()
 
 	def compile(self, i: int, code: str, title_id: str) -> str:
 		self.table_functions.append(Symbol_Table(self.log, "Fun"))
 		self.table_variables.append(Symbol_Table(self.log, "Var"))
 		self.table_classes  .append(Symbol_Table(self.log, "Cla"))
 
+		l1 = QVBoxLayout()
+		l1.addWidget(QLabel("Classes"))
+		l1.addWidget(self.table_classes[-1])
+		w1 = QWidget()
+		w1.setLayout(l1)
+		
+		l2 = QVBoxLayout()
+		l2.addWidget(QLabel("Functions"))
+		l2.addWidget(self.table_functions[-1])
+		w2 = QWidget()
+		w2.setLayout(l2)
+		
+		l3 = QVBoxLayout()
+		w3 = QWidget()
+		l3.addWidget(QLabel("Variables"))
+		l3.addWidget(self.table_variables[-1])
+		w3.setLayout(l3)
+
 		splitter = QSplitter()
-		splitter.addWidget(self.table_classes  [-1])
-		splitter.addWidget(self.table_functions[-1])
-		splitter.addWidget(self.table_variables[-1])
+		splitter.addWidget(w1)
+		splitter.addWidget(w2)
+		splitter.addWidget(w3)
 		self.tabs.addTab(splitter, f"[{i}] - ({title_id})")
 
 		try:

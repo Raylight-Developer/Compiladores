@@ -312,6 +312,15 @@ QScrollArea {
 }
 
 QLabel {
+	border-color: rgb(175,175,175);
+	border-width: 1px;
+	border-radius: 0px;
+
+	background: rgb(30,30,30);
+	height: 35px;
+	text-align: center;
+}
+QLabel#FS {
 	background-color: rgb(25,25,25);
 	text-align: center;
 	font-size: 48px;

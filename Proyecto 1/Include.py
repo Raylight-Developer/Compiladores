@@ -4,6 +4,7 @@ from PySide6.QtGui import *
 import sys
 import os
 
+from PySide6.QtWidgets import QWidget
 from graphviz import Digraph
 from antlr4 import *
 from typing import *
