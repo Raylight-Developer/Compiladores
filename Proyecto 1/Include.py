@@ -2,6 +2,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 import traceback
+import antlr4
 import sys
 import os
 
@@ -26,3 +27,10 @@ def parse_args(args: str):
 			key, value = arg[2:].split("=", 1) if "=" in arg[2:] else (arg[2:], None)
 			options[key] = value
 	return options
+
+def is_float(value: str):
+	try:
+		float(value)
+		return True
+	except:
+		return False

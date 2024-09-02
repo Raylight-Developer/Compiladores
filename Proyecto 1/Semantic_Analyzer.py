@@ -659,14 +659,18 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		left = self.visit(ctx.factor(0))
 		right = self.visit(ctx.factor(1))
 
+		if type(left) is tuple: left = left[0]
+		if type(right) is tuple: right = right[0]
+		self.log.debug(f"left: {left}, type: {type(left)}")
+		self.log.debug(f"right: {right}, type: {type(right)}")
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
 
 		if ctx.getChild(1).getText() == '+':
-			return left + right
+			return f"{left} + {right}"
 		elif ctx.getChild(1).getText() == '-':
-			return left - right
+			return f"{left} - {right}"
 
 
 	def visitFactor(self, ctx: CompiscriptParser.FactorContext):
@@ -685,11 +689,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
 
 		if ctx.getChild(1).getText() == '*':
-			return left * right
+			return f"{left} * {right}"
 		elif ctx.getChild(1).getText() == '/':
-			return left / right
+			return f"{left} / {right}"
 		elif ctx.getChild(1).getText() == '%':
-			return left % right
+			return f"{left} % {right}"
 
 
 	def visitArray(self, ctx: CompiscriptParser.ArrayContext):
