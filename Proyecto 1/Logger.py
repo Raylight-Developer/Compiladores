@@ -74,6 +74,28 @@ class Test_Logger(QScrollArea):
 		Text.append(value)
 		self.contents.addWidget(Text)
 
+	def addCollapse(self, title: str, value: str, indent: int = 0):
+		button = QPushButton(title)
+
+		Text = Viewer()
+		Text.insertPlainText(value)
+		Text.setStyleSheet(f"margin-left: {5 +indent * 40}px; background:rgb(50,50,50);")
+
+		container = QWidget()
+		container.setStyleSheet("margin: 0px; margin-top:4px; margin-bottom:4px;")
+		layout = QVBoxLayout()
+		layout.setSpacing(0)
+		layout.setContentsMargins(0,0,0,0)
+		container.setLayout(layout)
+		layout.addWidget(button)
+		layout.addWidget(Text)
+		Text.hide()
+		button.clicked.connect(lambda: (
+			Text.hide() if Text.isVisible() else Text.show()
+		))
+
+		self.contents.addWidget(container)
+
 	def addSep(self):
 		separator = QWidget()
 		separator.setFixedHeight(2)

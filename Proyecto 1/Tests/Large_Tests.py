@@ -30,25 +30,25 @@ for ( var i = 1; i <= 10; i = i + 1) {
 	True,
 """class Persona {
 	init ( nombre , edad ) {
-		this . nombre = nombre ;
-		this . edad = edad ;
+		this.nombre = nombre ;
+		this.edad = edad ;
 	}
 	saludar () {
-		print " Hola , mi nombre es " + this . nombre ;
+		print " Hola , mi nombre es " + this.nombre ;
 	}
 }
 class Estudiante extends Persona {
 	init ( nombre , edad , grado ) {
-		super . init ( nombre , edad ) ;
-		this . grado = grado ;
+		super.init ( nombre , edad ) ;
+		this.grado = grado ;
 	}
 	estudiar () {
-		print this . nombre + " esta estudiando en " + this . grado + " grado ." ;
+		print this.nombre + " esta estudiando en " + this.grado + " grado ." ;
 	}
 }
 var juan = Estudiante ( " Juan " , 20 , 3) ;
-juan . saludar () ; // Salida : Hola , mi nombre es Juan
-juan . estudiar () ; // Salida : Juan esta estudiando en 3 grado
+juan.saludar () ; // Salida : Hola , mi nombre es Juan
+juan.estudiar () ; // Salida : Juan esta estudiando en 3 grado
 for ( var i = 1; i <= 5; i = i + 1) {
 	if ( i % 2 == 0) {
 		print i + " es par " ;
@@ -56,9 +56,9 @@ for ( var i = 1; i <= 5; i = i + 1) {
 		print i + " es impar " ;
 	}
 }
-while ( juan . edad < 25) {
-	juan . edad = juan . edad + 1;
-	print " Edad de Juan : " + juan . edad ;
+while ( juan.edad < 25) {
+	juan.edad = juan.edad + 1;
+	print " Edad de Juan : " + juan.edad ;
 }
 """
 ),

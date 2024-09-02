@@ -255,7 +255,7 @@ print suma5 (20) ; // "25".
 		fun imprimir () {
 			print i;
 		}
-		funciones . add ( imprimir ) ;
+		funciones.add ( imprimir ) ;
 	}
 	return funciones ;
 }
@@ -299,7 +299,7 @@ print contar () ; // "2".
 	}
 }
 var juan = new Persona () ;
-juan . decirHola () ; // Salida : Hola , mundo !
+juan.decirHola () ; // Salida : Hola , mundo !
 """,
 ),
 (
@@ -307,14 +307,14 @@ juan . decirHola () ; // Salida : Hola , mundo !
 	True,
 """class Persona {
 	init ( nombre ) {
-		this . nombre = nombre ;
+		this.nombre = nombre ;
 	}
 	decirNombre () {
-		print this . nombre ;
+		print this.nombre ;
 	}
 }
 var juan = new Persona ( " Juan " ) ;
-juan . decirNombre () ; // Salida : Juan
+juan.decirNombre () ; // Salida : Juan
 """,
 ),
 (
@@ -322,15 +322,15 @@ juan . decirNombre () ; // Salida : Juan
 	True,
 """class Persona {
 	init ( nombre , edad ) {
-		this . nombre = nombre ;
-		this . edad = edad ;
+		this.nombre = nombre ;
+		this.edad = edad ;
 	}
 	presentar () {
-		print this . nombre + " tiene " + this . edad + " anios . " ;
+		print this.nombre + " tiene " + this.edad + " anios." ;
 	}
 }
 var maria = new Persona ( " Maria " , 30) ;
-maria . presentar () ; // Salida : Maria tiene 30 anios .
+maria.presentar () ; // Salida : Maria tiene 30 anios .
 """,
 ),
 (
@@ -338,23 +338,23 @@ maria . presentar () ; // Salida : Maria tiene 30 anios .
 	True,
 """class Persona {
 	init ( nombre ) {
-		this . nombre = nombre ;
+		this.nombre = nombre ;
 	}
 	decirNombre () {
-		print this . nombre ;
+		print this.nombre ;
 	}
 }
 class Estudiante extends Persona {
 	init ( nombre , grado ) {
-		super . init ( nombre ) ;
-		this . grado = grado ;
+		super.init ( nombre ) ;
+		this.grado = grado ;
 	}
 	decirGrado () {
-		print this . nombre + " esta en " + this . grado + " . " ;
+		print this.nombre + " esta en " + this.grado + "." ;
 	}
 }
 var ana = new Estudiante ( " Ana " , " tercer grado " ) ;
-ana . decirGrado () ; // Salida : Ana esta en tercer grado .
+ana.decirGrado () ; // Salida : Ana esta en tercer grado .
 """,
 )
 	]

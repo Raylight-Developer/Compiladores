@@ -42,30 +42,30 @@ class Tester(QMainWindow):
 	def parse(self):
 		for i, (title, should_pass, code) in enumerate(self.code):
 			self.log.append(f"<h2>{title}</h2>")
-			self.log.append(f"<h4>Compiling [{i}]</h4>")
+			self.log.append(f"<h4>Compiling [{i}] - ({title.split()[1]})...</h4>")
 			self.log.append("CODE: {")
 			self.log.addCode(code, 1)
 			self.log.append("}")
 			try:
 				resultado = self.compile(i, code, title)
-				self.log.append(f"{G}[{i}] Compilation Succesful{RESET}<br>")
-				self.code_output.insertPlainText(f"\n[{i}] {resultado}\n")
+				self.log.append(f"{G}Compilation Succesful{RESET}<br>")
+				self.code_output.insertPlainText(f"\n[{i}] - ({title.split()[1]}) {resultado}\n")
 				self.succeses += 1
 				self.title_succeses.append(title)
 			except Exception as e:
-				self.code_output.insertPlainText(f"\n[{i}] {e}\n")
+				self.code_output.insertPlainText(f"\n[{i}] - ({title.split()[1]}) {e}\n")
 				if should_pass == False:
 					self.succeses += 1
 					self.title_succeses.append(title)
-					self.log.append(f"{G}[{i}] Compilation ''Succesful''{RESET}{Y}(Should fail){RESET}" + " {")
+					self.log.append(f"{G}Compilation ''Succesful''{RESET}{Y}(Should fail){RESET}" + " {")
 				else:
 					self.title_failures.append(title)
-					self.log.append(f"{R}[{i}] Compilation Failed{RESET}" + " {")
+					self.log.append(f"{R}Compilation Failed{RESET}" + " {")
 
 				self.log.append(f"{e}", 1)
-				self.log.append("Debug Output:", 1)
-				self.log.append("self.log.debug_output", 2)
 				self.log.append("}")
+			debug = "\n".join(self.log.debug_output)
+			self.log.addCollapse(f"Debug Output [{i}] - ({title.split()[1]})", debug, 1)
 
 			self.log.addSep()
 			self.code_output.addSep()
@@ -96,7 +96,7 @@ class Tester(QMainWindow):
 		splitter.addWidget(self.table_classes  [-1])
 		splitter.addWidget(self.table_functions[-1])
 		splitter.addWidget(self.table_variables[-1])
-		self.tabs.addTab(splitter, f"[{i}] - {title.split()[1]}")
+		self.tabs.addTab(splitter, f"[{i}] - ({title.split()[1]})")
 
 		try:
 			lexer = CompiscriptLexer(InputStream(code))
