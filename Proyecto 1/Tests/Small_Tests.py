@@ -212,7 +212,7 @@ for ( var i = 0; i < 10; i = i + 1) {
 	"# 9.0 Funciones",
 	True,
 """fun saludo ( nombre ) {
-print " Hola, " + nombre ;
+	print " Hola, " + nombre ;
 }
 saludo ( " Compiscript " ) ;
 """,
