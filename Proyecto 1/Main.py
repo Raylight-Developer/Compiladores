@@ -113,7 +113,7 @@ var miau = test * x;""")
 			if not os.path.exists("./Output"):
 				os.makedirs("Output")
 			visitor.nodeTree(tree)
-			if RENDER_TREE: visitor.graph.render("Syntax Graph","./Output", False, True, "png")
+			if RENDER_TREE: visitor.graph.render("Syntax-Graph","./Output", False, True, "png")
 
 			self.table_classes.resizeColumnsToContents()
 			self.table_functions.resizeColumnsToContents()
