@@ -187,7 +187,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		text = ctx.getText().strip()
+		test = ctx.getText()
+		print(f"STATEMENT: test {test}")
 		# print(f"HAY BREAK {text}")
+
+		# if test[0] == "{" and test[1] == "}":
+		# 	raise Exception("Error: La declaracion if no tiene cuerpo")
+		
 		# Detectar 'break'
 		if text == "break;":
 			if not self.inside_loop:
@@ -258,9 +264,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		condition_value = self.visit(ctx.expression())
 		text = ctx.getText()
 		self.log.debug(f"condicion valor: {condition_value}")
-		
+		print(f"CONDICION IF: {condition_value}")
 		# Verificar que la condición sea de tipo booleano
-		if not isinstance(condition_value, bool):
+		if not isinstance(condition_value[0], bool):
 			raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 				# Obtener la info del nodo
 		# En caso de tener un print, procesarlo
@@ -283,6 +289,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Crear un nuevo scope para el bloque 'if'
 		self.table_variables.enter_scope()
 		self.current_scope = self.table_variables.scopes[-1].id
+		
+
 		self.log.debug(f"Entering 'if' scope: {self.current_scope}")
 		
 		# Si la condición es True, ejecutar el bloque 'if'
