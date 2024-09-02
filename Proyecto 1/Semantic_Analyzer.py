@@ -1,4 +1,3 @@
-
 from CompiscriptVisitor import CompiscriptVisitor
 from CompiscriptParser import CompiscriptParser
 from CompiscriptLexer import CompiscriptLexer
@@ -20,11 +19,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.table_functions = table_functions
 		self.table_variables = table_variables
 		self.table_classes = table_classes
-		self.global_variables = {}
+
 		self.current_scope = "global_0"
 		self.variables_scope = {}
-		self.variables_globals = {}
-		self.array_values = []
 
 		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
@@ -42,6 +39,27 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitClassDecl(self, ctx:CompiscriptParser.ClassDeclContext):
 		return self.visitChildren(ctx)
 
+	def declare_variable(self, name: str, ctx: ParserRuleContext):
+		"""Declare a variable in the current scope."""
+		if name in self.local_variables:
+			self.log.error(f"Variable '{name}' is already declared in the current scope.")
+		self.local_variables[name] = ctx
+
+	def validacion_numeros_mediante_casteo(self, data):
+		# print(f"Datos antes de depurar: {data}")
+		try:
+			int(data[0].strip())
+			int(data[1].strip())
+		except TypeError:
+			raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(data[0]).__name__} y {type(data[1]).__name__}")
+		# print(f"Datos después de depurar: {data}")
+
+	def depuracion_elemntos_con_detalles_extra(self, data):
+		data[0] = data[0].strip('()')
+		data[1] = data[1].strip('()')
+		self.log.debug(f"Datos después de eliminar paréntesis: {data}")
+		return data
+
 
 	def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
 		fun_name = ctx.function().IDENTIFIER().getText()
@@ -52,13 +70,15 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			raise Exception(f"Error: Función '{fun_name}' ya declarada.")
 		# Obtencion de los parametros
 		parametros = [param.getText() for param in ctx.function().parameters().IDENTIFIER()] 
+		# print(f"PARAMETAIOSJDF {parametros}")
+
 		params = ctx.function().parameters()
 		if params:
 			for param in params.IDENTIFIER():
 				self.declare_variable(param.getText(), param)
-
 		# Registrar la función
 		self.declared_functions.add(fun_name)
+
 
 		# Crear los datos del símbolo de la función
 		symbol_data = Symbol_Property()
@@ -69,6 +89,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Agregar a la tabla de funciones
 		self.table_functions.add(symbol_data)
 
+
 		# Delegar al siguiente método (por si hay más cosas que procesar dentro de la función)
 		return self.visitChildren(ctx)
 
@@ -78,7 +99,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		var_declartion = ctx.getText()
 		arreglo = []
 		var_type = "unknown"
-		# para capturar declaracion de variables
+		var_value = None
+
 		# para capturar el contenido del arreglo
 		patron_array = r'\[([^\]]+)\]'
 		# Buscar la coincidencia en la cadena
@@ -87,7 +109,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			# Extraer el contenido del arreglo y dividirlo en elementos
 			elementos = coincidencia_array.group(1).split(',')
 			# Convertir los elementos a enteros
-			arreglo = [int(elemento) for elemento in elementos]
+			arreglo = [elemento for elemento in elementos]
 			var_type = "array"
 	
 		# Determina si estamos en un scope local o global
@@ -107,7 +129,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			raise Exception(f"Error: Variable '{var_name}' ya declarada en el scope '{current_scope_id}'.")
 
 		# Try to get the variable's type from the context
-		var_value = None
+		
 		if ctx.expression():
 			if var_type == "unknown":
 				var_value = self.visit(ctx.expression())
@@ -190,7 +212,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		text = ctx.getText().strip()
 		test = ctx.getText()
-		self.log.debug(f"STATEMENT: test {test}")
 		# print(f"HAY BREAK {text}")
 
 		# if test[0] == "{" and test[1] == "}":
@@ -266,9 +287,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		condition_value = self.visit(ctx.expression())
 		text = ctx.getText()
 		self.log.debug(f"condicion valor: {condition_value}")
-		self.log.debug(f"CONDICION IF: {condition_value}")
+		print(f"CONDICION IF: {condition_value}")
+		if isinstance(condition_value, tuple):
+			if not isinstance(condition_value[0], bool):
+				raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+		elif not isinstance(condition_value, bool):		
 		# Verificar que la condición sea de tipo booleano
-		if not isinstance(condition_value[0], bool):
+
 			raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 				# Obtener la info del nodo
 		# En caso de tener un print, procesarlo
@@ -335,33 +360,27 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 
 	def visitPrintStmt(self, ctx: CompiscriptParser.PrintStmtContext):
-		# Obtener la info del nodo
 		text = ctx.getText()
-		# En caso de tener un print, procesarlo
 		if "print" in text:
-			# Verificar si la función 'print' ya ha sido declarada
 			if "print" not in self.declared_functions:
-				# Si 'print' no está declarada, agregarla a la tabla de funciones
 				print_function = Symbol_Property()
 				print_function.id = "print"
-				print_function.parameters = "any"  # 'any', ya que acepta cualquier cosa
+				print_function.parameters = "any"
 				print_function.return_type = "void"
-				
-				# Agregar a la tabla de funciones
+				# Agregarlo a la tabla de funciones
 				self.table_functions.add(print_function)
-
 				# Marcar 'print' como declarada
 				self.declared_functions.add("print")
 
-			# Obtener y visitar la expresión dentro de la instrucción print
+			# Obtener la expresión y evaluarla
 			expression_value = self.visit(ctx.expression())
+			self.log.debug(f'Evaluated expression: {expression_value}')
 
-			# Imprimir la expresión (esto es solo un ejemplo de cómo podrías manejarlo)
-			self.log.debug(f'Print statement: {expression_value}')
+			# Aquí deberías recibir el valor real de "hola" en lugar de 'global_0'
+			print(f'Print statement: {expression_value}')
 
 			return None
 		else:
-			# Delegar al siguiente metodo
 			return self.visitChildren(ctx)
 
 
@@ -375,8 +394,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		text = ctx.getText()
 		self.log.debug(f"Condición valor: {condition_value}")
 		
+		self.log.debug(f"CONDICION WHILE: {condition_value}")
+		if isinstance(condition_value, tuple):
+			if not isinstance(condition_value[0], bool):
+				raise TypeError(f"Error: La condición en 'while' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+		elif not isinstance(condition_value, bool):		
 		# Verificar que la condición sea de tipo booleano
-		if not isinstance(condition_value, bool):
 			raise TypeError(f"Error: La condición en 'while' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 		
 		# Verificar si la función 'while' ya ha sido declarada (este bloque parece innecesario pero lo dejo por si lo necesitas)
@@ -420,7 +443,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Entrar en un nuevo scope, lo que automáticamente incrementa el contador de scopes
 		self.table_variables.enter_scope()
 		# Imprimir el identificador del nuevo scope para debugging
-		self.log.debug(f"Entering scope: {self.table_variables.scopes[-1].id}")
+		self.log.debug(f"Entering scope 12: {self.table_variables.scopes[-1].id}")
 		self.current_scope = self.table_variables.scopes[-1].id
 		# Evaluar todas las declaraciones dentro del bloque
 		result = None
@@ -469,15 +492,22 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
 		""" Este sirve para poder hacer la asignacion de valores"""
+		
 		if ctx.IDENTIFIER() is not None:
 			var_name = str(ctx.IDENTIFIER())
-			self.log.debug(var_name)
+			self.log.debug(f"VARNAME: {var_name}")
 
-			current_scope_vars = self.variables_scope.get(self.current_scope, {})
+			current_scope_vars = self.variables_scope.get(self.current_scope)
+			print(current_scope_vars)
 			if var_name not in current_scope_vars:
 				raise Exception(f"Error: La variable '{var_name}' no esta en el scope actual.")
 
-			value = self.visit(ctx.expression())
+			if ctx.assignment() is not None:
+				# Visita la expresión a la derecha del '='
+				value = self.visit(ctx.assignment())
+			elif ctx.logic_or() is not None:
+				# Visita la lógica "or" si está presente
+				value = self.visit(ctx.logic_or())
 
 			current_scope_vars[var_name]['value'] = value
 			self.variables_scope[self.current_scope] = current_scope_vars
@@ -517,88 +547,110 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				# Si result es False, podemos devolverlo inmediatamente
 				if not result:
 					return False
-
 			return result
 		else:
 			return self.visitChildren(ctx)
 
 	
-	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
+	def visitEquality(self, ctx: CompiscriptParser.EqualityContext):
 		text = ctx.getText()
 		data = []
-		left, right = "", ""
 		if "==" in text:
 			data = text.split("==")
 			self.log.debug(f"Datos después del split por '==': {data}")
 			data = self.depuracion_elemntos_con_detalles_extra(data)
-			if data[0].lower() == "true" or data[0].lower() == "false":  # Verifica correctamente los booleanos
-				left = data[0].lower() == "true"
-				right = data[1].lower() == "true"
-			else:
-				left = data[0]
-				right = data[1]
-				self.validacion_numeros_mediante_casteo([left, right])
-			return left == right
+			return self.compare_values(data, "==")
 		elif "!=" in text:
 			data = text.split("!=")
 			self.log.debug(f"Datos después del split por '!=': {data}")
 			data = self.depuracion_elemntos_con_detalles_extra(data)
-			if data[0].lower() == "true" or data[0].lower() == "false":
-				left = data[0].lower() == "true"
-				right = data[1].lower() == "true"
-			else:
-				left = data[0]
-				right = data[1]
-				self.validacion_numeros_mediante_casteo([left, right])
-			return left != right
+			return self.compare_values(data, "!=")
 		else:
 			return self.visitChildren(ctx)
 
 
-	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
+	def visitComparison(self, ctx: CompiscriptParser.ComparisonContext):
 		text = ctx.getText()
 		data = []
-		left, right = "", ""
-
 		if "<=" in text:
 			data = text.split("<=")
-			# print(f"Datos después de split por '<': {data}")
+			self.log.debug(f"Datos después del split por '<=': {data}")
 			data = self.depuracion_elemntos_con_detalles_extra(data)
-			self.validacion_numeros_mediante_casteo(data)
-			left = data[0]
-			right = data[1]
-			return left < right
-		
+			return self.compare_values(data, "<=")
 		elif ">=" in text:
 			data = text.split(">=")
-			# print(f"Datos después de split por '<=': {data}")
+			self.log.debug(f"Datos después del split por '>=': {data}")
 			data = self.depuracion_elemntos_con_detalles_extra(data)
-			self.validacion_numeros_mediante_casteo(data)
-			left = data[0]
-			right = data[1]
-			return left[0] <= right[0]
-		
+			return self.compare_values(data, ">=")
 		elif ">" in text:
 			data = text.split(">")
-			# print(f"Datos después de split por '>': {data}")
+			self.log.debug(f"Datos después del split por '>': {data}")
 			data = self.depuracion_elemntos_con_detalles_extra(data)
-			self.validacion_numeros_mediante_casteo(data)
-			left = data[0]
-			right = data[1]
-			return left > right
-		
+			return self.compare_values(data, ">")
 		elif "<" in text:
-			# print(f"Datos después de split por '>=': {data}")
 			data = text.split("<")
+			self.log.debug(f"Datos después del split por '<': {data}")
 			data = self.depuracion_elemntos_con_detalles_extra(data)
-			self.validacion_numeros_mediante_casteo(data)
-			left = data[0]
-			right = data[1]
-			return left >= right
+			return self.compare_values(data, "<")
 		else:
 			return self.visitChildren(ctx)
 		
 
+	def try_cast(self,value):
+		stripped_value = value.strip()
+		
+		# Intentar convertir a int
+		try:
+			return int(stripped_value)
+		except ValueError:
+			pass
+		
+		# Intentar convertir a float
+		try:
+			return float(stripped_value)
+		except ValueError:
+			pass
+		
+		# Si no es ni int ni float, devolver la cadena tal cual
+		return stripped_value
+
+
+	def compare_values(self, data, operator):
+		value1 = self.try_cast(data[0])
+		value2 = self.try_cast(data[1])
+		
+		comparison_operations = {
+			"==": lambda x, y: x == y,
+			"!=": lambda x, y: x != y,
+			">": lambda x, y: x > y,
+			">=": lambda x, y: x >= y,
+			"<": lambda x, y: x < y,
+			"<=": lambda x, y: x <= y
+		}
+
+		# Manejar booleanos (caso especial)
+		if isinstance(value1, str) and value1.lower() in ["true", "false"]:
+			value1 = value1.lower() == "true"
+		if isinstance(value2, str) and value2.lower() in ["true", "false"]:
+			value2 = value2.lower() == "true"
+		
+		# Verificar tipos y hacer la comparación
+		if isinstance(value1, (int, float, bool)) and isinstance(value2, (int, float, bool)):
+			return comparison_operations[operator](value1, value2)
+		
+		# Comparar cadenas solo con `==` y `!=`
+		if isinstance(value1, str) and isinstance(value2, str) and operator in ["==", "!="]:
+			return comparison_operations[operator](value1, value2)
+		
+		raise TypeError(f"No se pueden comparar valores de tipos diferentes: {type(value1).__name__} y {type(value2).__name__}")
+
+
+	def depuracion_elemntos_con_detalles_extra(self, data):
+		data[0] = data[0].strip('()')
+		data[1] = data[1].strip('()')
+		self.log.debug(f"Datos después de eliminar paréntesis: {data}")
+		return data
+	
 
 	def visitTerm(self, ctx: CompiscriptParser.TermContext):
 		if ctx.getChildCount() == 1:
@@ -624,8 +676,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		left = self.visit(ctx.unary(0))
 		right = self.visit(ctx.unary(1))
 
-		if type(left) == tuple: left = left[0]
-		if type(right) == tuple: right = right[0]
+		if type(left) is tuple: left = left[0]
+		if type(right) is tuple: right = right[0]
 		self.log.debug(f"left: {left}, type: {type(left)}")
 		self.log.debug(f"right: {right}, type: {type(right)}")
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
@@ -702,6 +754,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				return self.local_variables[var_name], "unknown"  # Unknown until evaluated
 			elif var_name in self.global_variables:
 				return self.global_variables[var_name], "unknown"
+			elif var_name in self.variables_scope[self.current_scope]:
+				return self.variables_scope[self.current_scope][var_name]
 			else:
 				raise Exception(f"Variable '{var_name}' no declarada en el ámbito {self.current_scope}.")
 		elif ctx.getText() == "true":
@@ -732,28 +786,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		return self.visitChildren(ctx)
-
-
-	def declare_variable(self, name: str, ctx: ParserRuleContext):
-		"""Declare a variable in the current scope."""
-		if name in self.local_variables:
-			self.log.error(f"Variable '{name}' is already declared in the current scope.")
-		self.local_variables[name] = ctx
-
-	def validacion_numeros_mediante_casteo(self, data):
-		# print(f"Datos antes de depurar: {data}")
-		try:
-			int(data[0].strip())
-			int(data[1].strip())
-		except TypeError:
-			raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(data[0]).__name__} y {type(data[1]).__name__}")
-		# print(f"Datos después de depurar: {data}")
-
-	def depuracion_elemntos_con_detalles_extra(self, data):
-		data[0] = data[0].strip('()')
-		data[1] = data[1].strip('()')
-		self.log.debug(f"Datos después de eliminar paréntesis: {data}")
-		return data
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
 		node_id = f"node{self.counter}"
