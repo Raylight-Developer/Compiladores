@@ -451,12 +451,25 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif operator == '%':
 			return left % right
 		# Si el operador no es reconocido, lanza una excepción
+		
 		else:
 			raise Exception(f"Operador desconocido: {operator}")
 
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
 		""" Este sirve para poder hacer la asignacion de valores"""
+		if ctx.IDENTIFIER() is not None:
+			var_name = str(ctx.IDENTIFIER())
+			print(var_name)
+
+			current_scope_vars = self.variables_scope.get(self.current_scope, {})
+			if var_name not in current_scope_vars:
+				raise Exception(f"Error: La variable '{var_name}' no esta en el scope actual.")
+
+			value = self.visit(ctx.expression())
+
+			current_scope_vars[var_name]['value'] = value
+			self.variables_scope[self.current_scope] = current_scope_vars
 		return self.visitChildren(ctx)
 
 
@@ -616,6 +629,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		left = self.visit(ctx.unary(0))
 		right = self.visit(ctx.unary(1))
 
+		if type(left) == tuple:
+			left = left[0]
+		if type(right) == tuple:
+			right = right[0]
+		print(f"left: {left}, type: {type(left)}")
+		print(f"right: {right}, type: {type(right)}")
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")

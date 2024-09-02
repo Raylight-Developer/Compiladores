@@ -25,6 +25,12 @@ var nice;
 var nice1;
 
 
+var test = 10 + (3*5);
+var x = 0;
+var miau = test * x;
+FALLA miau, no infiere tipo y valor
+
+
 {} {}
 25
 Entering scope: scope1

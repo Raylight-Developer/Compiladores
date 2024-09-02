@@ -12,7 +12,9 @@ class Display(QMainWindow):
 		self.code_input = QTextEdit()
 		self.code_input.setPlaceholderText("Code to compile...")
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
-		self.code_input.setText("var test = 10 + (3*5);")
+		self.code_input.setText("""var test = 10 + (3*5);
+var x = 0;
+var miau = test * x;""")
 
 		self.code_output = QTextBrowser()
 		self.code_output.setPlaceholderText("Compiled code")
