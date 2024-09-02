@@ -39,9 +39,11 @@ class Tester(QMainWindow):
 		self.parse()
 
 	def parse(self):
-		for i, (codigo, should_pass) in enumerate(self.code):
+		for i, (code, should_pass, title) in enumerate(self.code):
+			self.log.append(f"Compiling [{i}] {title}...")
+			self.log.append(f"{TEST}<pre>{code}</pre>{RESET}")
 			try:
-				resultado = self.compile(i, codigo)
+				resultado = self.compile(i, code)
 				self.log.append(f"{G}[{i}] Comiplation Succesful{RESET}<br><br>")
 				self.code_output.insertPlainText(f"[{i}] {resultado}\n\n")
 				self.succeses += 1
@@ -75,9 +77,6 @@ class Tester(QMainWindow):
 		splitter.addWidget(self.table_functions[-1])
 		splitter.addWidget(self.table_variables[-1])
 		self.tabs.addTab(splitter, f"Test [{i}]")
-
-		self.log.append(f"Compiling [{i}]...")
-		self.log.append(f"{TEST}<pre>{code}</pre>{RESET}")
 
 		try:
 			lexer = CompiscriptLexer(InputStream(code))
