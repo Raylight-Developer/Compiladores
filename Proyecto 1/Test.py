@@ -55,11 +55,11 @@ class Tester(QMainWindow):
 			try:
 				resultado = self.compile(i, code, title_id)
 				self.log.append(f"{G}Compilation Succesful{RESET}<br>")
-				self.code_output.insertPlainText(f"\n[{i}] - ({title_id}) {resultado}\n")
+				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {resultado}\n")
 				self.succeses += 1
 				self.title_succeses.append(title)
 			except Exception as e:
-				self.code_output.insertPlainText(f"\n[{i}] - ({title_id}) {e}\n")
+				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {e}\n")
 				if should_pass == False:
 					self.succeses += 1
 					self.title_succeses.append(title)

@@ -21,6 +21,7 @@ var x = 0;
 var miau = test * x;""")
 
 		self.code_output = Logger()
+		Antlr_Syntax_Highlighter(self.code_output.document())
 		self.code_output.setPlaceholderText("Compiled code")
 
 		self.log = Logger()

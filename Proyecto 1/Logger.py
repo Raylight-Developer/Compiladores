@@ -66,6 +66,13 @@ class Test_Logger(QScrollArea):
 		Text.setStyleSheet(f"padding-left: {5 +indent * 40}px")
 		self.contents.addWidget(Text)
 
+	def insertAntlrText(self, value:str, indent: int = 0):
+		Text = Viewer()
+		Text.insertPlainText(value)
+		Antlr_Syntax_Highlighter(Text.document())
+		Text.setStyleSheet(f"padding-left: {5 +indent * 40}px")
+		self.contents.addWidget(Text)
+
 	def addCode(self, value:str, indent: int = 0):
 		Text = Viewer()
 		Text.setStyleSheet(f"padding-left: {5 +indent * 40}px")
@@ -79,6 +86,7 @@ class Test_Logger(QScrollArea):
 
 		Text = Viewer()
 		Text.insertPlainText(value)
+		Py_Syntax_Highlighter(Text.document())
 		Text.setStyleSheet(f"margin-left: {5 +indent * 40}px; background:rgb(50,50,50);")
 
 		container = QWidget()
