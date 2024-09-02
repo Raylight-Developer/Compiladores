@@ -24,6 +24,6 @@
 
 # print(result)  # Output: '5'
 
-none = "1>=2"
-value = none.split(">=")
-print(value)
+# none = "1>=2"
+# value = none.split(">=")
+# print(value)

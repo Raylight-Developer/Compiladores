@@ -1,8 +1,9 @@
+
 from CompiscriptVisitor import CompiscriptVisitor
 from CompiscriptParser import CompiscriptParser
 from CompiscriptLexer import CompiscriptLexer
 from Symbol_Table import Symbol_Table, Symbol_Property
-import copy
+import re
 
 from Include import *
 
@@ -10,6 +11,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def __init__(self, log: QTextBrowser, table_functions: Symbol_Table, table_variables: Symbol_Table, table_classes: Symbol_Table, parser: CompiscriptParser):
 		super().__init__()
 		self.counter = 1
+		self.inside_loop = False
+		self.inside_block_fun_if = False
 		self.parser = parser
 		self.graph = Digraph()
 		self.log = log
@@ -17,17 +20,15 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.table_variables = table_variables
 		self.table_classes = table_classes
 		self.global_variables = {}
-		self.current_scope = ""
+		self.current_scope = "global_0"
 		self.variables_scope = {}
 		self.variables_globals = {}
+		self.array_values = []
 
 		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
 		self.declared_functions: Set[str] = set()
-	
-	def raise_semantic_error(self, message: str):
-		# Centraliza la generación de errores semánticos
-		raise Exception(f"Semantic Error: {message}")
+		# self.functions_parameters = Set[str] = set()
 
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
@@ -43,42 +44,53 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
 		fun_name = ctx.function().IDENTIFIER().getText()
-
+		# print(f"TEXTO: {ctx.getText()} -- {fun_name}")
+		# fun_declard = ctx.function().call()
 		# Verifica si la función ya está declarada
-		if fun_name in self.functions:
+		if fun_name in self.declared_functions:
 			raise Exception(f"Error: Función '{fun_name}' ya declarada.")
+		# Obtencion de los parametros
+		parametros = [param.getText() for param in ctx.function().parameters().IDENTIFIER()] 
+		# print(f"PARAMETAIOSJDF {parametros}")
 
-		# Registra la función en la tabla de símbolos
-		self.functions[fun_name] = ctx
+		# Registrar la función
+		self.declared_functions.add(fun_name)
 
-		# Construir los datos del símbolo
+		# Crear los datos del símbolo de la función
 		symbol_data = Symbol_Property()
-		symbol_data.id = fun_name                    # ID
-		symbol_data.type = "function"                  # Data_Type
-		symbol_data.size = "-"                         # Size (no aplica a funciones)
-		symbol_data.offset = "-"                         # Offset (no aplica a funciones)
-		symbol_data.scope = "global"                    # Scope (asumiendo que las funciones son globales)
-		#symbol_data. = "function"                   # Structure ????????????????????????????????????????????????????????????????????????????????????????????
+		symbol_data.id = fun_name                      # ID
+		symbol_data.type = "function"                  # Tipo
+		symbol_data.parameters = ", ".join(parametros)
+		symbol_data.return_type = "void"
+		# Agregar a la tabla de funciones
+		self.table_functions.add(symbol_data)
 
-		# Agregar el símbolo a la tabla
-		# self.table_functions.add(symbol_data)???????????????????????????????????????????????????????????????????????????????????????????????????????
 
-		# Construir el AST
-		node_id = self.nodeTree(ctx)
+		# Delegar al siguiente método (por si hay más cosas que procesar dentro de la función)
+		return self.visitChildren(ctx)
 
-		# Visita el cuerpo de la función
-		self.visit(ctx.function().block())
-
-		return node_id
-
-	
+		
 	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
 		var_name = ctx.IDENTIFIER().getText()
-
+		var_declartion = ctx.getText()
+		arreglo = []
+		var_type = "unknown"
+		# para capturar declaracion de variables
+		# para capturar el contenido del arreglo
+		patron_array = r'\[([^\]]+)\]'
+		# Buscar la coincidencia en la cadena
+		coincidencia_array = re.search(patron_array, var_declartion)
+		if coincidencia_array:
+			# Extraer el contenido del arreglo y dividirlo en elementos
+			elementos = coincidencia_array.group(1).split(',')
+			# Convertir los elementos a enteros
+			arreglo = [int(elemento) for elemento in elementos]
+			var_type = "array"
+	
 		# Determina si estamos en un scope local o global
 		is_local_scope = len(self.table_variables.scopes) > 1
 		current_scope_id = self.current_scope if is_local_scope else "global_0"
-
+		
 		# print(f"ATENTO: {current_scope_id, self.current_scope, is_local_scope}")
 		if current_scope_id == '':
 			current_scope_id = "global_0"
@@ -88,26 +100,43 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.variables_scope[current_scope_id] = {}
 
 		# Verifica si la variable ya está declarada en el scope actual
-		if var_name in self.variables_scope[current_scope_id]:
+		if var_name in self.variables_scope[current_scope_id] :
 			raise Exception(f"Error: Variable '{var_name}' ya declarada en el scope '{current_scope_id}'.")
 
 		# Try to get the variable's type from the context
-		var_type = "unknown"
 		var_value = None
 		if ctx.expression():
-			var_value = self.visit(ctx.expression())
-			var_type = self.determine_type(var_value)
+			if var_type == "unknown":
+				var_value = self.visit(ctx.expression())
+				var_type = self.determine_type(var_value)
+			elif var_type == "array":
+				pass
 
-		# Guarda la variable en el diccionario del scope actual en variables_scope
-		self.variables_scope[current_scope_id][var_name] = {"type": var_type, "value": var_value}
+		if var_type == "array":
+			# Guarda la variable en el diccionario del scope actual en variables_scope
+			self.variables_scope[current_scope_id][var_name] = {"type": var_type, "value": arreglo}
+		else:
+			# Guarda la variable en el diccionario del scope actual en variables_scope
+			self.variables_scope[current_scope_id][var_name] = {"type": var_type, "value": var_value}
+
+
 		print(f"variables_scope: {self.variables_scope}")
-
-		# Crea la propiedad de la variable y la agrega a la tabla de símbolos
+		
 		property = Symbol_Property()
-		property.id = var_name
-		property.scope = "local" if is_local_scope else "global"
-		property.value = var_value
-		property.type = var_type
+		# Enviarlo en tipo array
+		if var_type == "array":
+			
+			property.id = var_name
+			property.scope = "local" if is_local_scope else "global"
+			property.value = arreglo
+			property.type = var_type
+			# print(f"DEBERIA ENVIARSE {property.value}")
+		else:
+		# Crea la propiedad de la variable y la agrega a la tabla de símbolos
+			property.id = var_name
+			property.scope = "local" if is_local_scope else "global"
+			property.value = var_value
+			property.type = var_type
 
 		# Agrega la variable a la tabla de variables en el scope actual
 		self.table_variables.add_and_scope(property)
@@ -120,13 +149,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		node_id = self.nodeTree(ctx)
 
 		# Visita la expresión asociada si existe
-		if ctx.expression():
-			expression_value = self.visit(ctx.expression())
-			print(f"Value of the expression assigned to {var_name}: {expression_value}")
+		# if ctx.expression():
+		# 	expression_value = self.visit(ctx.expression())
+		# 	print(f"Value of the expression assigned to {var_name}: {expression_value}")
 
 		return node_id
-	
-	
+
+
 	def determine_type(self, value):
 		if isinstance(value, bool):
 			return "boolean"
@@ -147,6 +176,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.variables_scope[scope_id] = {}
 		print(f"Entered new scope: {scope_id}")
 
+
 	def exitScope(self):
 		# When exiting the scope, pop the scope stack and return to the parent scope
 		print(f"Exiting scope: {self.current_scope}")
@@ -155,48 +185,66 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
+		text = ctx.getText().strip()
+		# print(f"HAY BREAK {text}")
+		# Detectar 'break'
+		if text == "break;":
+			if not self.inside_loop:
+				raise Exception("Error: La declaracion 'break' no esta dentro de un bucle.")
+			print("Declaracion Break encontrada, saliendo del bucle.")
+			return "break"  # Indica al bucle que debe terminar
+		
+		# Detectar 'continue'
+		elif text == "continue;":
+			if not self.inside_loop:
+				raise Exception("Error: La declaracion 'continue' no esta dentro de un bucle.")
+			print("Declaracion Continue encontrada, continuando el bucle.")
+			return "continue"  # Indica al bucle que debe saltar a la siguiente iteración
+		
+		elif text == "return":
+			if not self.inside_block_fun_if:
+				raise Exception("Error: La declaracion 'return' return esta fuera de un bloque.")
+		
+		# Para otras sentencias, delegar al visitor correspondiente
 		return self.visitChildren(ctx)
 
 
-	def visitExprStmt(self, ctx:CompiscriptParser.ExprStmtContext):
+	def visitExprStmt(self, ctx: CompiscriptParser.ExprStmtContext):	
+		# Si no es una llamada, delega a la visita de los hijos (otras expresiones)
 		return self.visitChildren(ctx)
 
 
 	def visitForStmt(self, ctx: CompiscriptParser.ForStmtContext):
-		# Crear un nuevo scope para el ciclo 'for'
+		# Entrar en un nuevo scope
 		self.table_variables.enter_scope()
-		self.current_scope = self.table_variables.scopes[-1].id
+		new_scope_id = self.table_variables.scopes[-1].id
+		self.current_scope = new_scope_id
 		print(f"Entering 'for' scope: {self.current_scope}")
 
-		# 1. Inicialización: Ejecutar la inicialización del ciclo, si existe
-		if ctx.varDecl():
-			self.visit(ctx.varDecl())
-		elif ctx.exprStmt():
-			self.visit(ctx.exprStmt())
-		
-		# 2. Condición: Evaluar la condición del 'for' si existe
-		condition_value = True
-		if ctx.expression(0):
-			condition_value = self.visit(ctx.expression(0))
+		# Inicialización, condición y actualización
+		if ctx.varDecl():  # Manejo de la declaración de variable dentro del for
+			self.visitVarDecl(ctx.varDecl())
+
+		# Evaluar la condición
+		condition_value = self.visit(ctx.expression(0)) if ctx.expression(0) else True
+
+		# while condition_value:
+		# 	# Ejecutar las sentencias dentro del for
+		# 	for stmt in ctx.statement():
+		# 		result = self.visit(stmt)
+		# 		if result == "break":
+		# 			break
+		# 		elif result == "continue":
+		# 			break  # En Python, continue se maneja rompiendo el loop for stmt y continuando el loop externo
 			
-			# Verificar que la condición sea de tipo booleano
-			if not isinstance(condition_value, bool):
-				raise TypeError(f"Error: La condición en la sentencia 'for' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+		# 	# Actualización de la expresión dentro del for (i++)
+		# 	if ctx.expression(1):
+		# 		self.visit(ctx.expression(1))
 
-		# 3. Ciclo 'for': Continuar mientras la condición sea verdadera
-		while condition_value:
-			# 4. Ejecutar el cuerpo del ciclo
-			self.visit(ctx.statement())
+		# 	# Re-evaluar la condición
+		# 	condition_value = self.visit(ctx.expression(0)) if ctx.expression(0) else True
 
-			# 5. Actualización: Ejecutar la actualización del ciclo, si existe
-			if ctx.expression(1):
-				self.visit(ctx.expression(1))
-
-			# Re-evaluar la condición después de cada iteración si existe
-			if ctx.expression(0):
-				condition_value = self.visit(ctx.expression(0))
-
-		# Salir del scope del bloque 'for'
+		# Salir del scope después de terminar el bucle
 		print(f"Exiting 'for' scope: {self.current_scope}")
 		self.table_variables.exit_scope()
 		self.current_scope = self.table_variables.scopes[-1].id if self.table_variables.scopes else "global_0"
@@ -309,6 +357,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitReturnStmt(self, ctx:CompiscriptParser.ReturnStmtContext):
 		return self.visitChildren(ctx)
 
+
 	def visitWhileStmt(self, ctx:CompiscriptParser.WhileStmtContext):
 		# Evaluar la condición del 'while'
 		condition_value = self.visit(ctx.expression())
@@ -333,6 +382,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				# Marcar 'while' como declarada
 				self.declared_functions.add("while")
 		
+		self.inside_loop = True
 		# Crear un nuevo scope para el bloque 'while'
 		self.table_variables.enter_scope()
 		self.current_scope = self.table_variables.scopes[-1].id
@@ -351,7 +401,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		print(f"Exiting 'while' scope: {self.current_scope}")
 		self.table_variables.exit_scope()
 		self.current_scope = self.table_variables.scopes[-1].id if self.table_variables.scopes else "global_0"
-		
+		self.inside_loop = False
 		return None
 
 
@@ -578,8 +628,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return left % right
 
 
-	def visitArray(self, ctx:CompiscriptParser.ArrayContext):
-		return self.visitChildren(ctx)
+	def visitArray(self, ctx: CompiscriptParser.ArrayContext):
+		# Obtener todas las expresiones dentro del array
+		elements = [self.visit(expression) for expression in ctx.expression()]
+		
+		# Aquí podrías devolver una lista o cualquier estructura de datos que represente un array en tu lenguaje.
+		return elements
 
 
 	def visitInstantiation(self, ctx:CompiscriptParser.InstantiationContext):
@@ -601,9 +655,24 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return self.visit(ctx.getChild(0))  # El primer hijo debe ser el siguiente nivel de expresión (por ejemplo, `primary`)
 
 
-	def visitCall(self, ctx:CompiscriptParser.CallContext):
-		name = str(ctx.IDENTIFIER())
+	def visitCall(self, ctx: CompiscriptParser.CallContext):
+		# function_name = ctx.primary().IDENTIFIER().getText()
+		# # print(function_name)
+		
+		# # Verificar si la función ha sido declarada
+		# if function_name not in self.declared_functions:
+		# 	raise Exception(f"Error: La función '{function_name}' no está definida.")
+		
+		# # Verificar los argumentos de la función (opcionalmente)
+		# expected_params = self.table_functions.lookup(function_name).parameters.split(", ")
+		# passed_params = ctx.arguments().expression()
+		
+		# if len(expected_params) != len(passed_params):
+		# 	raise Exception(f"Error: La función '{function_name}' espera {len(expected_params)} argumentos, pero se pasaron {len(passed_params)}.")
+		
+		# Visitar los hijos (por si hay más cosas que procesar en la llamada)
 		return self.visitChildren(ctx)
+
 
 	def visitPrimary(self, ctx: CompiscriptParser.PrimaryContext):
 		if ctx.NUMBER():
@@ -622,7 +691,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			elif var_name in self.global_variables:
 				return self.global_variables[var_name], "unknown"
 			else:
-				raise Exception(f"Error: Variable '{var_name}' not declared.")
+				raise Exception(f"Variable '{var_name}' no declarada en el ámbito {self.current_scope}.")
 		elif ctx.getText() == "true":
 			return True
 		elif ctx.getText() == "false":
@@ -633,12 +702,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return self.visit(ctx.expression())  # Delegate to expression handling
 
 
-	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
+	def visitFunction(self, ctx: CompiscriptParser.FunctionContext):
+		# Continúa la visita del cuerpo de la función
+		# function_name = ctx.IDENTIFIER().getText()
+		# parameters = self.visit(ctx.parameters())
+		# print(f"Function: {function_name}, Parameters: {parameters}")
 		return self.visitChildren(ctx)
 
-
+	# Visit a parse tree produced by CompiscriptParser#parameters.
 	def visitParameters(self, ctx:CompiscriptParser.ParametersContext):
-		return self.visitChildren(ctx)
+		# ctx.IDENTIFIER() devuelve una lista de nodos de identificadores.
+		# Extraer el texto de cada uno para obtener los nombres de los parámetros.
+		parameters = [param.getText() for param in ctx.IDENTIFIER()]
+		# print(f"OBTENCION PARAMETROS {parameters}")
+		return parameters
 
 
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):

@@ -61,3 +61,15 @@ global_0
 global_0
 
 Estos valores no se deberian almacenar asi en visitVarDecl, validar mas adelante, pues se dejara comentario
+
+
+El for esta truqueado, pues si declaro una variable tipo var i, en el mismo scope del for, en el incremento de i = i + 1 no la reconoce
+pero si pongo una constante en esa are y luego la regreso al valor de i, si la reconoce
+Antes
+var test = 10 + (3*5);
+for(var i = 0; 1 < 1; 1){
+}
+Despues
+var test = 10 + (3*5);
+for(var i = 0; 1 < 1; i = i + 1){
+}

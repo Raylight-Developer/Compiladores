@@ -13,7 +13,8 @@ class Symbol_Property:
 	size: int = 0
 	offset: int = 0
 	scope: Union[str , None] = ""
-	value: str | Any = ""
+	# Modificación aquí: Acepta str o List[Any]
+	value: Union[str, List[Any]]= ""
 
 	parameters: str = ""
 	return_type: str = ""
@@ -48,6 +49,12 @@ class Symbol_Table(QTableWidget):
 
 	def add(self, value: Symbol_Property):
 		row = self.rowCount()
+		# print(f"DEBERIA LLEGAR: {value.value}")
+		# Convertir el valor si es una lista
+		if isinstance(value.value, list):
+			value.value = ", ".join(map(str, value.value))  # Convierte la lista a una cadena de texto
+		else:
+			value.value = str(value.value)
 		self.setRowCount(row + 1)
 		if self.type == "Var":
 			self.setItem(row, 0, QTableWidgetItem(str(value.id)))
@@ -55,7 +62,7 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row, 2, QTableWidgetItem(str(value.size)))
 			self.setItem(row, 3, QTableWidgetItem(str(value.offset)))
 			self.setItem(row, 4, QTableWidgetItem(str(value.scope)))
-			self.setItem(row, 5, QTableWidgetItem(str(value.value)))
+			self.setItem(row, 5, QTableWidgetItem((value.value)))
 		elif self.type == "Fun":
 			self.setItem(row, 0, QTableWidgetItem(str(value.id)))
 			self.setItem(row, 1, QTableWidgetItem(str(value.parameters)))
