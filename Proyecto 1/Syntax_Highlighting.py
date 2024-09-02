@@ -226,7 +226,7 @@ class Antlr_Syntax_Highlighter(QSyntaxHighlighter) :
 		self.highlightingRules: List[HighlightingRule] = []
 
 		self.control = QTextCharFormat()
-		self.control.setForeground(QColor(225, 205, 255))
+		self.control.setForeground(QColor(200, 200, 200))
 		for pattern in [
 			"class", "True", "False", "true", "false", "or", "and", "not", "in", "!", "=", "logic_or", "logic_and", "equality", "comparison", "factor", "term", 
 			"fun", "print", "init", "var", "assignment", "declaration", "assignment", "expression",
