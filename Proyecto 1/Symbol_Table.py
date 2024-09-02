@@ -48,7 +48,6 @@ class Symbol_Table(QTableWidget):
 
 	def add(self, value: Symbol_Property):
 		row = self.rowCount()
-		# print(f"DEBERIA LLEGAR: {value.value}")
 		# Convertir el valor si es una lista
 		if isinstance(value.value, list):
 			value.value = ", ".join(map(str, value.value))  # Convierte la lista a una cadena de texto

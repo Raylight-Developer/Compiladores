@@ -110,10 +110,11 @@ var miau = test * x;""")
 			visitor = Semantic_Analyzer(self.log, self.table_functions, self.table_variables, self.table_classes, parser)
 			visitor.visit(tree)
 
-			if not os.path.exists("./Output"):
-				os.makedirs("Output")
-			visitor.nodeTree(tree)
-			if RENDER_TREE: visitor.graph.render("Syntax-Graph","./Output", False, True, "png")
+			if RENDER_TREE: 
+				if not os.path.exists("./Output"):
+					os.makedirs("Output")
+				visitor.nodeTree(tree)
+				visitor.graph.render("Syntax-Graph","./Output", False, True, "png")
 
 			self.table_classes.resizeColumnsToContents()
 			self.table_functions.resizeColumnsToContents()

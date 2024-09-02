@@ -188,7 +188,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		text = ctx.getText().strip()
 		test = ctx.getText()
-		print(f"STATEMENT: test {test}")
+		self.log.debug(f"STATEMENT: test {test}")
 		# print(f"HAY BREAK {text}")
 
 		# if test[0] == "{" and test[1] == "}":
@@ -264,7 +264,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		condition_value = self.visit(ctx.expression())
 		text = ctx.getText()
 		self.log.debug(f"condicion valor: {condition_value}")
-		print(f"CONDICION IF: {condition_value}")
+		self.log.debug(f"CONDICION IF: {condition_value}")
 		# Verificar que la condición sea de tipo booleano
 		if not isinstance(condition_value[0], bool):
 			raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")

@@ -5,6 +5,8 @@ from Tests.Small_Tests import *
 from Semantic_Analyzer import *
 from SyntaxErrorListener import *
 
+RENDER_TREES = False
+
 class Tester(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -41,19 +43,20 @@ class Tester(QMainWindow):
 
 	def parse(self):
 		for i, (title, should_pass, code) in enumerate(self.code):
+			title_id = title.split()[1]
 			self.log.append(f"<h2>{title}</h2>")
-			self.log.append(f"<h4>Compiling [{i}] - ({title.split()[1]})...</h4>")
+			self.log.append(f"<h4>Compiling [{i}] - ({title_id})...</h4>")
 			self.log.append("CODE: {")
 			self.log.addCode(code.strip(), 1)
 			self.log.append("}")
 			try:
-				resultado = self.compile(i, code, title)
+				resultado = self.compile(i, code, title_id)
 				self.log.append(f"{G}Compilation Succesful{RESET}<br>")
-				self.code_output.insertPlainText(f"\n[{i}] - ({title.split()[1]}) {resultado}\n")
+				self.code_output.insertPlainText(f"\n[{i}] - ({title_id}) {resultado}\n")
 				self.succeses += 1
 				self.title_succeses.append(title)
 			except Exception as e:
-				self.code_output.insertPlainText(f"\n[{i}] - ({title.split()[1]}) {e}\n")
+				self.code_output.insertPlainText(f"\n[{i}] - ({title_id}) {e}\n")
 				if should_pass == False:
 					self.succeses += 1
 					self.title_succeses.append(title)
@@ -65,7 +68,7 @@ class Tester(QMainWindow):
 				self.log.append(f"{e}", 1)
 				self.log.append("}")
 			debug = "\n".join(self.log.debug_output)
-			self.log.addCollapse(f"Debug Output [{i}] - ({title.split()[1]})", debug, 1)
+			self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
 
 			self.log.addSep()
 			self.code_output.addSep()
@@ -87,7 +90,7 @@ class Tester(QMainWindow):
 			self.tabs.currentWidget().widget(1).resizeColumnsToContents()
 			self.tabs.currentWidget().widget(2).resizeColumnsToContents()
 
-	def compile(self, i: int, code: str, title:str) -> str:
+	def compile(self, i: int, code: str, title_id: str) -> str:
 		self.table_functions.append(Symbol_Table(self.log, "Fun"))
 		self.table_variables.append(Symbol_Table(self.log, "Var"))
 		self.table_classes  .append(Symbol_Table(self.log, "Cla"))
@@ -96,7 +99,7 @@ class Tester(QMainWindow):
 		splitter.addWidget(self.table_classes  [-1])
 		splitter.addWidget(self.table_functions[-1])
 		splitter.addWidget(self.table_variables[-1])
-		self.tabs.addTab(splitter, f"[{i}] - ({title.split()[1]})")
+		self.tabs.addTab(splitter, f"[{i}] - ({title_id})")
 
 		try:
 			lexer = CompiscriptLexer(InputStream(code))
@@ -115,6 +118,12 @@ class Tester(QMainWindow):
 			visitor = Semantic_Analyzer(self.log, self.table_functions[-1], self.table_variables[-1], self.table_classes[-1], parser)
 			visitor.visit(tree)
 
+			if RENDER_TREES: 
+				if not os.path.exists("./Output/Tests"):
+					os.makedirs("Output/Tests")
+				visitor.nodeTree(tree)
+				visitor.graph.render(f"Syntax-Graph[{i}]-({title_id})","./Output/Tests", False, True, "png")
+
 			self.table_classes  [-1].resizeColumnsToContents()
 			self.table_functions[-1].resizeColumnsToContents()
 			self.table_variables[-1].resizeColumnsToContents()
@@ -122,8 +131,7 @@ class Tester(QMainWindow):
 			return tree.toStringTree(recog=parser)
 
 		except Exception as e:
-			raise Exception(str(e))
-
+			raise e
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./RobotoMono-Medium.ttf")
