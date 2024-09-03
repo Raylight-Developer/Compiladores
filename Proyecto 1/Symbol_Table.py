@@ -38,7 +38,7 @@ class Symbol_Table(QTableWidget):
 		if self.type == "Var":
 			self.columns = ["ID", "Type", "Size", "Offset", "Scope", "Code"]
 		elif self.type == "Fun":
-			self.columns = ["ID", "Parameters", "Return Type"]
+			self.columns = ["ID", "Parameters", "Return Type", "Code"]
 		elif self.type == "Cla":
 			self.columns = ["ID", "Size", "Attributes", "Inherits", "Methods"]
 
@@ -66,6 +66,7 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row, 0, QTableWidgetItem(str(value.id)))
 			self.setItem(row, 1, QTableWidgetItem(str(value.parameters)))
 			self.setItem(row, 2, QTableWidgetItem(str(value.return_type)))
+			self.setItem(row, 3, QTableWidgetItem(str(value.value)))
 		elif self.type == "Cla":
 			self.setItem(row, 0, QTableWidgetItem(str(value.id)))
 			self.setItem(row, 1, QTableWidgetItem(str(value.size)))

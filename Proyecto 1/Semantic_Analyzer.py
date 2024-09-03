@@ -127,13 +127,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Registrar la función
 		self.declared_functions.add(fun_name)
 
-		function_body = str(ctx.function().getText())
-		print(function_body)
+		function_body = ctx.function().block().getText()
 
 		# Crear los datos del símbolo de la función
 		symbol_data = Symbol_Property()
 		symbol_data.id = fun_name                      # ID
 		symbol_data.type = "function"                  # Tipo
+		symbol_data.value = function_body
 		symbol_data.parameters = ", ".join(parametros)
 		if "return" in function_body:
 			symbol_data.return_type = "unknown"
@@ -352,6 +352,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				print_function.id = "if"
 				print_function.parameters = "boolean"  # 'any', ya que acepta cualquier cosa
 				print_function.return_type = "None"
+				print_function.value = str(condition_value)
 				
 				# Agregar a la tabla de funciones
 				self.table_functions.add(print_function)
@@ -414,6 +415,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				print_function.id = "print"
 				print_function.parameters = "any"
 				print_function.return_type = "void"
+				print_function.value = "print()"
 				# Agregarlo a la tabla de funciones
 				self.table_functions.add(print_function)
 				# Marcar 'print' como declarada
@@ -455,6 +457,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				while_function.id = "while"
 				while_function.parameters = "boolean"  # 'boolean', ya que la condición debe ser booleana
 				while_function.return_type = "None"
+				while_function.value = str(condition_value)
 				
 				# Agregar a la tabla de funciones
 				self.table_functions.add(while_function)
