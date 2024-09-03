@@ -18,7 +18,7 @@ def getSmallCode():
 var resta = 5 - 3;
 var producto = 4 * 2;
 var division = 8 / 2;
-""", 0, 0, 0
+""", 0, 0, 4
 ),
 (
 	"# 5.9 Comparaciones",
@@ -27,7 +27,7 @@ var division = 8 / 2;
 var mayorIgual = 10 >= 10; // true
 var igual = 1 == 1; // true
 var diferente = " a " != " b " ; // true
-""", 0, 0, 0
+""", 0, 0, 4
 ),
 (
 	"# 5.10 Logicos",
@@ -35,7 +35,7 @@ var diferente = " a " != " b " ; // true
 """var y = true and false ; // false
 var o = true or false ; // true
 var no = ! true ; // false
-""", 0, 0, 0
+""", 0, 0, 3
 ),
 (
 	"# 5.11 Precedencia y agrupamiento",
@@ -43,7 +43,7 @@ var no = ! true ; // false
 """var min = 0;
 var max = 10;
 var promedio = ( min + max ) / 2;
-""", 0, 0, 0
+""", 0, 0, 3
 ),
 (
 	"# 6.2 Declaraciones de Impresion",
@@ -58,7 +58,7 @@ var promedio = ( min + max ) / 2;
 	var a = " dentro del bloque " ;
 	print a ;
 }
-""", 0, 0, 0
+""", 0, 0, 1
 ),
 (
 	"# 6.4 Declaraciones de Control de Flujo",
@@ -78,14 +78,14 @@ while ( condicion ) {
 for ( var i = 0; i < 10; i = i + 1) {
 	print i ;
 }
-""", 0, 0, 0
+""", 0, 4, 1
 ),
 (
 	"# 6.5 Declaraciones de Variables",
 	True,
 """var nombre = " Compiscript " ;
 var edad ;
-""", 0, 0, 0
+""", 0, 0, 2
 ),
 (
 	"# 6.6 Declaraciones de Funciones",
@@ -93,15 +93,14 @@ var edad ;
 """fun saludar ( nombre ) {
 	print " Hola, " + nombre ;
 }
-""", 0, 0, 0
+""", 0, 1, 1
 ),
 (
 	"# 7.1 Declaracion y Asignacion",
 	True,
-"""
-var nombre ;
+"""var nombre;
 var edad = 25;
-""", 0, 0, 0
+""", 0, 0, 2
 ),
 (
 	"# 7.2 Ambito de las Variables",
@@ -111,7 +110,7 @@ var a = " dentro del bloque " ;
 	print a ; // Imprime : dentro del bloque
 }
 print a ; // Error : a no esta definida
-""", 0, 0, 0
+""", 0, 0, 1
 ),
 (
 	"# 7.3 Variables Globales y Locales",
@@ -119,14 +118,14 @@ print a ; // Error : a no esta definida
 """
 var globalVar = " soy global";
 fun miFuncion () {
-var localVar = " soy local";
+	var localVar = " soy local";
 	print globalVar; // Acceso permitido
 	print localVar; // Acceso permitido
 }
 miFuncion ();
 print globalVar; // Acceso permitido
 print localVar; // Error : localVar no esta definida
-""", 0, 0, 0
+""", 0, 1, 2
 ),
 (
 	"# 7.4 Inicializacion Tardia",
@@ -135,7 +134,7 @@ print localVar; // Error : localVar no esta definida
 var miVariable;
 miVariable = " Ahora tengo un valor ";
 print miVariable ; // Imprime : Ahora tengo un valor
-""", 0, 0, 0
+""", 0, 0, 1
 ),
 (
 	"# 7.5 Variables Constantes",
@@ -147,7 +146,7 @@ print miVariable ; // Imprime : Ahora tengo un valor
 var constante = obtenerConstante ();
 print constante ; // Imprime : No modificar
 // constante = " Intento de modificacion " ; // Error intencional
-""", 0, 0, 0
+""", 0, 1, 1
 ),
 (
 	"# 8.1 Declaraciones if",
@@ -160,7 +159,7 @@ if ( condicion ) {
 else {
 	// Codigo si la condicion es falsa
 }
-""", 0, 0, 0
+""", 0, 2, 1
 ),
 (
 	"# 8.2 Declaraciones while",
@@ -170,7 +169,7 @@ var condicion = true;
 while ( condicion ) {
 	// Codigo a ejecutar mientras la condicion sea verdadera
 }
-""", 0, 0, 0
+""", 0, 1, 1
 ),
 (
 	"# 8.3 Declaraciones for",
@@ -178,7 +177,7 @@ while ( condicion ) {
 """for ( var i = 0; i < 10; i = i + 1) {
 	// Codigo a ejecutar en cada iteracion
 }
-""", 0, 0, 0
+""", 0, 1, 1
 ),
 (
 	"# 8.4 Declaraciones break y continue",
@@ -198,7 +197,7 @@ for ( var i = 0; i < 10; i = i + 1) {
 	}
 	print i ; // Solo imprime numeros impares
 }
-""", 0, 0, 0
+""", 0, 4, 2
 ),
 (
 	"# 8.5 Declaraciones return",
@@ -206,7 +205,7 @@ for ( var i = 0; i < 10; i = i + 1) {
 """fun suma (a, b) {
 	return a + b;
 }
-""", 0, 0, 0
+""", 0, 1, 2
 ),
 (
 	"# 9.0 Funciones",
@@ -215,7 +214,7 @@ for ( var i = 0; i < 10; i = i + 1) {
 	print " Hola, " + nombre ;
 }
 saludo ( " Compiscript " ) ;
-""", 0, 0, 0
+""", 0, 1, 0
 ),
 (
 	"# 9.2 Captura de Variables",
@@ -231,7 +230,7 @@ saludo ( " Compiscript " ) ;
 var contador = hacerContador () ;
 contador () ; // "1".
 contador () ; // "2".
-""", 0, 0, 0
+""", 0, 1, 2
 ),
 (
 	"# 9.4 Almacenamiento de Variables Capturadas",
@@ -244,7 +243,7 @@ contador () ; // "2".
 var suma5 = crearSumador (5) ;
 print suma5 (10) ; // "15".
 print suma5 (20) ; // "25".
-""", 0, 0, 0
+""", 0, 2, 3
 ),
 (
 	"# 10.1 Ejemplo de Captura Tardia",
@@ -263,7 +262,7 @@ var misFunciones = hacerFunciones () ;
 misFunciones [0]() ; // "3".
 misFunciones [1]() ; // "3".
 misFunciones [2]() ; // "3".
-""", 0, 0, 0
+""", 0, 3, 4
 ),
 (
 	"# 10.2	Uso Practico de las Closures",
@@ -278,7 +277,7 @@ misFunciones [2]() ; // "3".
 var contar = crearContador () ;
 print contar () ; // "1".
 print contar () ; // "2".
-""", 0, 0, 0
+""", 0, 2, 2
 ),
 (
 	"# 11.1 Definicion de Clases",
@@ -288,7 +287,7 @@ print contar () ; // "2".
 		print " Hola , mundo ! " ;
 	}
 }
-""", 0, 0, 0
+""", 1, 1, 0
 ),
 (
 	"# 11.2 Instanciacion de Clases",
@@ -300,7 +299,7 @@ print contar () ; // "2".
 }
 var juan = new Persona () ;
 juan.decirHola () ; // Salida : Hola , mundo !
-""", 0, 0, 0
+""", 1, 1, 1
 ),
 (
 	"# 11.4 Inicializadores",
@@ -315,7 +314,7 @@ juan.decirHola () ; // Salida : Hola , mundo !
 }
 var juan = new Persona ( " Juan " ) ;
 juan.decirNombre () ; // Salida : Juan
-""", 0, 0, 0
+""", 1, 2, 3
 ),
 (
 	"# 11.5 Campos de Instancia",
@@ -331,7 +330,7 @@ juan.decirNombre () ; // Salida : Juan
 }
 var maria = new Persona ( " Maria " , 30) ;
 maria.presentar () ; // Salida : Maria tiene 30 anios .
-""", 0, 0, 0
+""", 1, 2, 5
 ),
 (
 	"# 11.6 Herencia",
@@ -355,6 +354,6 @@ class Estudiante extends Persona {
 }
 var ana = new Estudiante ( " Ana " , " tercer grado " ) ;
 ana.decirGrado () ; // Salida : Ana esta en tercer grado .
-""", 0, 0, 0
+""", 2, 0, 7
 )
 	]

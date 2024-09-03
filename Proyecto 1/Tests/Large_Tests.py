@@ -3,11 +3,11 @@ def getFullCode():
 (
 	"# 12.1 Suma Simple",
 	True,
-"""fun suma (a , b ) {
+"""fun suma (a , b) {
 	return a + b ;
 }
 print suma (3 , 4) ; // Salida : 7
-""", 0, 0, 0
+""", 0, 1, 2
 ),
 (
 	"# 12.2 Bucle y Condicionales",
@@ -23,7 +23,7 @@ for ( var i = 1; i <= 10; i = i + 1) {
 		print i + " es impar " ;
 	}
 }
-""", 0, 0, 0
+""", 0, 4, 2
 ),
 (
 	"# 12.3 Sistema de Clases y Herencia",

@@ -57,15 +57,15 @@ class Tester(QMainWindow):
 				self.log.append(f"{G}Compilation Succesful{RESET}<br>")
 				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {resultado}\n")
 				self.succeses += 1
-				self.title_succeses.append((i, title))
+				self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
 			except Exception as e:
 				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {e}\n")
 				if should_pass == False:
 					self.succeses += 1
-					self.title_succeses.append((i, title))
+					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{G}Compilation ''Succesful''{RESET}{Y}(Should fail and did fail){RESET}" + " {")
 				else:
-					self.title_failures.append((i, title))
+					self.title_failures.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{R}Compilation Failed{RESET}" + " {")
 
 				self.log.append(f"{e}", 1)
@@ -82,7 +82,7 @@ class Tester(QMainWindow):
 		self.log.append(f"{G}PASSED:{RESET} {self.succeses}")
 		self.log.append(f"{R}FAILED:{RESET} {len(self.code) - self.succeses}")
 		self.log.append("Passed:")
-		for (i, title) in self.title_succeses:
+		for (i, title, expected_classes, expected_functions, expected_variables) in self.title_succeses:
 			existing_classes   = self.tabs.widget(i + 1).widget(1).layout().itemAt(1).widget().rowCount()
 			existing_functions = self.tabs.widget(i + 1).widget(2).layout().itemAt(1).widget().rowCount()
 			existing_variables = self.tabs.widget(i + 1).widget(3).layout().itemAt(1).widget().rowCount()
@@ -92,7 +92,7 @@ class Tester(QMainWindow):
 			self.log.append(f"{title}", 1)
 			self.log.append(f"Cla[{existing_classes} {expected_classes}] | Fun[{existing_functions} {expected_functions}] | Var[{existing_variables} {expected_variables}]", 6)
 		self.log.append("Failed:")
-		for (i, title) in self.title_failures:
+		for (i, title, expected_classes, expected_functions, expected_variables) in self.title_failures:
 			existing_classes   = self.tabs.widget(i + 1).widget(1).layout().itemAt(1).widget().rowCount()
 			existing_functions = self.tabs.widget(i + 1).widget(2).layout().itemAt(1).widget().rowCount()
 			existing_variables = self.tabs.widget(i + 1).widget(3).layout().itemAt(1).widget().rowCount()
