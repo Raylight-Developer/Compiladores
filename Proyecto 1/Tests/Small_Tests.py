@@ -247,7 +247,7 @@ print suma5 (20) ; // "25".
 """,
 ),
 (
-	"# 10.1 Ejemplo de Captura Tard ́ıa",
+	"# 10.1 Ejemplo de Captura Tardia",
 	True,
 """fun hacerFunciones () {
 	var funciones = [];

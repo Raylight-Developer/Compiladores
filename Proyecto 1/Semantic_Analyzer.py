@@ -287,10 +287,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if isinstance(condition_value, tuple):
 			if not isinstance(condition_value[0], bool):
 				raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
-		elif not isinstance(condition_value, bool):		
-		# Verificar que la condición sea de tipo booleano
-
-			raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+		#elif not isinstance(condition_value, bool):
+		#	raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 				# Obtener la info del nodo
 		# En caso de tener un print, procesarlo
 		if "if" in text:
@@ -394,9 +392,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if isinstance(condition_value, tuple):
 			if not isinstance(condition_value[0], bool):
 				raise TypeError(f"Error: La condición en 'while' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
-		elif not isinstance(condition_value, bool):		
-		# Verificar que la condición sea de tipo booleano
-			raise TypeError(f"Error: La condición en 'while' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+		#elif not isinstance(condition_value, bool):
+		#	raise TypeError(f"Error: La condición en 'while' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 		
 		# Verificar si la función 'while' ya ha sido declarada (este bloque parece innecesario pero lo dejo por si lo necesitas)
 		if "while" in text:
@@ -600,8 +597,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			value2 = self.try_cast(data[1])
 		
 		print(f"VALORES: {value1}, {value2}, {type(value1)}")
-		
-		
 
 		comparison_operations = {
 			"==": lambda x, y: x == y,
