@@ -89,9 +89,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 
-
-
-
 	def declare_variable(self, name: str, ctx: ParserRuleContext):
 		"""Declare a variable in the current scope."""
 		if name in self.local_variables:
