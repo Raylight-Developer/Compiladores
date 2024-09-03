@@ -33,6 +33,22 @@ The [Main](Main.py) file contains the GUI initialization. The GUI itself contain
 
 On compilation, the code will be submitted and preprocessed with the [Compiscript Lexer](CompiscriptLexer.py), which then passes through the [Compiscript Parser](CompiscriptParser.py) to generate the [Syntax Tree](Output/Syntax-Graph.png). This Syntax Tree then passes to the [Semantic Analyzer](Semantic_Analyzer.py) which visits every node, generating all the aformentioned data to finally be displayed on the GUI.
 
+The [Semantic Analyzer](Semantic_Analyzer.py)
+``` python
+inside_loop: bool # To Track Scope
+inside_block_fun_if: bool # To Track Scope
+
+global_variables: Dict[str, ParserRuleContext] # To Track Scopes
+local_variables: Dict[str, ParserRuleContext] # To Track Scopes
+declared_functions: Set[str] # To Track Functions
+
+table_functions : Symbol_Table  # To Add Symbols and also track current scope
+table_variables : Symbol_Table  # To Add Symbols and also track current scope
+table_classes   : Symbol_Table  # To Add Symbols and also track current scope
+
+log = log                       # To log and debug
+```
+
 # CompiScript and Semantic Analisis Examples
 For all examples, Run:
 * `python Test.py`

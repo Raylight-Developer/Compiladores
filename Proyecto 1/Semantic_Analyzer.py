@@ -70,10 +70,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		except: # No tiene Parametros
 			parametros = []
 		# self.log.debug(f"PARAMETAIOSJDF {parametros}")
-		print(f"PAMAREOSIAF: {parametros}")
 		params = ctx.function().parameters()
-		
-		print(f"PARAMETROS: {params}")
+
 		if params:
 			for param in params.IDENTIFIER():
 				self.declare_variable(param.getText(), param)
