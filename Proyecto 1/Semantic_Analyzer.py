@@ -39,6 +39,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitClassDecl(self, ctx:CompiscriptParser.ClassDeclContext):
 		return self.visitChildren(ctx)
 
+
 	def declare_variable(self, name: str, ctx: ParserRuleContext):
 		"""Declare a variable in the current scope."""
 		if name in self.local_variables:
@@ -65,8 +66,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Obtencion de los parametros
 		try:
 			parametros = [param.getText() for param in ctx.function().parameters().IDENTIFIER()]
-		except:
-			parametros = [param.getText() for param in ctx.function().parameters()]
+		except: # No tiene Parametros
+			parametros = []
 		# self.log.debug(f"PARAMETAIOSJDF {parametros}")
 
 		params = ctx.function().parameters()
@@ -495,18 +496,21 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 			current_scope_vars = self.variables_scope.get(self.current_scope)
 			self.log.debug(current_scope_vars)
-			if var_name not in current_scope_vars:
-				raise Exception(f"Error: La variable '{var_name}' no esta en el scope actual.")
+			try:
+				if var_name not in current_scope_vars:
+					raise Exception(f"Error: La variable '{var_name}' no esta en el scope actual.")
+				if ctx.assignment() is not None:
+					# Visita la expresión a la derecha del '='
+					value = self.visit(ctx.assignment())
+				elif ctx.logic_or() is not None:
+					# Visita la lógica "or" si está presente
+					value = self.visit(ctx.logic_or())
 
-			if ctx.assignment() is not None:
-				# Visita la expresión a la derecha del '='
-				value = self.visit(ctx.assignment())
-			elif ctx.logic_or() is not None:
-				# Visita la lógica "or" si está presente
-				value = self.visit(ctx.logic_or())
+				current_scope_vars[var_name]['value'] = value
+				self.variables_scope[self.current_scope] = current_scope_vars
+			except:
+				self.log.debug(f"{var_name} Has No Parameters")
 
-			current_scope_vars[var_name]['value'] = value
-			self.variables_scope[self.current_scope] = current_scope_vars
 		return self.visitChildren(ctx)
 
 
