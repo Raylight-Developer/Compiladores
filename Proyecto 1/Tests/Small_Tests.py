@@ -14,10 +14,10 @@ def getSmallCode():
 (
 	"# 5.8 Artimeticas",
 	True,
-"""var suma = 1 + 2;
+"""var; suma = 1 + 2;
 var resta = 5 - 3;
-var producto = 4 * 2;
-var division = 8 / 2;
+var producto = 4; * 2;
+var divis;ion = 8 / 2;;;;;;;
 """, 0, 0, 4
 ),
 (
