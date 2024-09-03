@@ -28,8 +28,7 @@ class Logger(QTextBrowser):
 	def debug(self, value: str):
 		if self.should_debug:
 			self.append("\t" + str(value))
-		else:
-			self.debug_output.append(str(value))
+		self.debug_output.append(str(value))
 
 class Test_Logger(QScrollArea):
 	def __init__(self, debug: bool = True, parent: QWidget = None):
@@ -51,8 +50,7 @@ class Test_Logger(QScrollArea):
 			Text.append(str(value))
 			Text.setStyleSheet(f"padding-left: {5 + indent * 40}px")
 			self.contents.addWidget(Text)
-		else:
-			self.debug_output.append(str(value))
+		self.debug_output.append(str(value))
 
 	def append(self, value:str, indent: int = 0):
 		Text = Viewer()
