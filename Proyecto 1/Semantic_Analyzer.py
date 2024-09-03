@@ -63,7 +63,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if fun_name in self.declared_functions:
 			raise Exception(f"Error: Función '{fun_name}' ya declarada.")
 		# Obtencion de los parametros
-		parametros = [param.getText() for param in ctx.function().parameters().IDENTIFIER()] 
+		try:
+			parametros = [param.getText() for param in ctx.function().parameters().IDENTIFIER()]
+		except:
+			parametros = [param.getText() for param in ctx.function().parameters()]
 		# print(f"PARAMETAIOSJDF {parametros}")
 
 		params = ctx.function().parameters()
@@ -489,6 +492,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if ctx.IDENTIFIER() is not None:
 			var_name = str(ctx.IDENTIFIER())
 			self.log.debug(f"VARNAME: {var_name}")
+			print(f"ASSIGN VARNAME: {var_name}")
 
 			current_scope_vars = self.variables_scope.get(self.current_scope)
 			self.log.debug(current_scope_vars)

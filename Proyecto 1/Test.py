@@ -91,9 +91,9 @@ class Tester(QMainWindow):
 
 	def on_tab_changed(self):
 		if self.tabs.currentIndex() != 0:
-			self.tabs.currentWidget().widget(0).layout().itemAt(1).widget().resizeColumnsToContents()
 			self.tabs.currentWidget().widget(1).layout().itemAt(1).widget().resizeColumnsToContents()
 			self.tabs.currentWidget().widget(2).layout().itemAt(1).widget().resizeColumnsToContents()
+			self.tabs.currentWidget().widget(3).layout().itemAt(1).widget().resizeColumnsToContents()
 
 	def compile(self, i: int, code: str, title_id: str) -> str:
 		self.table_functions.append(Symbol_Table(self.log, "Fun"))
@@ -118,7 +118,13 @@ class Tester(QMainWindow):
 		l3.addWidget(self.table_variables[-1])
 		w3.setLayout(l3)
 
+		Text = QTextBrowser()
+		Text.setTabStopDistance(40)
+		Syntax_Highlighter(Text.document())
+		Text.append(code)
+
 		splitter = QSplitter()
+		splitter.addWidget(Text)
 		splitter.addWidget(w1)
 		splitter.addWidget(w2)
 		splitter.addWidget(w3)
