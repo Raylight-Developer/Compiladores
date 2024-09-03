@@ -127,13 +127,18 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Registrar la función
 		self.declared_functions.add(fun_name)
 
+		function_body = str(ctx.function().getText())
+		print(function_body)
 
 		# Crear los datos del símbolo de la función
 		symbol_data = Symbol_Property()
 		symbol_data.id = fun_name                      # ID
 		symbol_data.type = "function"                  # Tipo
 		symbol_data.parameters = ", ".join(parametros)
-		symbol_data.return_type = "void"
+		if "return" in function_body:
+			symbol_data.return_type = "unknown"
+		else:
+			symbol_data.return_type = "void"
 		# Agregar a la tabla de funciones
 		self.table_functions.add(symbol_data)
 
@@ -259,12 +264,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		text = ctx.getText().strip()
-		test = ctx.getText()
-		# self.log.debug(f"HAY BREAK {text}")
-
-		# if test[0] == "{" and test[1] == "}":
-		# 	raise Exception("Error: La declaracion if no tiene cuerpo")
-		
 		# Detectar 'break'
 		if text == "break;":
 			if not self.inside_loop:
@@ -352,7 +351,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				print_function = Symbol_Property()
 				print_function.id = "if"
 				print_function.parameters = "boolean"  # 'any', ya que acepta cualquier cosa
-				print_function.return_type = "void"
+				print_function.return_type = "None"
 				
 				# Agregar a la tabla de funciones
 				self.table_functions.add(print_function)
@@ -455,7 +454,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				while_function = Symbol_Property()
 				while_function.id = "while"
 				while_function.parameters = "boolean"  # 'boolean', ya que la condición debe ser booleana
-				while_function.return_type = "void"
+				while_function.return_type = "None"
 				
 				# Agregar a la tabla de funciones
 				self.table_functions.add(while_function)
