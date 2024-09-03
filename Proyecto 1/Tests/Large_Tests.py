@@ -60,7 +60,7 @@ while ( juan.edad < 25) {
 	juan.edad = juan.edad + 1;
 	print " Edad de Juan : " + juan.edad ;
 }
-""", 0, 0, 0
+""", 2, 8, 10
 ),
 (
 	"# 12.4 Funcion Recursiva",
@@ -75,6 +75,6 @@ fun fibonacci ( n ) {
 	return fibonacci ( n - 1) + fibonacci ( n - 2) ;
 }
 print " Fibonacci de 10: " + fibonacci (10) ; // Salida : Fibonacci de 10: 55
-""", 0, 0, 0
+""", 0, 4, 1
 )
 	]
