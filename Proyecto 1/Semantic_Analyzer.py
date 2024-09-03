@@ -42,7 +42,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def declare_variable(self, name: str, ctx: ParserRuleContext):
 		"""Declare a variable in the current scope."""
 		if name in self.local_variables:
-			self.log.error(f"Variable '{name}' is already declared in the current scope.")
+			self.log.debug(f"Variable '{name}' is already declared in the current scope.")
 		self.local_variables[name] = ctx
 
 	def validacion_numeros_mediante_casteo(self, data):
@@ -586,17 +586,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		
 
 	def compare_values(self, data, operator):
-		value1, value2 = "",""
-		if data[0] in self.variables_scope[self.current_scope]:
-			value1 = self.variables_scope[self.current_scope][data[0]]["value"]
-		else:
-			value1 = self.try_cast(data[0])
-		if data[1] in self.variables_scope[self.current_scope]:
-			value2 = self.variables_scope[self.current_scope][data[2]]["value"]		
-		else:
-			value2 = self.try_cast(data[1])
-		
-		print(f"VALORES: {value1}, {value2}, {type(value1)}")
+		value1 = data[0]
+		value2 = data[1]
 
 		comparison_operations = {
 			"==": lambda x, y: x == y,
