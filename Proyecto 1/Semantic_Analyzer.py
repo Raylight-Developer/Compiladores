@@ -547,72 +547,49 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	
 	def visitEquality(self, ctx: CompiscriptParser.EqualityContext):
+		return ctx.getText()
 		text = ctx.getText()
 		data = []
 		if "==" in text:
 			data = text.split("==")
 			self.log.debug(f"Datos después del split por '==': {data}")
-			data = self.depuracion_elemntos_con_detalles_extra(data)
 			return self.compare_values(data, "==")
 		elif "!=" in text:
 			data = text.split("!=")
 			self.log.debug(f"Datos después del split por '!=': {data}")
-			data = self.depuracion_elemntos_con_detalles_extra(data)
 			return self.compare_values(data, "!=")
 		else:
 			return self.visitChildren(ctx)
 
 
 	def visitComparison(self, ctx: CompiscriptParser.ComparisonContext):
+		return ctx.getText()
 		text = ctx.getText()
 		data = []
 		if "<=" in text:
 			data = text.split("<=")
 			self.log.debug(f"Datos después del split por '<=': {data}")
-			data = self.depuracion_elemntos_con_detalles_extra(data)
 			return self.compare_values(data, "<=")
 		elif ">=" in text:
 			data = text.split(">=")
 			self.log.debug(f"Datos después del split por '>=': {data}")
-			data = self.depuracion_elemntos_con_detalles_extra(data)
 			return self.compare_values(data, ">=")
 		elif ">" in text:
 			data = text.split(">")
 			self.log.debug(f"Datos después del split por '>': {data}")
-			data = self.depuracion_elemntos_con_detalles_extra(data)
 			return self.compare_values(data, ">")
 		elif "<" in text:
 			data = text.split("<")
 			self.log.debug(f"Datos después del split por '<': {data}")
-			data = self.depuracion_elemntos_con_detalles_extra(data)
 			return self.compare_values(data, "<")
 		else:
 			return self.visitChildren(ctx)
 		
 
-	def try_cast(self,value):
-		stripped_value = value.strip()
-		
-		# Intentar convertir a int
-		try:
-			return int(stripped_value)
-		except ValueError:
-			pass
-		
-		# Intentar convertir a float
-		try:
-			return float(stripped_value)
-		except ValueError:
-			pass
-		
-		# Si no es ni int ni float, devolver la cadena tal cual
-		return stripped_value
-
-
 	def compare_values(self, data, operator):
-		value1 = self.try_cast(data[0])
-		value2 = self.try_cast(data[1])
-		
+		value1 = data[0]
+		value2 = data[1]
+
 		comparison_operations = {
 			"==": lambda x, y: x == y,
 			"!=": lambda x, y: x != y,
@@ -622,17 +599,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			"<=": lambda x, y: x <= y
 		}
 
+		#if value1 in self.global_variables or value1 in self.local_variables:
+		#	if value2 in self.global_variables or value2 in self.local_variables:
+
 		# Manejar booleanos (caso especial)
 		if isinstance(value1, str) and value1.lower() in ["true", "false"]:
 			value1 = value1.lower() == "true"
 		if isinstance(value2, str) and value2.lower() in ["true", "false"]:
 			value2 = value2.lower() == "true"
-		
-		# Verificar tipos y hacer la comparación
-		if isinstance(value1, (int, float, bool)) and isinstance(value2, (int, float, bool)):
-			return comparison_operations[operator](value1, value2)
 
-		if is_num(value1) and is_num(value2):
+		if (is_num(value1) and is_num(value2)) or (is_bool(value1) and is_bool(value2)):
 			return comparison_operations[operator](value1, value2)
 
 		# Comparar cadenas solo con `==` y `!=`
@@ -641,13 +617,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		raise TypeError(f"No se pueden comparar valores de tipos diferentes para [{value1}] y [{value2}]: {type(value1).__name__} y {type(value2).__name__}")
 
-
-	def depuracion_elemntos_con_detalles_extra(self, data):
-		data[0] = data[0].strip('()')
-		data[1] = data[1].strip('()')
-		self.log.debug(f"Datos después de eliminar paréntesis: {data}")
-		return data
-	
 
 	def visitTerm(self, ctx: CompiscriptParser.TermContext):
 		if ctx.getChildCount() == 1:

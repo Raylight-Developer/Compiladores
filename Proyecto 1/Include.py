@@ -34,3 +34,10 @@ def is_num(value: str):
 		return True
 	except:
 		return False
+
+def is_bool(value: str):
+	try:
+		bool(value)
+		return True
+	except:
+		return False
