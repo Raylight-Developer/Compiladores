@@ -46,13 +46,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.local_variables[name] = ctx
 
 	def validacion_numeros_mediante_casteo(self, data):
-		# print(f"Datos antes de depurar: {data}")
+		# self.log.debug(f"Datos antes de depurar: {data}")
 		try:
 			int(data[0].strip())
 			int(data[1].strip())
 		except TypeError:
 			raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(data[0]).__name__} y {type(data[1]).__name__}")
-		# print(f"Datos después de depurar: {data}")
+		# self.log.debug(f"Datos después de depurar: {data}")
 
 
 	def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
@@ -67,7 +67,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			parametros = [param.getText() for param in ctx.function().parameters().IDENTIFIER()]
 		except:
 			parametros = [param.getText() for param in ctx.function().parameters()]
-		# print(f"PARAMETAIOSJDF {parametros}")
+		# self.log.debug(f"PARAMETAIOSJDF {parametros}")
 
 		params = ctx.function().parameters()
 		if params:
@@ -113,7 +113,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		is_local_scope = len(self.table_variables.scopes) > 1
 		current_scope_id = self.current_scope if is_local_scope else "global_0"
 		
-		# print(f"ATENTO: {current_scope_id, self.current_scope, is_local_scope}")
+		# self.log.debug(f"ATENTO: {current_scope_id, self.current_scope, is_local_scope}")
 		if current_scope_id == '':
 			current_scope_id = "global_0"
 
@@ -152,7 +152,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			property.scope = "local" if is_local_scope else "global"
 			property.value = arreglo
 			property.type = var_type
-			# print(f"DEBERIA ENVIARSE {property.value}")
+			# self.log.debug(f"DEBERIA ENVIARSE {property.value}")
 		else:
 		# Crea la propiedad de la variable y la agrega a la tabla de símbolos
 			property.id = var_name
@@ -173,7 +173,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Visita la expresión asociada si existe
 		# if ctx.expression():
 		# 	expression_value = self.visit(ctx.expression())
-		# 	print(f"Value of the expression assigned to {var_name}: {expression_value}")
+		# 	self.log.debug(f"Value of the expression assigned to {var_name}: {expression_value}")
 
 		return node_id
 
@@ -209,7 +209,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		text = ctx.getText().strip()
 		test = ctx.getText()
-		# print(f"HAY BREAK {text}")
+		# self.log.debug(f"HAY BREAK {text}")
 
 		# if test[0] == "{" and test[1] == "}":
 		# 	raise Exception("Error: La declaracion if no tiene cuerpo")
@@ -492,7 +492,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if ctx.IDENTIFIER() is not None:
 			var_name = str(ctx.IDENTIFIER())
 			self.log.debug(f"VARNAME: {var_name}")
-			print(f"ASSIGN VARNAME: {var_name}")
 
 			current_scope_vars = self.variables_scope.get(self.current_scope)
 			self.log.debug(current_scope_vars)
@@ -708,7 +707,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitCall(self, ctx: CompiscriptParser.CallContext):
 		# function_name = ctx.primary().IDENTIFIER().getText()
-		# # print(function_name)
+		# # self.log.debug(function_name)
 		
 		# # Verificar si la función ha sido declarada
 		# if function_name not in self.declared_functions:
@@ -759,7 +758,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Continúa la visita del cuerpo de la función
 		# function_name = ctx.IDENTIFIER().getText()
 		# parameters = self.visit(ctx.parameters())
-		# print(f"Function: {function_name}, Parameters: {parameters}")
+		# self.log.debug(f"Function: {function_name}, Parameters: {parameters}")
 		return self.visitChildren(ctx)
 
 	# Visit a parse tree produced by CompiscriptParser#parameters.
@@ -767,7 +766,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# ctx.IDENTIFIER() devuelve una lista de nodos de identificadores.
 		# Extraer el texto de cada uno para obtener los nombres de los parámetros.
 		parameters = [param.getText() for param in ctx.IDENTIFIER()]
-		# print(f"OBTENCION PARAMETROS {parameters}")
+		# self.log.debug(f"OBTENCION PARAMETROS {parameters}")
 		return parameters
 
 

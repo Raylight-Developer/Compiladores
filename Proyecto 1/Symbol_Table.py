@@ -35,7 +35,7 @@ class Symbol_Table(QTableWidget):
 		self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
 
 		if self.type == "Var":
-			self.columns = ["ID", "Type", "Size", "Offset", "Scope", "Value"]
+			self.columns = ["ID", "Type", "Size", "Offset", "Scope", "Code"]
 		elif self.type == "Fun":
 			self.columns = ["ID", "Parameters", "Return Type"]
 		elif self.type == "Cla":
