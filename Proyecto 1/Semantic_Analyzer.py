@@ -63,13 +63,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if fun_name in self.declared_functions:
 			raise Exception(f"Error: Función '{fun_name}' ya declarada.")
 		# Obtencion de los parametros
+		
 		try:
 			parametros = [param.getText() for param in ctx.function().parameters().IDENTIFIER()]
-		except:
+		except Exception:
 			parametros = [param.getText() for param in ctx.function().parameters()]
 		# self.log.debug(f"PARAMETAIOSJDF {parametros}")
-
+		print(f"PAMAREOSIAF: {parametros}")
 		params = ctx.function().parameters()
+		
+		print(f"PARAMETROS: {params}")
 		if params:
 			for param in params.IDENTIFIER():
 				self.declare_variable(param.getText(), param)
