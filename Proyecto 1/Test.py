@@ -88,16 +88,18 @@ class Tester(QMainWindow):
 			existing_functions = self.tabs.widget(i + 1).widget(2).layout().itemAt(1).widget().rowCount()
 			existing_variables = self.tabs.widget(i + 1).widget(3).layout().itemAt(1).widget().rowCount()
 			if existing_classes   == expected_classes and existing_functions == expected_functions and existing_variables == expected_variables:
-				Succeses.append((i, title, f"Cla[{existing_classes} == {expected_classes}] | Fun[{existing_functions} == {expected_functions}] | Var[{existing_variables} == {expected_variables}]"))
+				Succeses.append((i, title, f"[{existing_classes} == {expected_classes}] | [{existing_functions} == {expected_functions}] | [{existing_variables} == {expected_variables}]"))
 			else:
 				existing_classes   = G + str(existing_classes)   + RESET + " ==" if existing_classes   == expected_classes   else R + str(existing_classes)   + RESET + " !="
 				existing_functions = G + str(existing_functions) + RESET + " ==" if existing_functions == expected_functions else R + str(existing_functions) + RESET + " !="
 				existing_variables = G + str(existing_variables) + RESET + " ==" if existing_variables == expected_variables else R + str(existing_variables) + RESET + " !="
-				Failures.append((i, title, f"Cla[{existing_classes} {expected_classes}] | Fun[{existing_functions} {expected_functions}] | Var[{existing_variables} {expected_variables}]"))
+				Failures.append((i, title, f"[{existing_classes} {expected_classes}] | [{existing_functions} {expected_functions}] | [{existing_variables} {expected_variables}]"))
 
 		self.log.append(f"TESTS #: {len(self.code)}")
 		self.log.append(f"{G}PASSED#:{RESET} {len(Succeses)}")
 		self.log.append(f"{R}FAILED#:{RESET} {len(Failures)}")
+		self.log.append("[INDEX] - (NAME)")
+		self.log.append("[Output_Class_Symbol_Count    OPERATOR Expected_Class_Symbol_Count   ] | [Output_Function_Symbol_Count OPERATOR Expected_Function_Symbol_Count] | [Output_Variable_Symbol_Count OPERATOR Expected_Variable_Symbol_Count]", 1)
 		self.log.append("Passed:")
 		for (i, title, msg) in Succeses:
 			self.log.append(f"[{i}] - ({title})", 1)
