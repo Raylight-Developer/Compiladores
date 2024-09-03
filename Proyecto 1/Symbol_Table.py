@@ -21,6 +21,7 @@ class Symbol_Property:
 
 	attributes: str = ""
 	inherits: str = ""
+	methods: str = ""
 
 class Symbol_Table(QTableWidget):
 	def __init__(self, log: QTextBrowser, type: str):
@@ -39,7 +40,7 @@ class Symbol_Table(QTableWidget):
 		elif self.type == "Fun":
 			self.columns = ["ID", "Parameters", "Return Type"]
 		elif self.type == "Cla":
-			self.columns = ["ID", "Size", "Attributes", "Inherits"]
+			self.columns = ["ID", "Size", "Attributes", "Inherits", "Methods"]
 
 		self.setColumnCount(len(self.columns))
 		self.setRowCount(0)
@@ -70,6 +71,7 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row, 1, QTableWidgetItem(str(value.size)))
 			self.setItem(row, 2, QTableWidgetItem(str(value.attributes)))
 			self.setItem(row, 3, QTableWidgetItem(str(value.inherits)))
+			self.setItem(row, 4, QTableWidgetItem(str(value.methods)))
 
 	def addSingle(self, row: int, column: Union[int, str], value: str):
 		if self.rowCount() < row:

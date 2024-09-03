@@ -22,6 +22,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.current_scope = "global_0"
 		self.variables_scope = {}
+		self.declared_classes= {}
 
 		self.global_variables: Dict[str, ParserRuleContext] = {}
 		self.local_variables: Dict[str, ParserRuleContext] = {}
@@ -36,8 +37,59 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 
-	def visitClassDecl(self, ctx:CompiscriptParser.ClassDeclContext):
+	def visitClassDecl(self, ctx: CompiscriptParser.ClassDeclContext):
+		# Obtener el nombre de la clase
+		class_name = ctx.IDENTIFIER(0).getText()
+		
+		# Verificar si la clase ya está declarada
+		if class_name in self.declared_classes:
+			raise Exception(f"Error: Clase '{class_name}' ya declarada.")
+		
+		# Registrar la clase en la tabla de clases
+		self.declared_classes[class_name] = {"properties": {}, "methods": {}}
+		
+		# Verificar si la clase tiene una clase padre (herencia)
+		if ctx.IDENTIFIER(1):
+			parent_class = ctx.IDENTIFIER(1).getText()
+			# Verificar si la clase padre está declarada
+			if parent_class not in self.declared_classes:
+				raise Exception(f"Error: Clase padre '{parent_class}' no declarada.")
+		else:
+			parent_class = None
+		
+		# Crear los datos del símbolo de la clase
+		class_symbol = Symbol_Property()
+		class_symbol.id = class_name
+		class_symbol.type = "class"
+		class_symbol.parent = parent_class
+
+		# Inicializar la cadena de métodos
+		methods_str = []
+
+		# Visitar y registrar los métodos dentro de la clase
+		for method in ctx.function():
+			method_name = method.IDENTIFIER().getText()
+			
+			# Visitar el método para procesarlo
+			self.visit(method)
+			
+			# Guardar el método en el diccionario de métodos de la clase
+			self.declared_classes[class_name]["methods"][method_name] = method
+			
+			# Agregar el método a la cadena de métodos
+			methods_str.append(method_name)
+
+		# Asignar la cadena de métodos al símbolo de la clase
+		class_symbol.methods = ", ".join(methods_str)  # Unir los nombres de los métodos en una cadena
+
+		# Agregar la clase a la tabla de clases
+		self.table_classes.add(class_symbol)
+		
+		# Delegar al siguiente método (por si hay más cosas que procesar dentro de la clase)
 		return self.visitChildren(ctx)
+
+
+
 
 
 	def declare_variable(self, name: str, ctx: ParserRuleContext):
