@@ -249,9 +249,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if ctx.varDecl():  # Manejo de la declaración de variable dentro del for
 			self.visitVarDecl(ctx.varDecl())
 
+		
+
 		# Evaluar la condición
 		condition_value = self.visit(ctx.expression(0)) if ctx.expression(0) else True
-
+		self.log.debug(f"CONDICION VALUE: {condition_value}")
 		# while condition_value:
 		# 	# Ejecutar las oraciones dentro del for
 		# 	for stmt in ctx.statement():
@@ -610,9 +612,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 
 	def compare_values(self, data, operator):
-		value1 = self.try_cast(data[0])
-		value2 = self.try_cast(data[1])
+		value1, value2 = "",""
+		if data[0] in self.variables_scope[self.current_scope]:
+			value1 = self.variables_scope[self.current_scope][data[0]]["value"]
+		else:
+			value1 = self.try_cast(data[0])
+		if data[1] in self.variables_scope[self.current_scope]:
+			value2 = self.variables_scope[self.current_scope][data[2]]["value"]		
+		else:
+			value2 = self.try_cast(data[1])
 		
+		print(f"VALORES: {value1}, {value2}, {type(value1)}")
+		
+		
+
 		comparison_operations = {
 			"==": lambda x, y: x == y,
 			"!=": lambda x, y: x != y,
