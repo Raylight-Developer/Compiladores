@@ -78,29 +78,45 @@ class Tester(QMainWindow):
 			self.code_output.addSep()
 
 		self.log.append("<h2># Summary</h2>")
-		self.log.append(f"TESTS:  {len(self.code)}")
-		self.log.append(f"{G}PASSED:{RESET} {self.succeses}")
-		self.log.append(f"{R}FAILED:{RESET} {len(self.code) - self.succeses}")
+		
+		self.log.append("<h3>TABLE TESTS</h3>")
+
+		Succeses = []
+		Failures = []
+		for i, (title, should_pass, code, expected_classes, expected_functions, expected_variables) in enumerate(self.code):
+			existing_classes   = self.tabs.widget(i + 1).widget(1).layout().itemAt(1).widget().rowCount()
+			existing_functions = self.tabs.widget(i + 1).widget(2).layout().itemAt(1).widget().rowCount()
+			existing_variables = self.tabs.widget(i + 1).widget(3).layout().itemAt(1).widget().rowCount()
+			if existing_classes   == expected_classes and existing_functions == expected_functions and existing_variables == expected_variables:
+				Succeses.append((i, title, f"Cla[{existing_classes} == {expected_classes}] | Fun[{existing_functions} == {expected_functions}] | Var[{existing_variables} == {expected_variables}]"))
+			else:
+				existing_classes   = G + str(existing_classes)   + RESET + " ==" if existing_classes   == expected_classes   else R + str(existing_classes)   + RESET + " !="
+				existing_functions = G + str(existing_functions) + RESET + " ==" if existing_functions == expected_functions else R + str(existing_functions) + RESET + " !="
+				existing_variables = G + str(existing_variables) + RESET + " ==" if existing_variables == expected_variables else R + str(existing_variables) + RESET + " !="
+				Failures.append((i, title, f"Cla[{existing_classes} {expected_classes}] | Fun[{existing_functions} {expected_functions}] | Var[{existing_variables} {expected_variables}]"))
+
+		self.log.append(f"TESTS #: {len(self.code)}")
+		self.log.append(f"{G}PASSED#:{RESET} {len(Succeses)}")
+		self.log.append(f"{R}FAILED#:{RESET} {len(Failures)}")
+		self.log.append("Passed:")
+		for (i, title, msg) in Succeses:
+			self.log.append(f"[{i}] - ({title})", 1)
+			self.log.append(msg, 2)
+		self.log.append("Failed:")
+		for (i, title, msg) in Failures:
+			self.log.append(f"[{i}] - ({title})", 1)
+			self.log.append(msg, 2)
+
+		self.log.append("<h3>RUNTHROUGH TESTS</h3>")
+		self.log.append(f"TESTS #: {len(self.code)}")
+		self.log.append(f"{G}PASSED#:{RESET} {self.succeses}")
+		self.log.append(f"{R}FAILED#:{RESET} {len(self.code) - self.succeses}")
 		self.log.append("Passed:")
 		for (i, title, expected_classes, expected_functions, expected_variables) in self.title_succeses:
-			existing_classes   = self.tabs.widget(i + 1).widget(1).layout().itemAt(1).widget().rowCount()
-			existing_functions = self.tabs.widget(i + 1).widget(2).layout().itemAt(1).widget().rowCount()
-			existing_variables = self.tabs.widget(i + 1).widget(3).layout().itemAt(1).widget().rowCount()
-			existing_classes   = G + str(existing_classes)   + RESET + " ==" if existing_classes   == expected_classes   else R + str(existing_classes)   + RESET + " !="
-			existing_functions = G + str(existing_functions) + RESET + " ==" if existing_functions == expected_functions else R + str(existing_functions) + RESET + " !="
-			existing_variables = G + str(existing_variables) + RESET + " ==" if existing_variables == expected_variables else R + str(existing_variables) + RESET + " !="
-			self.log.append(f"{title}", 1)
-			self.log.append(f"Cla[{existing_classes} {expected_classes}] | Fun[{existing_functions} {expected_functions}] | Var[{existing_variables} {expected_variables}]", 6)
+			self.log.append(f"[{i}] - ({title})", 1)
 		self.log.append("Failed:")
 		for (i, title, expected_classes, expected_functions, expected_variables) in self.title_failures:
-			existing_classes   = self.tabs.widget(i + 1).widget(1).layout().itemAt(1).widget().rowCount()
-			existing_functions = self.tabs.widget(i + 1).widget(2).layout().itemAt(1).widget().rowCount()
-			existing_variables = self.tabs.widget(i + 1).widget(3).layout().itemAt(1).widget().rowCount()
-			existing_classes   = G + str(existing_classes)   + RESET + " ==" if existing_classes   == expected_classes   else R + str(existing_classes)   + RESET + " !="
-			existing_functions = G + str(existing_functions) + RESET + " ==" if existing_functions == expected_functions else R + str(existing_functions) + RESET + " !="
-			existing_variables = G + str(existing_variables) + RESET + " ==" if existing_variables == expected_variables else R + str(existing_variables) + RESET + " !="
-			self.log.append(f"{title}", 1)
-			self.log.append(f"Cla[{existing_classes} {expected_classes}] | Fun[{existing_functions} {expected_functions}] | Var[{existing_variables} {expected_variables}]", 6)
+			self.log.append(f"[{i}] - ({title})", 1)
 
 		self.setCentralWidget(self.widget)
 		QTimer.singleShot(50, lambda: (
