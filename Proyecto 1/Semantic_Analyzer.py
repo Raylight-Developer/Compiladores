@@ -229,15 +229,15 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return node_id
 
 
-	def determine_type(self, value):
-		if isinstance(value, bool):
+	def determine_type(self, value: str):
+		if isinstance(value, bool) or str(value) == "true" or str(value) == "false":
 			return "boolean"
+		elif isinstance(value, int) or value.isdigit():
+			return "int"
+		elif isinstance(value, float) or is_num(value):
+			return "float"
 		elif isinstance(value, str):
 			return "char" if len(value) == 1 else "string"
-		elif isinstance(value, int):
-			return "int"
-		elif isinstance(value, float):
-			return "float"
 		else:
 			return "unknown"
 

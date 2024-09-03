@@ -16,9 +16,10 @@ class Display(QMainWindow):
 		self.code_input.setTabStopDistance(40)
 		self.code_input.setPlaceholderText("Code to compile...")
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
-		self.code_input.setText("""fun suma (a , b ) {
-	return a + b ;
-}""")
+		self.code_input.setText("""fun suma (a , b) {
+	return a + b;
+}
+var test = 10;""")
 
 		self.code_output = Logger()
 		Antlr_Syntax_Highlighter(self.code_output.document())
