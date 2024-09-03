@@ -79,29 +79,33 @@ class Tester(QMainWindow):
 
 		self.log.append("<h2># Summary</h2>")
 		
-		self.log.append("<h3>TABLE TESTS</h3>")
-
 		Succeses = []
+		Warnings = []
 		Failures = []
 		for i, (title, should_pass, code, expected_classes, expected_functions, expected_variables) in enumerate(self.code):
 			existing_classes   = self.tabs.widget(i + 1).widget(1).layout().itemAt(1).widget().rowCount()
 			existing_functions = self.tabs.widget(i + 1).widget(2).layout().itemAt(1).widget().rowCount()
 			existing_variables = self.tabs.widget(i + 1).widget(3).layout().itemAt(1).widget().rowCount()
-			if existing_classes   == expected_classes and existing_functions == expected_functions and existing_variables == expected_variables:
-				Succeses.append((i, title, f"[{existing_classes} == {expected_classes}] | [{existing_functions} == {expected_functions}] | [{existing_variables} == {expected_variables}]"))
+			if existing_classes == expected_classes and existing_functions == expected_functions and existing_variables == expected_variables:
+				Succeses.append((i, title, f"[{G}{existing_classes}{RESET} == {expected_classes}] | [{G}{existing_functions}{RESET} == {expected_functions}] | [{G}{existing_variables}{RESET} == {expected_variables}]"))
+			elif existing_classes == expected_classes or existing_functions == expected_functions or existing_variables == expected_variables:
+				existing_classes   = G + str(existing_classes)   + RESET + " ==" if existing_classes   == expected_classes   else Y + str(existing_classes)   + RESET + " !="
+				existing_functions = G + str(existing_functions) + RESET + " ==" if existing_functions == expected_functions else Y + str(existing_functions) + RESET + " !="
+				existing_variables = G + str(existing_variables) + RESET + " ==" if existing_variables == expected_variables else Y + str(existing_variables) + RESET + " !="
+				Warnings.append((i, title, f"[{existing_classes} {expected_classes}] | [{existing_functions} {expected_functions}] | [{existing_variables} {expected_variables}]"))
 			else:
-				existing_classes   = G + str(existing_classes)   + RESET + " ==" if existing_classes   == expected_classes   else R + str(existing_classes)   + RESET + " !="
-				existing_functions = G + str(existing_functions) + RESET + " ==" if existing_functions == expected_functions else R + str(existing_functions) + RESET + " !="
-				existing_variables = G + str(existing_variables) + RESET + " ==" if existing_variables == expected_variables else R + str(existing_variables) + RESET + " !="
-				Failures.append((i, title, f"[{existing_classes} {expected_classes}] | [{existing_functions} {expected_functions}] | [{existing_variables} {expected_variables}]"))
+				Failures.append((i, title, f"[{R}{existing_classes}{RESET} != {expected_classes}] | [{R}{existing_functions}{RESET} != {expected_functions}] | [{R}{existing_variables}{RESET} != {expected_variables}]"))
 
-		self.log.append(f"TESTS #: {len(self.code)}")
-		self.log.append(f"{G}PASSED#:{RESET} {len(Succeses)}")
-		self.log.append(f"{R}FAILED#:{RESET} {len(Failures)}")
+
+		self.log.append("<h3>TABLE TESTS</h3>")
 		self.log.append("[INDEX] - (NAME)")
 		self.log.append("[Output_Class_Symbol_Count    OPERATOR Expected_Class_Symbol_Count   ] | [Output_Function_Symbol_Count OPERATOR Expected_Function_Symbol_Count] | [Output_Variable_Symbol_Count OPERATOR Expected_Variable_Symbol_Count]", 1)
 		self.log.append("Passed:")
 		for (i, title, msg) in Succeses:
+			self.log.append(f"[{i}] - ({title})", 1)
+			self.log.append(msg, 2)
+		self.log.append("Warned:")
+		for (i, title, msg) in Warnings:
 			self.log.append(f"[{i}] - ({title})", 1)
 			self.log.append(msg, 2)
 		self.log.append("Failed:")
@@ -110,15 +114,23 @@ class Tester(QMainWindow):
 			self.log.append(msg, 2)
 
 		self.log.append("<h3>RUNTHROUGH TESTS</h3>")
-		self.log.append(f"TESTS #: {len(self.code)}")
-		self.log.append(f"{G}PASSED#:{RESET} {self.succeses}")
-		self.log.append(f"{R}FAILED#:{RESET} {len(self.code) - self.succeses}")
 		self.log.append("Passed:")
 		for (i, title, expected_classes, expected_functions, expected_variables) in self.title_succeses:
 			self.log.append(f"[{i}] - ({title})", 1)
 		self.log.append("Failed:")
 		for (i, title, expected_classes, expected_functions, expected_variables) in self.title_failures:
 			self.log.append(f"[{i}] - ({title})", 1)
+
+		self.log.append("<h3>TABLE TESTS</h3>")
+		self.log.append(f"TESTS  #: {len(self.code)}")
+		self.log.append(f"{G}PASSED #:{RESET} {len(Succeses)}")
+		self.log.append(f"{Y}WARNED #:{RESET} {len(Warnings)}")
+		self.log.append(f"{R}FAILED #:{RESET} {len(Failures)}")
+
+		self.log.append("<h3>RUNTHROUGH TESTS</h3>")
+		self.log.append(f"TESTS #: {len(self.code)}")
+		self.log.append(f"{G}PASSED#:{RESET} {self.succeses}")
+		self.log.append(f"{R}FAILED#:{RESET} {len(self.code) - self.succeses}")
 
 		self.setCentralWidget(self.widget)
 		QTimer.singleShot(50, lambda: (
