@@ -439,7 +439,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Entrar en un nuevo scope, lo que automáticamente incrementa el contador de scopes
 		self.table_variables.enter_scope()
 		# Imprimir el identificador del nuevo scope para debugging
-		self.log.debug(f"Entering scope 12: {self.table_variables.scopes[-1].id}")
+		self.log.debug(f"Entering scope: {self.table_variables.scopes[-1].id}")
 		self.current_scope = self.table_variables.scopes[-1].id
 		# Evaluar todas las declaraciones dentro del bloque
 		result = None

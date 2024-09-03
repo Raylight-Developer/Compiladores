@@ -7,7 +7,7 @@ def getFullCode():
 	return a + b ;
 }
 print suma (3 , 4) ; // Salida : 7
-""",
+""", 0, 0, 0
 ),
 (
 	"# 12.2 Bucle y Condicionales",
@@ -23,7 +23,7 @@ for ( var i = 1; i <= 10; i = i + 1) {
 		print i + " es impar " ;
 	}
 }
-""",
+""", 0, 0, 0
 ),
 (
 	"# 12.3 Sistema de Clases y Herencia",
@@ -60,7 +60,7 @@ while ( juan.edad < 25) {
 	juan.edad = juan.edad + 1;
 	print " Edad de Juan : " + juan.edad ;
 }
-"""
+""", 0, 0, 0
 ),
 (
 	"# 12.4 Funcion Recursiva",
@@ -75,6 +75,6 @@ fun fibonacci ( n ) {
 	return fibonacci ( n - 1) + fibonacci ( n - 2) ;
 }
 print " Fibonacci de 10: " + fibonacci (10) ; // Salida : Fibonacci de 10: 55
-"""
+""", 0, 0, 0
 )
 	]
