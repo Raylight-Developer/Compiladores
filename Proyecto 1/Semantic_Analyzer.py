@@ -631,12 +631,15 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Verificar tipos y hacer la comparación
 		if isinstance(value1, (int, float, bool)) and isinstance(value2, (int, float, bool)):
 			return comparison_operations[operator](value1, value2)
-		
+
+		if is_num(value1) and is_num(value2):
+			return comparison_operations[operator](value1, value2)
+
 		# Comparar cadenas solo con `==` y `!=`
 		if isinstance(value1, str) and isinstance(value2, str) and operator in ["==", "!="]:
 			return comparison_operations[operator](value1, value2)
-		
-		raise TypeError(f"No se pueden comparar valores de tipos diferentes: {type(value1).__name__} y {type(value2).__name__}")
+
+		raise TypeError(f"No se pueden comparar valores de tipos diferentes para [{value1}] y [{value2}]: {type(value1).__name__} y {type(value2).__name__}")
 
 
 	def depuracion_elemntos_con_detalles_extra(self, data):
