@@ -605,7 +605,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	
 	def visitEquality(self, ctx: CompiscriptParser.EqualityContext):
-		return ctx.getText()
+		#return ctx.getText()
 		text = ctx.getText()
 		data = []
 		if "==" in text:
@@ -621,7 +621,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 
 	def visitComparison(self, ctx: CompiscriptParser.ComparisonContext):
-		return ctx.getText()
+		#return ctx.getText()
 		text = ctx.getText()
 		data = []
 		if "<=" in text:
@@ -790,13 +790,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.STRING():
 			str_value = ctx.STRING().getText().strip('"')
 			return str_value
-		elif ctx.IDENTIFIER():
+		elif ctx.IDENTIFIER(): #TODO Check if it is a param in a function declaration ()
 			var_name = ctx.IDENTIFIER().getText()
 			if var_name in self.local_variables:
 				return self.local_variables[var_name], "unknown"  # Unknown until evaluated
 			elif var_name in self.global_variables:
 				return self.global_variables[var_name], "unknown"
-			elif var_name in self.variables_scope[self.current_scope]:
+			elif self.current_scope in self.variables_scope and var_name in self.variables_scope[self.current_scope]:
 				return self.variables_scope[self.current_scope][var_name]
 			else:
 				raise Exception(f"Variable '{var_name}' no declarada en el ámbito {self.current_scope}.")

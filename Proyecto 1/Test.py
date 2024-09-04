@@ -71,8 +71,9 @@ class Tester(QMainWindow):
 					self.log.append(f"{R}Compilation Failed{RESET}" + " {")
 
 				self.log.append(f"{e}", 1)
+				self.log.append(f"{traceback.format_exc().splitlines()[-3]}", 3)
 				self.log.append("}")
-				self.log.addCollapse("Traceback", f"{traceback.format_exc()}", 1)
+				self.log.addCollapse("Full Traceback", f"{traceback.format_exc()}", 1)
 			debug = "\n".join(self.log.debug_output)
 			self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
 
