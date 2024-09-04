@@ -1,5 +1,6 @@
 from Logger import*
 from Syntax_Highlighting import *
+from Tests.Final_Tests import *
 from Tests.Large_Tests import *
 from Tests.Small_Tests import *
 from Semantic_Analyzer import *
@@ -38,8 +39,7 @@ class Tester(QMainWindow):
 		label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.setCentralWidget(label)
 
-		self.code = getSmallCode() + getFullCode() # Full Test
-		self.succeses = 0
+		self.code = getFinalCode()#getSmallCode() + getFullCode() # Full Test
 		self.title_failures = []
 		self.title_succeses = []
 		QTimer.singleShot(50, lambda: self.parse())
@@ -54,14 +54,16 @@ class Tester(QMainWindow):
 			self.log.append("}")
 			try:
 				resultado = self.compile(i, code, title_id)
-				self.log.append(f"{G}Compilation Succesful{RESET}<br>")
 				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {resultado}\n")
-				self.succeses += 1
-				self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
+				if should_pass:
+					self.log.append(f"{G}Compilation Succesful{RESET}<br>")
+					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
+				else:
+					self.title_failures.append((i, title, expected_classes, expected_functions, expected_variables))
+					self.log.append(f"{R}Compilation Should Have Failed{RESET}")
 			except Exception as e:
 				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {e}\n")
 				if should_pass == False:
-					self.succeses += 1
 					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{G}Compilation ''Succesful''{RESET}{Y}(Should fail and did fail){RESET}" + " {")
 				else:
@@ -129,8 +131,8 @@ class Tester(QMainWindow):
 
 		self.log.append("<h3>RUNTHROUGH TESTS</h3>")
 		self.log.append(f"TESTS #: {len(self.code)}")
-		self.log.append(f"{G}PASSED#:{RESET} {self.succeses}")
-		self.log.append(f"{R}FAILED#:{RESET} {len(self.code) - self.succeses}")
+		self.log.append(f"{G}PASSED#:{RESET} {len(self.title_succeses)}")
+		self.log.append(f"{R}FAILED#:{RESET} {len(self.title_failures)}")
 
 		self.setCentralWidget(self.widget)
 		QTimer.singleShot(50, lambda: (

@@ -16,10 +16,48 @@ class Display(QMainWindow):
 		self.code_input.setTabStopDistance(40)
 		self.code_input.setPlaceholderText("Code to compile...")
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
-		self.code_input.setText("""fun suma (a , b) {
-	return a + b;
+		self.code_input.setText("""class Persona {
+	init(nombre, edad) {
+		this.nombre = nombre;
+		this.edad = edad;
+		this.color = "rojo";
+	}
+
+	saludar() {
+		print "Hola, mi nombre es " + this.color;
+	}
 }
-var test = 10;""")
+
+class Estudiante extends Persona {
+	init(nombre, edad, grado) {
+		super.init(nombre, edad);
+		this.grado = grado;
+	}
+
+	estudiar() {
+		print this.nombre + " esta estudiando en " + this.grado + " grado.";
+	}
+}
+
+var nombre = "Erick";
+
+var ropero = new Persona(nombre, 20);
+var juan = new Estudiante(nombre, 20, 3);
+juan.saludar();    // Salida: Hola, mi nombre es Juan
+juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
+
+for (var i = 1; i <= 5; i = i + 1) {
+	if (i % 2 == 0) {
+		print i + " es par";
+	} else {
+		print i + " es impar";
+	}
+}
+
+while (juan.edad < 25) {
+	juan.edad = juan.edad + 1;
+	print "Edad de Juan: " + juan.edad;
+}""")
 
 		self.code_output = Logger()
 		Antlr_Syntax_Highlighter(self.code_output.document())
