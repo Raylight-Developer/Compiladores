@@ -45,15 +45,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.log.error(f"Variable '{name}' is already declared in the current scope.")
 		self.local_variables[name] = ctx
 
-	def validacion_numeros_mediante_casteo(self, data):
-		# print(f"Datos antes de depurar: {data}")
-		try:
-			int(data[0].strip())
-			int(data[1].strip())
-		except TypeError:
-			raise TypeError(f"No se pueden comparar valores de tipos diferente: {type(data[0]).__name__} y {type(data[1]).__name__}")
-		# print(f"Datos después de depurar: {data}")
-
 
 	def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
 		fun_name = ctx.function().IDENTIFIER().getText()
@@ -72,7 +63,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				self.declare_variable(param.getText(), param)
 		# Registrar la función
 		self.declared_functions.add(fun_name)
-
 
 		# Crear los datos del símbolo de la función
 		symbol_data = Symbol_Property()
@@ -94,7 +84,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		arreglo = []
 		var_type = "unknown"
 		var_value = None
-
+		
 		# para capturar el contenido del arreglo
 		patron_array = r'\[([^\]]+)\]'
 		# Buscar la coincidencia en la cadena
@@ -121,9 +111,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Verifica si la variable ya está declarada en el scope actual
 		if var_name in self.variables_scope[current_scope_id] :
 			raise Exception(f"Error: Variable '{var_name}' ya declarada en el scope '{current_scope_id}'.")
-
-		# Try to get the variable's type from the context
-		
+		# Try to get the variable's type from the context		
 		if ctx.expression():
 			if var_type == "unknown":
 				var_value = self.visit(ctx.expression())
@@ -138,13 +126,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			# Guarda la variable en el diccionario del scope actual en variables_scope
 			self.variables_scope[current_scope_id][var_name] = {"type": var_type, "value": var_value}
 
-
 		self.log.debug(f"variables_scope: {self.variables_scope}")
 
 		property = Symbol_Property()
 		# Enviarlo en tipo array
 		if var_type == "array":
-			
 			property.id = var_name
 			property.scope = "local" if is_local_scope else "global"
 			property.value = arreglo
@@ -235,6 +221,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitExprStmt(self, ctx: CompiscriptParser.ExprStmtContext):	
 		# Si no es una llamada, delega a la visita de los hijos (otras expresiones)
+		print(f"IDENTIFICADOR: {ctx.IDENTIFIER()}")
+		if ctx.IDENTIFIER() is not None:
+			var_name = ctx.IDENTIFIER().getText()
+			if not self.symbol_table.lookup(var_name):
+				raise Exception(f"Error: Variable '{var_name}' no declarada en el scope actual.")
+		
+		# Procesar el resto de la expresión
 		return self.visitChildren(ctx)
 
 
@@ -249,11 +242,15 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if ctx.varDecl():  # Manejo de la declaración de variable dentro del for
 			self.visitVarDecl(ctx.varDecl())
 
-		
-
 		# Evaluar la condición
 		condition_value = self.visit(ctx.expression(0)) if ctx.expression(0) else True
-		self.log.debug(f"CONDICION VALUE: {condition_value}")
+		self.log.debug(f"CONDICION VALUE DEL FOR: {condition_value}")
+
+		self.log.debug(ctx.statement().getText())
+		
+		if(ctx.statement):
+			self.visit(ctx.statement())
+
 		# while condition_value:
 		# 	# Ejecutar las oraciones dentro del for
 		# 	for stmt in ctx.statement():
@@ -274,7 +271,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.log.debug(f"Exiting 'for' scope: {self.current_scope}")
 		self.table_variables.exit_scope()
 		self.current_scope = self.table_variables.scopes[-1].id if self.table_variables.scopes else "global_0"
-
 		return None
 
 
@@ -284,30 +280,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		text = ctx.getText()
 		self.log.debug(f"condicion valor: {condition_value}")
 		self.log.debug(f"CONDICION IF: {condition_value}")
+		print(f"VALOR DE LA CONDICION: {condition_value}")
 		if isinstance(condition_value, tuple):
 			if not isinstance(condition_value[0], bool):
-				raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+				raise TypeError(f"Error Tipo 1: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
+		elif isinstance(condition_value, dict):
+			if not isinstance(condition_value["value"], bool):
+				raise TypeError(f"Error Tipo 2: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 		elif not isinstance(condition_value, bool):		
 		# Verificar que la condición sea de tipo booleano
-
-			raise TypeError(f"Error: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
-				# Obtener la info del nodo
-		# En caso de tener un print, procesarlo
-		if "if" in text:
-			# Verificar si la función 'print' ya ha sido declarada
-			if "if" not in self.declared_functions:
-				# Si 'print' no está declarada, agregarla a la tabla de funciones
-				print_function = Symbol_Property()
-				print_function.id = "if"
-				print_function.parameters = "boolean"  # 'any', ya que acepta cualquier cosa
-				print_function.return_type = "void"
-				
-				# Agregar a la tabla de funciones
-				self.table_functions.add(print_function)
-
-				# Marcar 'print' como declarada
-				self.declared_functions.add("if")
-
+			raise TypeError(f"Error Tipo 3: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 		
 		# Crear un nuevo scope para el bloque 'if'
 		self.table_variables.enter_scope()
@@ -357,27 +339,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitPrintStmt(self, ctx: CompiscriptParser.PrintStmtContext):
 		text = ctx.getText()
-		if "print" in text:
-			if "print" not in self.declared_functions:
-				print_function = Symbol_Property()
-				print_function.id = "print"
-				print_function.parameters = "any"
-				print_function.return_type = "void"
-				# Agregarlo a la tabla de funciones
-				self.table_functions.add(print_function)
-				# Marcar 'print' como declarada
-				self.declared_functions.add("print")
+		# Obtener la expresión y evaluarla
+		expression_value = self.visit(ctx.expression())
+		self.log.debug(f'Evaluated expression: {expression_value}')
 
-			# Obtener la expresión y evaluarla
-			expression_value = self.visit(ctx.expression())
-			self.log.debug(f'Evaluated expression: {expression_value}')
-
-			# Aquí deberías recibir el valor real de "hola" en lugar de 'global_0'
-			self.log.debug(f'Print statement: {expression_value}')
-
-			return None
-		else:
-			return self.visitChildren(ctx)
+		# Aquí deberías recibir el valor real de "hola" en lugar de 'global_0'
+		self.log.debug(f'Print statement: {expression_value}')
+		return self.visitChildren(ctx)
 
 
 	def visitReturnStmt(self, ctx:CompiscriptParser.ReturnStmtContext):
@@ -398,20 +366,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Verificar que la condición sea de tipo booleano
 			raise TypeError(f"Error: La condición en 'while' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
 		
-		# Verificar si la función 'while' ya ha sido declarada (este bloque parece innecesario pero lo dejo por si lo necesitas)
-		if "while" in text:
-			if "while" not in self.declared_functions:
-				while_function = Symbol_Property()
-				while_function.id = "while"
-				while_function.parameters = "boolean"  # 'boolean', ya que la condición debe ser booleana
-				while_function.return_type = "void"
-				
-				# Agregar a la tabla de funciones
-				self.table_functions.add(while_function)
-
-				# Marcar 'while' como declarada
-				self.declared_functions.add("while")
-		
+		# Verificar si la función 'while' ya ha sido declarada (este bloque parece innecesario pero lo dejo por si lo necesitas)		
 		self.inside_loop = True
 		# Crear un nuevo scope para el bloque 'while'
 		self.table_variables.enter_scope()
@@ -445,6 +400,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		result = None
 		for declaration in ctx.declaration():
 			result = self.visit(declaration)
+		self.log.debug(f"RESULTDO SCOPE: {result}")
 
 		# Salir del scope al final del bloque, lo que también elimina el scope del stack
 		self.log.debug(f"Exiting scope: {self.table_variables.scopes[-1].id}")
@@ -469,7 +425,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
-
+		self.log(left, operator, right)
 		if operator == '+':
 			return left + right
 		elif operator == '-':
@@ -594,38 +550,50 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def try_cast(self,value):
 		stripped_value = value.strip()
-		
 		# Intentar convertir a int
 		try:
 			return int(stripped_value)
 		except ValueError:
 			pass
-		
 		# Intentar convertir a float
 		try:
 			return float(stripped_value)
 		except ValueError:
 			pass
-		
 		# Si no es ni int ni float, devolver la cadena tal cual
 		return stripped_value
 
 
 	def compare_values(self, data, operator):
 		value1, value2 = "",""
-		if data[0] in self.variables_scope[self.current_scope]:
-			value1 = self.variables_scope[self.current_scope][data[0]]["value"]
+		# print(f"DATA QUE SE RECIBE, {data}, {data[0]}, {data[1]}")
+		print("NO ELIMINAR O COMENTAR ESTOS PRINTS, LOS ERRORES EN EL IDE NO SON MUY DESCRIPTIVOS HASTA ESTE PUNTO")
+		print("SI SE IMPRIME ESTO, ES PORQUE HAY CONFLICTO CON LA VARIABLE Y ES SCOPE, EN ESTA CASO, SE BUSCA LA VAR EN EL SCOPE ERRONEO")
+		
+		# Primer valor de la comparativa, validando que este en el scope global
+		if data[0] in self.variables_scope["global_0"]:
+			value1 = self.variables_scope["global_0"][data[0]]["value"]
 		else:
-			value1 = self.try_cast(data[0])
-		if data[1] in self.variables_scope[self.current_scope]:
-			value2 = self.variables_scope[self.current_scope][data[2]]["value"]		
-		else:
-			value2 = self.try_cast(data[1])
-		
-		print(f"VALORES: {value1}, {value2}, {type(value1)}")
-		
-		
+			# Validar que este en el scope local
+			if data[0] in self.variables_scope[self.current_scope]:
+				value1 = self.variables_scope[self.current_scope][data[0]]["value"]
+			else:
+				# Castear el valor que no esta en un variable
+				value1 = self.try_cast(data[0])
 
+		# Segundo valor de la comparativa, Valida que este en el scope global
+		if data[1] in self.variables_scope["global_0"]:
+			value2 = self.variables_scope["global_0"][data[1]]["value"]
+		else:
+			# Validar que este en el scope local
+			if data[1] in self.variables_scope[self.current_scope]:
+				value2 = self.variables_scope[self.current_scope][data[1]]["value"]		
+			else:
+				# Castear el valor que no esta en un variable
+				value2 = self.try_cast(data[1])
+		
+		print(f"VALORES: {value1}, {value2}, {type(value1)}") # Estos son los valores del ciclo for, es decir, la var y la cond
+		
 		comparison_operations = {
 			"==": lambda x, y: x == y,
 			"!=": lambda x, y: x != y,
@@ -645,12 +613,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if isinstance(value1, (int, float, bool)) and isinstance(value2, (int, float, bool)):
 			return comparison_operations[operator](value1, value2)
 
-		if is_num(value1) and is_num(value2):
-			return comparison_operations[operator](value1, value2)
-
 		# Comparar cadenas solo con `==` y `!=`
 		if isinstance(value1, str) and isinstance(value2, str) and operator in ["==", "!="]:
 			return comparison_operations[operator](value1, value2)
+
+		
 
 		raise TypeError(f"No se pueden comparar valores de tipos diferentes para [{value1}] y [{value2}]: {type(value1).__name__} y {type(value2).__name__}")
 
@@ -723,7 +690,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitArray(self, ctx: CompiscriptParser.ArrayContext):
 		# Obtener todas las expresiones dentro del array
 		elements = [self.visit(expression) for expression in ctx.expression()]
-		
 		# Aquí podrías devolver una lista o cualquier estructura de datos que represente un array en tu lenguaje.
 		return elements
 
@@ -814,6 +780,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		return self.visitChildren(ctx)
+
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
 		node_id = f"node{self.counter}"
