@@ -3,7 +3,6 @@ from Syntax_Highlighting import *
 from Semantic_Analyzer import *
 from SyntaxErrorListener import *
 
-
 class Display(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -68,13 +67,13 @@ while (juan.edad < 25) {
 
 		self.tables = QTabWidget()
 
-		self.table_functions = Symbol_Table(self.log, "Fun")
-		self.table_variables = Symbol_Table(self.log, "Var")
-		self.table_classes   = Symbol_Table(self.log, "Cla")
+		self.table_classes   = Symbol_Table(self.log, "Classes")
+		self.table_functions = Symbol_Table(self.log, "Functions")
+		self.table_variables = Symbol_Table(self.log, "Variables")
 
+		self.tables.addTab(self.table_classes  , QIcon(), "Classes")
 		self.tables.addTab(self.table_functions, QIcon(), "Functions")
 		self.tables.addTab(self.table_variables, QIcon(), "Variables")
-		self.tables.addTab(self.table_classes, QIcon(), "Classes")
 
 		tablayout = QHBoxLayout()
 		tablayout.setContentsMargins(12,12,12,14)
@@ -149,7 +148,7 @@ while (juan.edad < 25) {
 			if error_listener.has_error:
 				raise Exception("Error de sintaxis detectado durante la compilación.")
 
-			visitor = Semantic_Analyzer(self.log, self.table_functions, self.table_variables, self.table_classes, parser)
+			visitor = Semantic_Analyzer(self.log, self.table_classes, self.table_functions, self.table_variables, parser)
 			visitor.visit(tree)
 
 			if self.options["render"]:

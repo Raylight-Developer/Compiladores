@@ -5,6 +5,7 @@ import traceback
 import antlr4
 import sys
 import os
+import re
 
 from PySide6.QtWidgets import QWidget
 from graphviz import Digraph

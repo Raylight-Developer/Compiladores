@@ -1,6 +1,5 @@
 # Generated from Compiscript.g4 by ANTLR 4.13.1
 from antlr4 import *
-from CompiscriptParser import CompiscriptParser
 # from ExprLexer import ExprLexer
 # from ExprParser import ExprParser
 # from ExprVisitor import ExprVisitor

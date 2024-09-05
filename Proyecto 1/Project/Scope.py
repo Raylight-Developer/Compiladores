@@ -77,8 +77,7 @@ class Scope_Tracker:
 		self.current_scope = self.global_scope
 
 	def enterScope(self):
-		new_scope = Scope(parent=self.current_scope)
-		self.current_scope = new_scope
+		self.current_scope = Scope(self.current_scope)
 
 	def exitScope(self):
 		if self.current_scope.parent is not None:
@@ -88,18 +87,13 @@ class Scope_Tracker:
 
 	def declareClass(self, value: Class):
 		self.current_scope.declareClass(value)
-
 	def lookupClass(self, value: Class):
 		return self.current_scope.lookupClass(value)
-
 	def declareFunction(self, value: Function):
 		self.current_scope.declareFunction(value)
-
 	def lookupFunction(self, value: Function):
 		return self.current_scope.lookupFunction(value)
-
 	def declareVariable(self, value: Variable):
 		self.current_scope.declareVariable(value)
-
 	def lookupVariable(self, value: Variable):
 		return self.current_scope.lookupVariable(value)
