@@ -27,6 +27,9 @@ class Var:
 	def __init__(self, code: Union[str, int, float, bool, None] = None, type: Type = Type.UNKNOWN):
 		self.code = code
 		self.type = type
+	
+	def __str__(self):
+		return f"{self.type} [{self.code}]"
 
 class Variable:
 	def __init__(self):

@@ -649,11 +649,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				return left + right
 			elif ctx.getChild(1).getText() == '-':
 				return left - right
-		else:
-			if ctx.getChild(1).getText() == '+':
-				return f"({left} + {right})"
-			elif ctx.getChild(1).getText() == '-':
-				return f"({left} - {right})"
+
+		if ctx.getChild(1).getText() == '+':
+			return f"({left} + {right})"
+		elif ctx.getChild(1).getText() == '-':
+			return f"({left} - {right})"
 
 
 	def visitFactor(self, ctx: CompiscriptParser.FactorContext):
@@ -678,13 +678,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				return left / right
 			elif ctx.getChild(1).getText() == '%':
 				return left % right
-		else:
-			if ctx.getChild(1).getText() == '*':
-				return f"({left} * {right})"
-			elif ctx.getChild(1).getText() == '/':
-				return f"({left} / {right})"
-			elif ctx.getChild(1).getText() == '%':
-				return f"({left} % {right})"
+
+		if ctx.getChild(1).getText() == '*':
+			return f"({left} * {right})"
+		elif ctx.getChild(1).getText() == '/':
+			return f"({left} / {right})"
+		elif ctx.getChild(1).getText() == '%':
+			return f"({left} % {right})"
 
 
 	def visitArray(self, ctx: CompiscriptParser.ArrayContext):

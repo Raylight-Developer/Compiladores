@@ -170,57 +170,67 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
 		if ctx.getChildCount() == 1:
-			return self.visit(ctx.factor(0))  # Retorna el único factor si no hay operación
+			return self.visit(ctx.factor(0))
 
 		left = self.visit(ctx.factor(0))
 		right = self.visit(ctx.factor(1))
 
 		if type(left) is tuple: left = left[0]
 		if type(right) is tuple: right = right[0]
-		self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
-		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
+		#self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
+
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
 
+		if isinstance(left, Variable) or isinstance(left, Var):
+			left = left.code
+		if isinstance(right, Variable) or isinstance(right, Var):
+			right = right.code
+
 		if is_float(str(left)) and is_float(str(right)):
-			if ctx.getChild(1).getText() == '+':
-				return left + right
-			elif ctx.getChild(1).getText() == '-':
-				return left - right
-		else:
 			if ctx.getChild(1).getText() == '+':
 				return f"({left} + {right})"
 			elif ctx.getChild(1).getText() == '-':
 				return f"({left} - {right})"
 
+		if ctx.getChild(1).getText() == '+':
+			return f"({left} + {right})"
+		elif ctx.getChild(1).getText() == '-':
+			return f"({left} - {right})"
+
 	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
 		if ctx.getChildCount() == 1:
-			return self.visit(ctx.unary(0))  # Retorna el único unary si no hay operación
+			return self.visit(ctx.unary(0))
 
 		left = self.visit(ctx.unary(0))
 		right = self.visit(ctx.unary(1))
 
 		if type(left) is tuple: left = left[0]
 		if type(right) is tuple: right = right[0]
-		self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
-		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
+		#self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
+
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
-		
+
+		if isinstance(left, Variable) or isinstance(left, Var):
+			left = left.code
+		if isinstance(right, Variable) or isinstance(right, Var):
+			right = right.code
+
 		if is_float(str(left)) and is_float(str(right)):
 			if ctx.getChild(1).getText() == '*':
-				return left * right
+				return Var(f"({left} * {right})", Type.FLOAT)
 			elif ctx.getChild(1).getText() == '/':
-				return left / right
+				return Var(f"({left} / {right})", Type.FLOAT)
 			elif ctx.getChild(1).getText() == '%':
-				return left % right
-		else:
-			if ctx.getChild(1).getText() == '*':
-				return f"({left} * {right})"
-			elif ctx.getChild(1).getText() == '/':
-				return f"({left} / {right})"
-			elif ctx.getChild(1).getText() == '%':
-				return f"({left} % {right})"
+				return Var(f"({left} % {right})", Type.FLOAT)
+
+		if ctx.getChild(1).getText() == '*':
+			return f"({left} * {right})"
+		elif ctx.getChild(1).getText() == '/':
+			return f"({left} / {right})"
+		elif ctx.getChild(1).getText() == '%':
+			return f"({left} % {right})"
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext):
 		return self.visitChildren(ctx)
