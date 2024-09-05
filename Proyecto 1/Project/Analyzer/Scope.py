@@ -6,57 +6,66 @@ from .Symbols import *
 class Scope:
 	def __init__(self, parent: 'Scope' = None):
 		self.parent: Scope = parent
-		self.classes   : BiMap[str, Class]    = {}
-		self.functions : BiMap[str, Function] = {}
-		self.variables : BiMap[str, Variable] = {}
+		self.classes   : BiMap[str, Class]    = BiMap()
+		self.functions : BiMap[str, Function] = BiMap()
+		self.variables : BiMap[str, Variable] = BiMap()
 
 	def declareClass(self, value: Class):
 		"""Declare a new Class in the current scope."""
-		if value in self.classes:
+		if self.classes.get_value(value):
 			raise KeyError(f"Class [{value.ID}] already declared in this scope")
 		value.scope_depth = self.scopeDepth()
-		self.classes[value.ID] = value
+		self.classes.add(value.ID, value)
 
-	def lookupClass(self, value: Class):
+	def lookupClass(self, ID: str):
 		"""Look up a Class in the current scope or any parent scope."""
-		if value in self.classes:
-			return self.classes[value.ID]
+		if ID in self.classes.forward_map.keys():
+			return self.classes.get_value(ID)
 		elif self.parent is not None:
-			return self.parent.lookupClass(value)
+			return self.parent.lookupClass(ID)
 		else:
-			raise KeyError(f"Class [{value.ID}] not declared in this scope")
+			raise KeyError(f"Class [{ID.ID}] not declared in this scope")
 
 	def declareFunction(self, value: Function):
 		"""Declare a new Function in the current scope."""
-		if value in self.functions:
+		if self.functions.get_value(value):
 			raise KeyError(f"Function [{value.ID}] already declared in this scope")
 		value.scope_depth = self.scopeDepth()
-		self.functions[value.ID] = value
+		self.functions.add(value.ID, value)
 
-	def lookupFunction(self, value: Function):
+	def lookupFunction(self, ID: str) -> Function:
 		"""Look up a Function in the current scope or any parent scope."""
-		if value in self.functions:
-			return self.functions[value.ID]
+		if ID in self.functions.forward_map.keys():
+			return self.functions.get_value(ID)
 		elif self.parent is not None:
-			return self.parent.lookupFunction(value)
+			return self.parent.lookupFunction(ID)
 		else:
-			raise KeyError(f"Function [{value.ID}] not declared in this scope")
+			raise KeyError(f"Function [{ID.ID}] not declared in this scope")
 
 	def declareVariable(self, value: Variable):
 		"""Declare a new Variable in the current scope."""
-		if value in self.variables:
+		if self.variables.get_value(value):
 			raise KeyError(f"Variable [{value.ID}] already declared in this scope")
 		value.scope_depth = self.scopeDepth()
-		self.variables[value.ID] = value
+		self.variables.add(value.ID, value)
 
-	def lookupVariable(self, value: Variable):
+	def checkVariable(self, ID: str) -> bool:
 		"""Look up a Variable in the current scope or any parent scope."""
-		if value in self.variables:
-			return self.variables[value.ID]
+		if ID in self.variables.forward_map.keys():
+			return True
 		elif self.parent is not None:
-			return self.parent.lookupVariable(value)
+			return self.parent.checkVariable(ID)
 		else:
-			raise KeyError(f"Variable [{value.ID}] not declared in this scope")
+			return False
+
+	def lookupVariable(self, ID: str) -> Variable:
+		"""Look up a Variable in the current scope or any parent scope."""
+		if ID in self.variables.forward_map.keys():
+			return self.variables.get_value(ID)
+		elif self.parent is not None:
+			return self.parent.lookupVariable(ID)
+		else:
+			raise KeyError(f"Variable [{ID}] not declared in this scope")
 
 	def scopeDepth(self) -> int:
 		"""Count how deep the current scope is relative to the global scope."""
@@ -69,9 +78,9 @@ class Scope:
 
 class Scope_Tracker:
 	def __init__(self):
-		self.global_classes   : BiMap[str, Class]    = {}
-		self.global_functions : BiMap[str, Function] = {}
-		self.global_variables : BiMap[str, Variable] = {}
+		self.global_classes   : BiMap[str, Class]    = BiMap()
+		self.global_functions : BiMap[str, Function] = BiMap()
+		self.global_variables : BiMap[str, Variable] = BiMap()
 
 		self.global_scope = Scope()
 		self.current_scope = self.global_scope
@@ -91,9 +100,11 @@ class Scope_Tracker:
 		return self.current_scope.lookupClass(value)
 	def declareFunction(self, value: Function):
 		self.current_scope.declareFunction(value)
-	def lookupFunction(self, value: Function):
-		return self.current_scope.lookupFunction(value)
-	def declareVariable(self, value: Variable):
-		self.current_scope.declareVariable(value)
-	def lookupVariable(self, value: Variable):
-		return self.current_scope.lookupVariable(value)
+	def lookupFunction(self, ID: str):
+		return self.current_scope.lookupFunction(ID)
+	def declareVariable(self, ID: str):
+		self.current_scope.declareVariable(ID)
+	def checkVariable(self, ID: str):
+		return self.current_scope.checkVariable(ID)
+	def lookupVariable(self, ID: str):
+		return self.current_scope.lookupVariable(ID)

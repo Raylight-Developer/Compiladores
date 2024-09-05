@@ -1,12 +1,32 @@
 from Include import *
+
 from enum import Enum
+import ast
 
 class Type(Enum):
 	INT = "int"
+	NONE = "nullptr"
+	BOOL = "bool"
+	LIST = "list"
 	VOID = "void"
 	FLOAT = "float"
 	STRING = "string"
 	UNKNOWN = "unknown"
+
+def inferVariableType(code: str):
+	if isinstance(code, int):
+		return Type.INT
+	elif isinstance(code, float):
+		return Type.FLOAT
+	elif isinstance(code, str):
+		return Type.STRING
+	else:
+		return Type.UNKNOWN
+
+class Var:
+	def __init__(self, code: Union[str, int, float, bool, None] = None, type: Type = Type.UNKNOWN):
+		self.code = code
+		self.type = type
 
 class Variable:
 	def __init__(self):

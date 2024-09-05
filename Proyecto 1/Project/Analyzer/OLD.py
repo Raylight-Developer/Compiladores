@@ -644,7 +644,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
 
-		if is_num(str(left)) and is_num(str(right)):
+		if is_float(str(left)) and is_float(str(right)):
 			if ctx.getChild(1).getText() == '+':
 				return left + right
 			elif ctx.getChild(1).getText() == '-':
@@ -671,7 +671,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
 		
-		if is_num(str(left)) and is_num(str(right)):
+		if is_float(str(left)) and is_float(str(right)):
 			if ctx.getChild(1).getText() == '*':
 				return left * right
 			elif ctx.getChild(1).getText() == '/':

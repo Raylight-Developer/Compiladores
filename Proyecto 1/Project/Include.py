@@ -29,7 +29,7 @@ def parse_args(args: str):
 			options[key] = value
 	return options
 
-def is_num(value: str):
+def is_float(value: str):
 	try:
 		float(value)
 		return True
