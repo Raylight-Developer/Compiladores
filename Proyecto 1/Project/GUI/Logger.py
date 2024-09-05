@@ -28,15 +28,15 @@ class Logger(QTextBrowser):
 	def log(self, value: str):
 		if self.should_debug:
 			value = str(value)
-			pattern = f"({re.escape('<!--html-->')}|{re.escape('<!--/html-->')})"
+			pattern = f"({re.escape('<COLOR>')}|{re.escape('</COLOR>')})"
 			parts = re.split(pattern, value)
 			
 			is_html = False
 			for part in parts:
-				if part == "<!--html-->":
+				if part == "<COLOR>":
 					# Starting an HTML section
 					is_html = True
-				elif part == "<!--/html-->":
+				elif part == "</COLOR>":
 					# Ending an HTML section
 					is_html = False
 				else:

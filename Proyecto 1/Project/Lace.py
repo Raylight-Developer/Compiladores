@@ -38,9 +38,9 @@ class Lace:
 			if val.count < len(temp_data):
 				self.data.write(temp_data[:len(temp_data) - 1 - val.count])
 		elif isinstance(val, ERROR):
-			self.data.write("<!--html-->" + R)
+			self.data.write("<COLOR>" + R)
 		elif isinstance(val, END):
-			self.data.write(RESET + "<!--/html-->")
+			self.data.write(RESET + "</COLOR>")
 		elif isinstance(val, Lace):
 			self.data.write(val.data.getvalue())
 		elif isinstance(val, str):

@@ -45,6 +45,7 @@ for (var i = 0; i < 2; i = i + 1) {
 
 		self.log = Logger()
 		self.log.setPlaceholderText("Log")
+		self.debug = Lace()
 
 		self.tables = QTabWidget()
 
@@ -96,8 +97,8 @@ for (var i = 0; i < 2; i = i + 1) {
 	def compile(self):
 		code = self.code_input.toPlainText()
 		self.code_output.clear()
+		self.debug.clear()
 		self.log.clear()
-		self.debug = Lace()
 	
 		self.log.append("Compiling...")
 		self.table_functions.clearContents()
@@ -127,13 +128,14 @@ for (var i = 0; i < 2; i = i + 1) {
 			self.table_variables.resizeColumnsToContents()
 
 			self.log.log(str(self.debug).strip())
-			self.log.append(f"{G}Comiplation Succesful{RESET}")
+			self.log.insertHtml(f"{G}Comiplation Succesful{RESET}<br>")
 			self.code_output.insertPlainText(tree.toStringTree(recog=parser))
 
 		except Exception as e:
 			self.log.log(str(self.debug).strip())
-			self.log.append(f"{R}Compilation Failed{RESET}<br><br>{e}")
-			self.code_output.append(f"{R}Compilation Failed{RESET}<br><br>{e}<br>{'<br>'.join(traceback.format_exc().splitlines())}")
+			self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>{e}")
+			self.code_output.insertHtml(f"{R}Compilation Failed{RESET}<br><br>{e}<br>")
+			self.code_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")

@@ -14,7 +14,7 @@ class Scope:
 	def declareClass(self, value: Class, debug: Lace):
 		"""Declare a new Class in the current scope."""
 		if self.checkClass(value.ID, debug):
-			debug << NL() << NL << ERROR() << f"Class [{value.ID}] Redifinition" << END()
+			debug << NL() << ERROR() << f"Class [{value.ID}] Redifinition" << END()
 			raise KeyError(f"Class [{value.ID}] Redifinition")
 		value.scope_depth = self.scopeDepth()
 		self.classes.add(value.ID, value)
@@ -41,7 +41,7 @@ class Scope:
 	def declareFunction(self, value: Function, debug: Lace):
 		"""Declare a new Function in the current scope."""
 		if self.checkFunction(value.ID, debug):
-			debug << NL() << NL << ERROR() << f"Function [{value.ID}] Redifinition" << END()
+			debug << NL() << ERROR() << f"Function [{value.ID}] Redifinition" << END()
 			raise KeyError(f"Function [{value.ID}] Redifinition")
 		value.scope_depth = self.scopeDepth()
 		self.functions.add(value.ID, value)
@@ -67,7 +67,7 @@ class Scope:
 	def declareVariable(self, value: Variable, debug: Lace):
 		"""Declare a new Variable in the current scope."""
 		if self.checkVariable(value.ID, debug):
-			debug << NL() << NL << ERROR() << f"Variable [{value.ID}] Redifinition" << END()
+			debug << NL() << ERROR() << f"Variable [{value.ID}] Redifinition" << END()
 			raise KeyError(f"Variable [{value.ID}] Redifinition")
 		value.scope_depth = self.scopeDepth()
 		self.variables.add(value.ID, value)
