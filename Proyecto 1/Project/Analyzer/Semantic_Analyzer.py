@@ -60,7 +60,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		variable.code = ctx.getText()
 		if ctx.expression():
 			var = self.visit(ctx.expression())
-			if isinstance(var, Var):
+			if isinstance(var, Container):
 				variable.code = var.code
 				variable.type = var.type
 			else:
@@ -159,78 +159,76 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
 		text = ctx.getText()
 		if any(item in ["!=", "=="] for item in text):
-			return Var(ctx.getText(), Type.BOOL)
+			return Container(ctx.getText(), Type.BOOL)
 		return self.visitChildren(ctx)
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		text = ctx.getText()
 		if any(item in ["<=", ">=", "<", ">", "!=", "==", "!"] for item in text):
-			return Var(ctx.getText(), Type.BOOL)
+			return Container(ctx.getText(), Type.BOOL)
 		return self.visitChildren(ctx)
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
 		if ctx.getChildCount() == 1:
 			return self.visit(ctx.factor(0))
 
-		left = self.visit(ctx.factor(0))
-		right = self.visit(ctx.factor(1))
+		left  : Container = self.visit(ctx.factor(0))
+		right : Container = self.visit(ctx.factor(1))
 
-		if type(left) is tuple: left = left[0]
-		if type(right) is tuple: right = right[0]
 		#self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
 
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
 
-		if isinstance(left, Variable) or isinstance(left, Var):
-			left = left.code
-		if isinstance(right, Variable) or isinstance(right, Var):
-			right = right.code
-
-		if is_float(str(left)) and is_float(str(right)):
-			if ctx.getChild(1).getText() == '+':
-				return f"({left} + {right})"
-			elif ctx.getChild(1).getText() == '-':
-				return f"({left} - {right})"
+		type = Type.FLOAT
+		if left.type == Type.INT and right.type == Type.INT:
+			type = Type.INT
+		elif left.type == Type.FLOAT and right.type == Type.INT:
+			type = Type.FLOAT
+		elif left.type == Type.INT and right.type == Type.FLOAT:
+			type = Type.FLOAT
+		elif left.type == Type.FLOAT and right.type == Type.FLOAT:
+			type = Type.FLOAT
 
 		if ctx.getChild(1).getText() == '+':
-			return f"({left} + {right})"
+			return Container(f"({left.code} + {right.code})", type)
 		elif ctx.getChild(1).getText() == '-':
-			return f"({left} - {right})"
+			return Container(f"({left.code} - {right.code})", type)
+		else:
+			self.debug << NL() << f"Error Cannot operate different Types [{left.type}]({left.code}) - [{right.type}]({right.code})"
+			raise Exception(f"Error Cannot operate different Types [{left.type}]({left.code}) - [{right.type}]({right.code})")
 
 	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
 		if ctx.getChildCount() == 1:
 			return self.visit(ctx.unary(0))
 
-		left = self.visit(ctx.unary(0))
-		right = self.visit(ctx.unary(1))
+		left  : Container = self.visit(ctx.unary(0))
+		right : Container = self.visit(ctx.unary(1))
 
-		if type(left) is tuple: left = left[0]
-		if type(right) is tuple: right = right[0]
 		#self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
 
 		if left is None or right is None:
 			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
 
-		if isinstance(left, Variable) or isinstance(left, Var):
-			left = left.code
-		if isinstance(right, Variable) or isinstance(right, Var):
-			right = right.code
-
-		if is_float(str(left)) and is_float(str(right)):
-			if ctx.getChild(1).getText() == '*':
-				return Var(f"({left} * {right})", Type.FLOAT)
-			elif ctx.getChild(1).getText() == '/':
-				return Var(f"({left} / {right})", Type.FLOAT)
-			elif ctx.getChild(1).getText() == '%':
-				return Var(f"({left} % {right})", Type.FLOAT)
+		type = Type.FLOAT
+		if left.type == Type.INT and right.type == Type.INT:
+			type = Type.INT
+		elif left.type == Type.FLOAT and right.type == Type.INT:
+			type = Type.FLOAT
+		elif left.type == Type.INT and right.type == Type.FLOAT:
+			type = Type.FLOAT
+		elif left.type == Type.FLOAT and right.type == Type.FLOAT:
+			type = Type.FLOAT
+		else:
+			self.debug << NL() << f"Error Cannot operate different Types [{left.type}]({left.code}) - [{right.type}]({right.code})"
+			raise Exception(f"Error Cannot operate different Types [{left.type}]({left.code}) - [{right.type}]({right.code})")
 
 		if ctx.getChild(1).getText() == '*':
-			return f"({left} * {right})"
+			return Container(f"({left.code} * {right.code})", type)
 		elif ctx.getChild(1).getText() == '/':
-			return f"({left} / {right})"
+			return Container(f"({left.code} / {right.code})", type)
 		elif ctx.getChild(1).getText() == '%':
-			return f"({left} % {right})"
+			return Container(f"({left.code} % {right.code})", type)
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext):
 		return self.visitChildren(ctx)
@@ -256,12 +254,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if ctx.NUMBER():
 			text = ctx.NUMBER().getText()
 			if '.' in text:
-				return Var(text, Type.FLOAT)
+				return Container(text, Type.FLOAT)
 			else:
-				return Var(text, Type.INT)
+				return Container(text, Type.INT)
 		elif ctx.STRING():
 			text = ctx.STRING().getText().strip('"')
-			return Var(text, Type.STRING)
+			return Container(text, Type.STRING)
 		elif ctx.IDENTIFIER():
 			var_name = ctx.IDENTIFIER().getText()
 			if self.scope_tracker.checkVariable(var_name):
@@ -274,13 +272,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 					self.debug << NL() << f"{variable}"
 				raise Exception(f"Variable '{var_name}' no declarada en el ámbito.")
 		elif ctx.getText() == "true":
-			return Var("true", Type.BOOL)
+			return Container("true", Type.BOOL)
 		elif ctx.getText() == "false":
-			return Var("false", Type.BOOL)
+			return Container("false", Type.BOOL)
 		elif ctx.getText() == "nil":
-			return Var("nil", Type.NONE)
+			return Container("nil", Type.NONE)
 		elif ctx.expression():
-			return Var(self.visit(ctx.expression()), Type.UNKNOWN)  # Delegate to expression handling
+			return self.visit(ctx.expression())  # Delegate to expression handling
 
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
 		return self.visitChildren(ctx)

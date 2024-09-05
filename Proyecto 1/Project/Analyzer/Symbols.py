@@ -23,8 +23,8 @@ def inferVariableType(code: str):
 	else:
 		return Type.UNKNOWN
 
-class Var:
-	def __init__(self, code: Union[str, int, float, bool, None] = None, type: Type = Type.UNKNOWN):
+class Container:
+	def __init__(self, code: Union[str, int, float, bool, None], type: Type):
 		self.code = code
 		self.type = type
 	

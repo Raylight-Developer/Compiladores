@@ -93,8 +93,8 @@ var string = "Hola Mundo";
 			self.log.append(f"{G}Comiplation Succesful{RESET}")
 			self.code_output.insertPlainText(resultado)
 		except Exception as e:
-			self.log.append(f"{R}Compilation Failed{RESET}<br><br>{e}<br>{traceback.format_exc()}")
 			self.code_output.insertPlainText(str(e))
+			self.code_output.append(f"{R}Compilation Failed{RESET}<br><br>{e}<br>{traceback.format_exc()}")
 
 	def compile(self, code: str):
 		self.log.append("Compiling...")
