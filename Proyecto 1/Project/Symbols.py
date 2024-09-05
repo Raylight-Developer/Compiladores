@@ -10,9 +10,10 @@ class Type(Enum):
 
 class Variable:
 	def __init__(self):
-		self.ID   : str  = None
-		self.type : Type = Type.UNKNOWN
-		self.code : str  = None
+		self.ID          : str  = None
+		self.type        : Type = Type.UNKNOWN
+		self.code        : str  = None
+		self.scope_depth : int = 0
 
 class Function_Parameter:
 	def __init__(self):
@@ -24,15 +25,17 @@ class Function:
 		self.ID          : str = None
 		self.code        : str = None
 		self.return_type : str = Type.VOID
+		self.scope_depth : int = 0
 
 		self.variables  : List[Variable]           = []
 		self.parameters : List[Function_Parameter] = []
 
 class Class:
 	def __init__(self):
-		self.ID     : str   = None
-		self.code   : str   = None
-		self.parent : Class = None
+		self.ID          : str   = None
+		self.code        : str   = None
+		self.parent      : Class = None
+		self.scope_depth : int   = 0
 
 		self.initializer      : Function       = None
 		self.member_functions : List[Function] = []
