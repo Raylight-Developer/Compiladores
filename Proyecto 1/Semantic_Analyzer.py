@@ -80,45 +80,25 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		
 	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
 		var_name = ctx.IDENTIFIER().getText()
-		var_declartion = ctx.getText()
+		var_declaration = ctx.getText()
 		arreglo = []
 		var_type = "unknown"
 		var_value = None
 		scope = "global"
-		
-		# Capturar el contenido del arreglo
-		patron_array = r'\[([^\]]+)\]'
-		coincidencia_array = re.search(patron_array, var_declartion)
-		if coincidencia_array:
-			elementos = coincidencia_array.group(1).split(',')
-			arreglo = [elemento for elemento in elementos]
-			var_type = "array"
 
-		print("LLEGO ACA")
 		# Determina si estamos en un scope local o global
 		is_local_scope = len(self.table_variables.scopes) > 1
 		current_scope_id = self.current_scope if is_local_scope else "global_0"
-		print(f"RECURRENTE: {current_scope_id}")
+
 		# Inicializa el scope en variables_scope si no existe
 		if current_scope_id not in self.variables_scope:
 			self.variables_scope[current_scope_id] = {}
-		print("PASO POR ACA")
-		if not self.variables_scope:
-			print("NO HAY VARIABLES")
-		else:
-			print("SI ESTA LLENO")
-		# Verifica si la variable ya está declarada globalmente (en global_0)
-		if var_name in self.variables_scope["global_0"]:
-			self.log.debug(f"'{var_name}' ya está declarada como global, no se sobrescribirá.")
-			# Si la variable ya existe globalmente, no permitimos redeclararla localmente
-			if is_local_scope:
-				raise Exception(f"Error: Variable '{var_name}' ya está declarada globalmente y no puede ser redeclarada localmente.")
-			# Si estamos en el scope global y la variable ya existe, lanzamos una excepción
-			raise Exception(f"Error: Variable '{var_name}' ya está declarada en el scope global.")
-		print("NO HAY PROBLEMA POR ACA")
-		# Verifica si la variable ya está declarada en el scope actual (local)
-		if is_local_scope and var_name in self.variables_scope[current_scope_id]:
-			raise Exception(f"Error: Variable '{var_name}' ya declarada en el scope '{current_scope_id}'.")
+
+		# Verifica si la variable ya está declarada en el scope actual o en scopes superiores
+		for scope in reversed(self.table_variables.scopes):
+			scope_id = scope.id
+			if var_name in self.variables_scope.get(scope_id, {}):
+				raise Exception(f"Error: Variable '{var_name}' ya declarada en el scope '{scope_id}'.")
 
 		# Asigna el tipo y el valor de la variable si hay una expresión asociada
 		if ctx.expression():
@@ -136,20 +116,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.variables_scope[current_scope_id][var_name] = variable_entry
 
-		self.log.debug(f"variables_scope: {self.variables_scope}")
-
-		'''
-		 	Esto ayuda a poder mantener la persistencia entre el tipo de scope que se encuentra la variable
-			pues al no tenerlo, las globales cambiaban de global a local.
-		'''
+		# Persistencia entre el tipo de scope
 		if is_local_scope:
-			# Si la variable ya está declarada globalmente, no se permite cambiarla a local
 			if var_name in self.variables_scope.get("global_0", {}):
-				self.log.debug(f"'{var_name}' ya está declarada como global, no se sobrescribirá en el scope local.")
-				scope = "global"# No permitir redeclarar globales en scopes locales
+				scope = "global"
 			else:
 				scope = "local"
-
 
 		# Agrega la variable a la tabla de símbolos
 		property = Symbol_Property()
@@ -163,6 +135,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		node_id = self.nodeTree(ctx)
 
 		return node_id
+
+
 
 	def determine_type(self, value):
 		if isinstance(value, bool):
@@ -179,11 +153,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		text = ctx.getText().strip()
 		test = ctx.getText()
-		# print(f"HAY BREAK {text}")
-
+		print(f"HAY BREAK {text}")
+		
 		# if test[0] == "{" and test[1] == "}":
 		# 	raise Exception("Error: La declaracion if no tiene cuerpo")
-		
 		# Detectar 'break'
 		if text == "break;":
 			if not self.inside_loop:
@@ -234,7 +207,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.log.debug(f"CONDICION VALUE DEL FOR: {condition_value}")
 
 		self.log.debug(ctx.statement().getText())
-		
+		# if ctx.varDecl():
+		# 	self.visit(ctx.varDecl())
 		if(ctx.statement):
 			self.visit(ctx.statement())
 
@@ -266,9 +240,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Evaluar la condición del 'if'
 		condition_value = self.visit(ctx.expression())
 		text = ctx.getText()
-		self.log.debug(f"condicion valor: {condition_value}")
 		self.log.debug(f"CONDICION IF: {condition_value}")
 		self.log.debug(f"VALOR DE LA CONDICION: {condition_value}")
+
+		# if ctx.varDecl():
+		# 	self.visit(ctx.varDecl())
+		# Validar si es una tupla, en este caso, estas validaciones son para obtener el valor de una variable
 		if isinstance(condition_value, tuple):
 			if not isinstance(condition_value[0], bool):
 				raise TypeError(f"Error Tipo 1: La condición en 'if' debe ser booleana, pero se obtuvo {type(condition_value).__name__}.")
@@ -360,7 +337,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.table_variables.enter_scope()
 		self.current_scope = self.table_variables.scopes[-1].id
 		self.log.debug(f"Entering 'while' scope: {self.current_scope}")
-		
+
+		if condition_value:
+			self.visit(ctx.statement())
 		# Mientras la condición sea True, ejecutar el bloque 'while'
 		# while condition_value:
 		# 	# Iterar sobre todas las declaraciones dentro del bloque 'while'
@@ -378,24 +357,31 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.inside_loop = False
 		return None
 
-
 	def visitBlock(self, ctx: CompiscriptParser.BlockContext):
 		# Entrar en un nuevo scope, lo que automáticamente incrementa el contador de scopes
 		self.table_variables.enter_scope()
-		# Imprimir el identificador del nuevo scope para debugging
-		self.log.debug(f"Entering scope visitBlock: {self.table_variables.scopes[-1].id}")
+		self.log.debug(f"Entering new scope visitBlock: {self.table_variables.scopes[-1].id}")
+		
 		self.current_scope = self.table_variables.scopes[-1].id
+		
 		# Evaluar todas las declaraciones dentro del bloque
 		result = None
 		for declaration in ctx.declaration():
 			result = self.visit(declaration)
-		self.log.debug(f"RESULTDO SCOPE: {result}")
 
 		# Salir del scope al final del bloque, lo que también elimina el scope del stack
 		self.log.debug(f"Exiting scope: {self.table_variables.scopes[-1].id}")
 		self.table_variables.exit_scope()
-		self.current_scope = "global_0"
+		
+		# Al salir del scope, restablecemos el current_scope al anterior
+		if len(self.table_variables.scopes) > 0:
+			self.current_scope = self.table_variables.scopes[-1].id
+		else:
+			self.current_scope = "global_0"
+		
 		return result
+
+
 
 
 	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
@@ -413,7 +399,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
-			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
+			raise Exception("ERROR TYPE VISIT EXPRESION TYPE. Error en la evaluación de la expresión: uno de los operandos es None.")
 		self.log(left, operator, right)
 		if operator == '+':
 			return left + right
@@ -426,9 +412,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif operator == '%':
 			return left % right
 		# Si el operador no es reconocido, lanza una excepción
-		
 		else:
-			raise Exception(f"Operador desconocido: {operator}")
+			raise Exception(f"VISIT EXPRESION TYPE ERROR. Operador desconocido: {operator}")
 
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
@@ -500,7 +485,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			operator = ctx.getChild(1).getText()  # Obtiene el operador ('==' o '!=')
 			right = self.visit(ctx.getChild(2))  # Evalúa la expresión a la derecha del operador
 
-			self.log.debug(f"Left: {left}, Right: {right}, Operator: {operator}")
+			self.log.debug(f"EQUALITY --- Left: {left}, Right: {right}, Operator: {operator}")
 
 			# Realiza la comparación una vez que ambas expresiones han sido evaluadas
 			if operator == "==":
@@ -513,28 +498,28 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 
 	def visitComparison(self, ctx: CompiscriptParser.ComparisonContext):
-		text = ctx.getText()
-		data = []
-		if "<=" in text:
-			data = text.split("<=")
-			self.log.debug(f"Datos después del split por '<=': {data}")
-			data = self.depuracion_elemntos_con_detalles_extra(data)
-			return self.compare_values(data, "<=")
-		elif ">=" in text:
-			data = text.split(">=")
-			self.log.debug(f"Datos después del split por '>=': {data}")
-			data = self.depuracion_elemntos_con_detalles_extra(data)
-			return self.compare_values(data, ">=")
-		elif ">" in text:
-			data = text.split(">")
-			self.log.debug(f"Datos después del split por '>': {data}")
-			data = self.depuracion_elemntos_con_detalles_extra(data)
-			return self.compare_values(data, ">")
-		elif "<" in text:
-			data = text.split("<")
-			self.log.debug(f"Datos después del split por '<': {data}")
-			data = self.depuracion_elemntos_con_detalles_extra(data)
-			return self.compare_values(data, "<")
+		if ctx.getChildCount() == 3:
+			left = self.visit(ctx.getChild(0))
+			operator = ctx.getChild(1).getText()
+			right = self.visit(ctx.getChild(2))
+			if isinstance(left, dict):
+				left = left["value"]
+			elif isinstance(right, dict):
+				right = right["value"]
+			print(left, type(left), right, type(right))
+			if type(left) is not type(right) in [int, float]:
+				raise Exception(f"DATA TYPE ERROR COMPARISON: No se pueden comparar 2 valores no numericos. {type(left).__name__}, {type(right).__name__}")
+			
+	
+			self.log.debug(f"COMPARISON Left: {left}, Right: {right}, Operator: {operator}")
+			if operator == "<=":
+				return left <= right
+			elif operator == ">=":
+				return left >= right
+			elif operator == "<":
+				return left < right
+			elif operator == ">":
+				return left > right
 		else:
 			return self.visitChildren(ctx)
 		
@@ -555,69 +540,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return stripped_value
 
 
-	def compare_values(self, data, operator):
-		value1, value2 = "",""
-		# print(f"DATA QUE SE RECIBE, {data}, {data[0]}, {data[1]}")
-		print("NO ELIMINAR O COMENTAR ESTOS PRINTS, LOS ERRORES EN EL IDE NO SON MUY DESCRIPTIVOS HASTA ESTE PUNTO")
-		print("SI SE IMPRIME ESTO, ES PORQUE HAY CONFLICTO CON LA VARIABLE Y ES SCOPE, EN ESTA CASO, SE BUSCA LA VAR EN EL SCOPE ERRONEO")
-		
-		# Primer valor de la comparativa, validando que este en el scope global
-		if data[0] in self.variables_scope["global_0"]:
-			value1 = self.variables_scope["global_0"][data[0]]["value"]
-		else:
-			# Validar que este en el scope local
-			if data[0] in self.variables_scope[self.current_scope]:
-				value1 = self.variables_scope[self.current_scope][data[0]]["value"]
-			else:
-				# Castear el valor que no esta en un variable
-				value1 = self.try_cast(data[0])
-
-		# Segundo valor de la comparativa, Valida que este en el scope global
-		if data[1] in self.variables_scope["global_0"]:
-			value2 = self.variables_scope["global_0"][data[1]]["value"]
-		else:
-			# Validar que este en el scope local
-			if data[1] in self.variables_scope[self.current_scope]:
-				value2 = self.variables_scope[self.current_scope][data[1]]["value"]		
-			else:
-				# Castear el valor que no esta en un variable
-				value2 = self.try_cast(data[1])
-		
-		print(f"VALORES: {value1}, {value2}, {type(value1)}") # Estos son los valores del ciclo for, es decir, la var y la cond
-		
-		comparison_operations = {
-			"==": lambda x, y: x == y,
-			"!=": lambda x, y: x != y,
-			">": lambda x, y: x > y,
-			">=": lambda x, y: x >= y,
-			"<": lambda x, y: x < y,
-			"<=": lambda x, y: x <= y
-		}
-
-		# Manejar booleanos (caso especial)
-		if isinstance(value1, str) and value1.lower() in ["true", "false"]:
-			value1 = value1.lower() == "true"
-		if isinstance(value2, str) and value2.lower() in ["true", "false"]:
-			value2 = value2.lower() == "true"
-		
-		# Verificar tipos y hacer la comparación
-		if isinstance(value1, (int, float, bool)) and isinstance(value2, (int, float, bool)):
-			return comparison_operations[operator](value1, value2)
-
-		# Comparar cadenas solo con `==` y `!=`
-		if isinstance(value1, str) and isinstance(value2, str) and operator in ["==", "!="]:
-			return comparison_operations[operator](value1, value2)
-
-		
-
-		raise TypeError(f"No se pueden comparar valores de tipos diferentes para [{value1}] y [{value2}]: {type(value1).__name__} y {type(value2).__name__}")
-
-
-	def depuracion_elemntos_con_detalles_extra(self, data):
-		data[0] = data[0].strip('()')
-		data[1] = data[1].strip('()')
-		self.log.debug(f"Datos después de eliminar paréntesis: {data}")
-		return data
+	def validar_dataType(self, left, right):
+		if isinstance(left,dict):
+			left = left["value"]
+		elif isinstance(right, dict):
+			right = right["value"]
 	
 
 	def visitTerm(self, ctx: CompiscriptParser.TermContext):
@@ -754,14 +681,17 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return str_value
 		elif ctx.IDENTIFIER():
 			var_name = ctx.IDENTIFIER().getText()
-			if var_name in self.local_variables:
-				return self.local_variables[var_name], "unknown"  # Unknown until evaluated
-			elif var_name in self.global_variables:
-				return self.global_variables[var_name], "unknown"
-			elif var_name in self.variables_scope[self.current_scope]:
+			print(f"VAR NAME : {var_name}")
+
+			# Verificar si la variable está en el scope actual o en los superiores
+			if self.current_scope in self.variables_scope and var_name in self.variables_scope[self.current_scope]:
 				return self.variables_scope[self.current_scope][var_name]
-			else:
-				raise Exception(f"Variable '{var_name}' no declarada en el ámbito {self.current_scope}.")
+			
+			# Si no está en el scope local, verificar en los globales
+			if "global_0" in self.variables_scope and var_name in self.variables_scope["global_0"]:
+				return self.variables_scope["global_0"][var_name]
+
+			raise Exception(f"ERROR VAR DECLARATION: '{var_name}' no declarada en el scope {self.current_scope}.")
 		elif ctx.getText() == "true":
 			return True
 		elif ctx.getText() == "false":
