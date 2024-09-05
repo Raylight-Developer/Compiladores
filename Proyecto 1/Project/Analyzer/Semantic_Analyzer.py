@@ -10,6 +10,8 @@ from GUI.Symbol_Table import *
 from GUI.Logger import *
 from .Scope import *
 
+FULL_VIEW = False
+
 class Semantic_Analyzer(CompiscriptVisitor):
 	def __init__(self, debug: Lace, table_c: Symbol_Table, table_f: Symbol_Table, table_v: Symbol_Table, parser: CompiscriptParser):
 		super().__init__()
@@ -55,13 +57,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 
 	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
-		self.debug << NL() << "ENTER VarDecl"
-		self.debug += 1
+		self.enter("VarDecl")
 #
 		variable = Variable()
-#
 		variable.ID = ctx.IDENTIFIER().getText()
 		variable.code = ctx.getText()
+#
 		if ctx.expression():
 			var = self.visit(ctx.expression())
 			if isinstance(var, Container):
@@ -72,13 +73,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				variable.type = inferVariableType(var)
 
 		self.debug << NL() << f"Variable [{variable.ID}]"
-		self.debug << NL() << f"Declaration [{variable.code}]"
 #
 		self.scope_tracker.declareVariable(variable)
 		self.addSymbolToTable(variable)
 #
-		self.debug -= 1
-		self.debug << NL() << "EXIT  VarDecl"
+		self.exit("VarDecl")
 
 		return self.visitChildren(ctx)
 
@@ -89,12 +88,23 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitForStmt(self, ctx:CompiscriptParser.ForStmtContext):
-		return self.visitChildren(ctx)
+		self.enter("For Statement")
 
-	def visitIfStmt(self, ctx:CompiscriptParser.IfStmtContext):
 		self.scope_tracker.enterScope()
 		children = self.visitChildren(ctx)
 		self.scope_tracker.exitScope()
+		
+		self.exit("For Statement")
+		return children
+
+	def visitIfStmt(self, ctx:CompiscriptParser.IfStmtContext):
+		self.enter("If Statement")
+
+		self.scope_tracker.enterScope()
+		children = self.visitChildren(ctx)
+		self.scope_tracker.exitScope()
+
+		self.exit("If Statement")
 		return children
 
 	def visitPrintStmt(self, ctx:CompiscriptParser.PrintStmtContext):
@@ -104,22 +114,31 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitWhileStmt(self, ctx:CompiscriptParser.WhileStmtContext):
+		self.enter("While Statement")
+
 		self.scope_tracker.enterScope()
 		children = self.visitChildren(ctx)
 		self.scope_tracker.exitScope()
+
+		self.exit("While Statement")
 		return children
 
 	def visitBlock(self, ctx:CompiscriptParser.BlockContext):
+		self.enter("Block")
+
 		self.scope_tracker.enterScope()
 		children = self.visitChildren(ctx)
 		self.scope_tracker.exitScope()
-		return children
 
+		self.exit("Block")
+		return children
 
 	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
 		return self.visitChildren(ctx)
 
 	def visitExpression(self, ctx:CompiscriptParser.ExpressionContext):
+		self.enterFull("Expression")
+
 		if ctx.getChildCount() == 1:
 			return self.visit(ctx.getChild(0))
 
@@ -130,7 +149,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
 			self.debug << NL() << ERROR() << f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]" << END()
-			self.error(f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
+			self.error()
 
 		if operator == '+':
 			return left + right
@@ -146,10 +165,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		
 		else:
 			self.debug << NL() << ERROR() << f"Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]" << END()
-			self.error(f"Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]")
+			self.error()
+
+		self.exitFull("Expression")
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
 		"""Assign Code to a Variable"""
+		self.enterFull("Assignment")
 
 		if ctx.IDENTIFIER() is not None:
 			var_name = ctx.IDENTIFIER().getText()
@@ -162,6 +184,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 			self.scope_tracker.lookupVariable(var_name).code = value
 
+		self.exitFull("Assignment")
 		return self.visitChildren(ctx)
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext):
@@ -171,19 +194,32 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
+		self.enterFull("Equality")
+
 		text = ctx.getText()
+
+		self.exitFull("Equality")
+
 		if any(item in ["!=", "=="] for item in text):
 			return Container(ctx.getText(), Type.BOOL)
 		return self.visitChildren(ctx)
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
+		self.enterFull("Comparison")
+
 		text = ctx.getText()
+
+		self.exitFull("Comparison")
+
 		if any(item in ["<=", ">=", "<", ">", "!=", "==", "!"] for item in text):
 			return Container(ctx.getText(), Type.BOOL)
 		return self.visitChildren(ctx)
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
+		self.enterFull("Term")
+
 		if ctx.getChildCount() == 1:
+			self.exitFull("Term")
 			return self.visit(ctx.factor(0))
 
 		left  : Container = self.visit(ctx.factor(0))
@@ -194,7 +230,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		if left is None or right is None:
 			self.debug << NL() << ERROR() << f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]" << END()
-			self.error(f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
+			self.error()
 
 		type = Type.FLOAT
 		if left.type == Type.INT and right.type == Type.INT:
@@ -205,17 +241,22 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			type = Type.FLOAT
 		elif left.type == Type.FLOAT and right.type == Type.FLOAT:
 			type = Type.FLOAT
+		else:
+			self.debug << NL() << ERROR() << f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})" << END()
+			self.error()
+
+		self.exitFull("Term")
 
 		if operator == '+':
 			return Container(f"({left.code} + {right.code})", type)
 		elif operator == '-':
 			return Container(f"({left.code} - {right.code})", type)
-		else:
-			self.debug << NL() << ERROR() << f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})" << END()
-			self.error(f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})")
 
 	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
+		self.enterFull("Factor")
+
 		if ctx.getChildCount() == 1:
+			self.exitFull("Factor")
 			return self.visit(ctx.unary(0))
 
 		left  : Container = self.visit(ctx.unary(0))
@@ -226,7 +267,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		if left is None or right is None:
 			self.debug << NL() << ERROR() << f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]" << END()
-			self.error(f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
+			self.error()
 
 		type = Type.FLOAT
 		if left.type == Type.INT and right.type == Type.INT:
@@ -239,7 +280,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			type = Type.FLOAT
 		else:
 			self.debug << NL() << ERROR() << f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})" << END()
-			self.error(f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})")
+			self.error()
+
+		self.exitFull("Factor")
 
 		if operator == '*':
 			return Container(f"({left.code} * {right.code})", type)
@@ -255,43 +298,49 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitUnary(self, ctx:CompiscriptParser.UnaryContext):
+		self.enterFull("Unary")
+
 		if ctx.getChildCount() == 2:
 			operator = ctx.getChild(0).getText()
 			operand = self.visit(ctx.getChild(1))
 			if operator == '-':
+				self.exitFull("Unary")
 				return -operand
 			elif operator == '!':
+				self.exitFull("Unary")
 				return not operand
 		else:
+			self.exitFull("Unary")
 			return self.visit(ctx.getChild(0))
 
 	def visitCall(self, ctx:CompiscriptParser.CallContext):
 		return self.visitChildren(ctx)
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
+		self.enterFull("Primary")
+
 		if ctx.NUMBER():
 			text = ctx.NUMBER().getText()
+			self.exitFull("Primary")
 			if '.' in text:
 				return Container(text, Type.FLOAT)
 			else:
 				return Container(text, Type.INT)
 		elif ctx.STRING():
 			text = ctx.STRING().getText().strip('"')
+			self.exitFull("Primary")
 			return Container(text, Type.STRING)
 		elif ctx.IDENTIFIER():
 			var_name = ctx.IDENTIFIER().getText()
 			if self.scope_tracker.checkVariable(var_name):
+				self.exitFull("Primary")
 				return self.scope_tracker.lookupVariable(var_name)
 			else:
 				self.debug << NL() << ERROR() << f"Variable '{var_name}' out of scope." << END()
-				self.debug += 1
-				self.debug << NL() << f"Variables in the current scope:"
-				self.debug += 1
-				for variable in self.scope_tracker.current_scope.variables.forward_map:
-					self.debug << NL() << f"{variable}"
-				self.debug -= 2
-				self.error(f"Variable '{var_name}' out of scope.")
-		elif ctx.getText() == "true":
+				self.error()
+
+		self.exitFull("Primary")
+		if ctx.getText() == "true":
 			return Container("true", Type.BOOL)
 		elif ctx.getText() == "false":
 			return Container("false", Type.BOOL)
@@ -317,8 +366,26 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif isinstance(value, Variable):
 			self.table_v.addSymbol(value)
 
-	def error(self, message: str):
-		raise Exception(message)
+	def error(self):
+		raise Exception()
+	
+	def enterFull(self, type: str):
+		if FULL_VIEW:
+			self.debug << NL() << "ENTER " + type
+			self.debug += 1
+
+	def exitFull(self, type: str):
+		if FULL_VIEW:
+			self.debug -= 1
+			self.debug << NL() << "EXIT  " + type
+
+	def enter(self, type: str):
+		self.debug << NL() << "ENTER " + type
+		self.debug += 1
+
+	def exit(self, type: str):
+		self.debug -= 1
+		self.debug << NL() << "EXIT  " + type
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
 		node_id = f"node{self.count}"

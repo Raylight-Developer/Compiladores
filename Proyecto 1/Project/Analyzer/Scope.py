@@ -15,7 +15,7 @@ class Scope:
 		"""Declare a new Class in the current scope."""
 		if self.checkClass(value.ID, debug):
 			debug << NL() << ERROR() << f"Class [{value.ID}] Redifinition" << END()
-			raise KeyError(f"Class [{value.ID}] Redifinition")
+			raise Exception()
 		value.scope_depth = self.scopeDepth()
 		self.classes.add(value.ID, value)
 		return True
@@ -36,13 +36,14 @@ class Scope:
 		elif self.parent is not None:
 			return self.parent.lookupClass(ID, debug)
 		else:
-			raise KeyError(f"Class [{ID.ID}] not declared in this scope")
+			debug << NL() << ERROR() << f"Class [{ID}] not declared in this scope" << END()
+			raise Exception()
 
 	def declareFunction(self, value: Function, debug: Lace):
 		"""Declare a new Function in the current scope."""
 		if self.checkFunction(value.ID, debug):
 			debug << NL() << ERROR() << f"Function [{value.ID}] Redifinition" << END()
-			raise KeyError(f"Function [{value.ID}] Redifinition")
+			raise Exception()
 		value.scope_depth = self.scopeDepth()
 		self.functions.add(value.ID, value)
 
@@ -62,13 +63,14 @@ class Scope:
 		elif self.parent is not None:
 			return self.parent.lookupFunction(ID, debug)
 		else:
-			raise KeyError(f"Function [{ID.ID}] not declared in this scope")
+			debug << NL() << ERROR() << f"Function [{ID}] not declared in this scope" << END()
+			raise Exception()
 
 	def declareVariable(self, value: Variable, debug: Lace):
 		"""Declare a new Variable in the current scope."""
 		if self.checkVariable(value.ID, debug):
 			debug << NL() << ERROR() << f"Variable [{value.ID}] Redifinition" << END()
-			raise KeyError(f"Variable [{value.ID}] Redifinition")
+			raise Exception()
 		value.scope_depth = self.scopeDepth()
 		self.variables.add(value.ID, value)
 
@@ -88,7 +90,8 @@ class Scope:
 		elif self.parent is not None:
 			return self.parent.lookupVariable(ID, debug)
 		else:
-			raise KeyError(f"Variable [{ID}] not declared in this scope")
+			debug << NL() << ERROR() << f"Variable [{ID}] not declared in this scope" << END()
+			raise Exception()
 
 	def scopeDepth(self) -> int:
 		"""Count how deep the current scope is relative to the global scope."""

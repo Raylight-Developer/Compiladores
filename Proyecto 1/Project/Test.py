@@ -1,10 +1,11 @@
-from GUI.Logger import*
 from GUI.Syntax_Highlighting import *
+from GUI.Logger import*
+
 from Tests.Final_Tests import *
 from Tests.Large_Tests import *
 from Tests.Small_Tests import *
+
 from Analyzer.Semantic_Analyzer import *
-from Analyzer.SyntaxErrorListener import *
 
 class Tester(QMainWindow):
 	def __init__(self):
@@ -16,6 +17,7 @@ class Tester(QMainWindow):
 		self.code_output = Test_Logger(False)
 
 		self.log = Test_Logger(False)
+		self.debug = Lace()
 
 		self.table_functions : List[Symbol_Table] = []
 		self.table_variables : List[Symbol_Table] = []
@@ -52,34 +54,28 @@ class Tester(QMainWindow):
 			self.log.append("CODE: {")
 			self.log.addCode(code.strip(), 1)
 			self.log.append("}")
-			result, output, debug = self.compile(i, code, title_id)
+			result, output, error = self.compile(i, code, title_id)
 			if result:
 				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {output}\n")
 				if should_pass:
 					self.log.append(f"{G}Compilation Succesful{RESET}<br>")
 					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
-					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug, 1)
 				else:
 					self.title_failures.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{R}Compilation Should Have Failed{RESET}")
-					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
-					self.log.addCollapse("Full Traceback", f"{traceback.format_exc()}", 1)
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug, 1)
 			else:
-				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {e}\n")
+				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {output}\n")
 				if should_pass == False:
 					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
-					self.log.append(f"{G}Compilation ''Succesful''{RESET}{Y}(Should fail and did fail){RESET}" + " {")
-					self.log.append(f"{output}", 1)
-					self.log.append("}")
-					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
+					self.log.append(f"{G}Compilation ''Succesful''{RESET}{Y}(Should fail and did fail){RESET}")
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug, 1)
 				else:
 					self.title_failures.append((i, title, expected_classes, expected_functions, expected_variables))
-					self.log.append(f"{R}Compilation Failed{RESET}" + " {")
-					self.log.append(f"{output}", 1)
-					self.log.append(f"{traceback.format_exc().splitlines()[-3]}", 3)
-					self.log.append("}")
-					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
-					self.log.addCollapse("Full Traceback", f"{traceback.format_exc()}", 1)
+					self.log.append(f"{R}Compilation Failed{RESET}")
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug, 1)
+					self.log.addCollapse(f"Traceback", f"{error}", 3)
 
 			self.log.addSep()
 			self.code_output.addSep()
@@ -151,6 +147,7 @@ class Tester(QMainWindow):
 			self.tabs.currentWidget().widget(3).layout().itemAt(1).widget().resizeColumnsToContents()
 
 	def compile(self, i: int, code: str, title_id: str) -> Tuple[bool, str, str]:
+		self.debug.clear()
 		self.table_classes  .append(Symbol_Table("Classes"))
 		self.table_functions.append(Symbol_Table("Functions"))
 		self.table_variables.append(Symbol_Table("Variables"))
@@ -190,34 +187,15 @@ class Tester(QMainWindow):
 			token_stream = CommonTokenStream(lexer)
 			parser = CompiscriptParser(token_stream)
 
-			error_listener = SyntaxErrorListener(self.log)
-			parser.removeErrorListeners()
-			parser.addErrorListener(error_listener)
-			
 			tree = parser.program()
 
-			if error_listener.has_error:
-				raise Exception("Error de sintaxis detectado durante la compilación.")
-
-			analyzer = Semantic_Analyzer(self.table_classes[-1], self.table_functions[-1], self.table_variables[-1], parser)
+			analyzer = Semantic_Analyzer(self.debug, self.table_classes[-1], self.table_functions[-1], self.table_variables[-1], parser)
 			analyzer.visit(tree)
 
-			if self.options["render"]:
-				if not os.path.exists("./Output/Tests"):
-					os.makedirs("Output/Tests")
-				analyzer.nodeTree(tree)
-				analyzer.graph.render(f"Syntax-Graph[{i}]-({title_id})","./Output/Tests", False, True, "png")
-
-			self.table_classes  [-1].resizeColumnsToContents()
-			self.table_functions[-1].resizeColumnsToContents()
-			self.table_variables[-1].resizeColumnsToContents()
-
-			self.log.debug(analyzer.debug)
-
-			return True, tree.toStringTree(recog=parser), str(analyzer.debug)
+			return True, tree.toStringTree(recog=parser), ""
 
 		except Exception as e:
-			return False, e, str(analyzer.debug).strip()
+			return False, e, traceback.format_exc()
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")

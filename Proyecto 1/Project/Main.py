@@ -1,7 +1,6 @@
 from GUI.Logger import*
 from GUI.Syntax_Highlighting import *
 from Analyzer.Semantic_Analyzer import *
-from Analyzer.SyntaxErrorListener import *
 
 class Display(QMainWindow):
 	def __init__(self):
@@ -31,7 +30,7 @@ var promedio = ( min + max ) / 2;
 var string = "Hola Mundo";
 for (var i = 0; i < 2; i = i + 1) {
 	var i;
-	var j =2;
+	var j = 2;
 	if (j < 2) {
 		var j;
 	}
@@ -128,7 +127,7 @@ for (var i = 0; i < 2; i = i + 1) {
 			self.table_variables.resizeColumnsToContents()
 
 			self.log.log(str(self.debug).strip())
-			self.log.insertHtml(f"{G}Comiplation Succesful{RESET}<br>")
+			self.log.insertHtml(f"<br><br>{G}Comiplation Succesful{RESET}<br>")
 			self.code_output.insertPlainText(tree.toStringTree(recog=parser))
 
 		except Exception as e:
@@ -136,6 +135,9 @@ for (var i = 0; i < 2; i = i + 1) {
 			self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>{e}")
 			self.code_output.insertHtml(f"{R}Compilation Failed{RESET}<br><br>{e}<br>")
 			self.code_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
+
+		self.log.verticalScrollBar().setValue(self.log.verticalScrollBar().maximum())
+		self.code_output.verticalScrollBar().setValue(self.code_output.verticalScrollBar().maximum())
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")
