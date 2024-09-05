@@ -30,9 +30,9 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row, 2, QTableWidgetItem(str(value.code)))
 		elif isinstance(value, Function):
 			self.setItem(row, 0, QTableWidgetItem(str(value.ID)))
-			self.setItem(row, 1, QTableWidgetItem(str(value.return_type)))
+			self.setItem(row, 1, QTableWidgetItem(value.return_type.value))
 			self.setItem(row, 2, QTableWidgetItem(str(value.code)))
 		elif isinstance(value, Variable):
 			self.setItem(row, 0, QTableWidgetItem(str(value.ID)))
-			self.setItem(row, 1, QTableWidgetItem(str(value.type)))
+			self.setItem(row, 1, QTableWidgetItem(value.type.value))
 			self.setItem(row, 2, QTableWidgetItem(str(value.code)))

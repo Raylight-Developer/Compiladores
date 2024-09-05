@@ -214,8 +214,8 @@ class Tester(QMainWindow):
 			raise e
 
 app = QApplication(sys.argv)
-font_id = QFontDatabase.addApplicationFont("./RobotoMono-Medium.ttf")
-app.setStyleSheet(open("./QStyleSheet.css", "r").read())
+font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")
+app.setStyleSheet(open("./Resources/QStyleSheet.css", "r").read())
 Window = Tester()
 Window.showMaximized()
 app.exec()

@@ -22,10 +22,10 @@ class Function_Parameter:
 
 class Function:
 	def __init__(self):
-		self.ID          : str = None
-		self.code        : str = None
-		self.return_type : str = Type.VOID
-		self.scope_depth : int = 0
+		self.ID          : str  = None
+		self.code        : str  = None
+		self.return_type : Type = Type.VOID
+		self.scope_depth : int  = 0
 
 		self.variables  : List[Variable]           = []
 		self.parameters : List[Function_Parameter] = []
