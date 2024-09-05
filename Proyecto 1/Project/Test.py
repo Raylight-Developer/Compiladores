@@ -1,10 +1,10 @@
-from Logger import*
-from Syntax_Highlighting import *
+from GUI.Logger import*
+from GUI.Syntax_Highlighting import *
 from Tests.Final_Tests import *
 from Tests.Large_Tests import *
 from Tests.Small_Tests import *
-from Semantic_Analyzer import *
-from SyntaxErrorListener import *
+from Analyzer.Semantic_Analyzer import *
+from Analyzer.SyntaxErrorListener import *
 
 class Tester(QMainWindow):
 	def __init__(self):
@@ -147,9 +147,9 @@ class Tester(QMainWindow):
 			self.tabs.currentWidget().widget(3).layout().itemAt(1).widget().resizeColumnsToContents()
 
 	def compile(self, i: int, code: str, title_id: str) -> str:
-		self.table_functions.append(Symbol_Table(self.log, "Fun"))
-		self.table_variables.append(Symbol_Table(self.log, "Var"))
-		self.table_classes  .append(Symbol_Table(self.log, "Cla"))
+		self.table_classes  .append(Symbol_Table("Classes"))
+		self.table_functions.append(Symbol_Table("Functions"))
+		self.table_variables.append(Symbol_Table("Variables"))
 
 		l1 = QVBoxLayout()
 		l1.addWidget(QLabel("Classes"))

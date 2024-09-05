@@ -1,7 +1,7 @@
 from Include import *
 
-from Utils import *
-from Symbols import *
+from .Utils import *
+from .Symbols import *
 
 class Scope:
 	def __init__(self, parent: 'Scope' = None):

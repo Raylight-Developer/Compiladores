@@ -1,12 +1,11 @@
 from Include import *
 
-from Symbols import *
+from Analyzer.Symbols import *
 
 class Symbol_Table(QTableWidget):
-	def __init__(self, log: QTextBrowser, type: str):
+	def __init__(self, type: str):
 		super().__init__()
 		self.columns = []
-		self.log = log
 
 		self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
 

@@ -1,5 +1,5 @@
 from Include import *
-from Syntax_Highlighting import *
+from GUI.Syntax_Highlighting import *
 
 class Viewer(QTextBrowser):
 	def __init__(self):

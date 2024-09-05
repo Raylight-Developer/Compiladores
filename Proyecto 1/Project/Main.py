@@ -1,7 +1,7 @@
-from Logger import*
-from Syntax_Highlighting import *
-from Semantic_Analyzer import *
-from SyntaxErrorListener import *
+from GUI.Logger import*
+from GUI.Syntax_Highlighting import *
+from Analyzer.Semantic_Analyzer import *
+from Analyzer.SyntaxErrorListener import *
 
 class Display(QMainWindow):
 	def __init__(self):
@@ -67,9 +67,9 @@ while (juan.edad < 25) {
 
 		self.tables = QTabWidget()
 
-		self.table_classes   = Symbol_Table(self.log, "Classes")
-		self.table_functions = Symbol_Table(self.log, "Functions")
-		self.table_variables = Symbol_Table(self.log, "Variables")
+		self.table_classes   = Symbol_Table("Classes")
+		self.table_functions = Symbol_Table("Functions")
+		self.table_variables = Symbol_Table("Variables")
 
 		self.tables.addTab(self.table_classes  , QIcon(), "Classes")
 		self.tables.addTab(self.table_functions, QIcon(), "Functions")
@@ -167,10 +167,9 @@ while (juan.edad < 25) {
 			raise Exception(str(e))
 
 
-#QApplication.setAttribute(Qt.ApplicationAttribute.AA_NativeWindows)
 app = QApplication(sys.argv)
-font_id = QFontDatabase.addApplicationFont("./RobotoMono-Medium.ttf")
-app.setStyleSheet(open("./QStyleSheet.css", "r").read())
+font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")
+app.setStyleSheet(open("./Resources/QStyleSheet.css", "r").read())
 Window = Display()
 Window.showMaximized()
 app.exec()
