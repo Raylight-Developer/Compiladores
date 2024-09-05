@@ -1,7 +1,6 @@
 package com.compiler;
 
 import com.compiler.CompiScript.*;
-import com.compiler.CompiScript.CompiScriptParser.ProgramContext;
 import com.compiler.GUI.*;
 
 import org.antlr.v4.runtime.*;
@@ -158,7 +157,7 @@ class Display extends QMainWindow {
 			CompiScriptParser parser = new CompiScriptParser(tokenStream);
 
 			// Parse the code
-			ProgramContext tree = parser.program();
+			CompiScriptParser.ProgramContext tree = parser.program();
 
 			Semantic_Analyzer visitor = new Semantic_Analyzer(log, tableClasses, tableFunctions, tableVariables, parser);
 			visitor.visit(tree);
@@ -177,7 +176,14 @@ class Display extends QMainWindow {
 
 public class Main {
 	public static void main(String[] args) {
-		QApplication.initialize(args);
+		QApplication app = QApplication.initialize(args);
+		QFontDatabase.addApplicationFont("src/main/resources/RobotoMono-Medium.ttf");
+		QFile file = new QFile("src/main/resources/QStyleSheet.css");
+		if (file.open(QIODevice.OpenModeFlag.ReadOnly)) {
+			QByteArray styleSheet = file.readAll();
+			app.setStyleSheet(styleSheet.toString());
+			file.close();
+		}
 		Display window = new Display();
 		window.showMaximized();
 		QApplication.exec();
