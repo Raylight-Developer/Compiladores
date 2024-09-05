@@ -157,10 +157,15 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
+		text = ctx.getText()
+		if any(item in ["!=", "=="] for item in text):
+			return Var(ctx.getText(), Type.BOOL)
 		return self.visitChildren(ctx)
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
-		#return ctx.getText()
+		text = ctx.getText()
+		if any(item in ["<=", ">=", "<", ">", "!=", "==", "!"] for item in text):
+			return Var(ctx.getText(), Type.BOOL)
 		return self.visitChildren(ctx)
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
@@ -259,11 +264,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 					self.debug << NL() << f"{variable}"
 				raise Exception(f"Variable '{var_name}' no declarada en el ámbito.")
 		elif ctx.getText() == "true":
-			return Var(True, Type.BOOL)
+			return Var("true", Type.BOOL)
 		elif ctx.getText() == "false":
-			return Var(False, Type.BOOL)
+			return Var("false", Type.BOOL)
 		elif ctx.getText() == "nil":
-			return Var(None, Type.NONE)
+			return Var("nil", Type.NONE)
 		elif ctx.expression():
 			return Var(self.visit(ctx.expression()), Type.UNKNOWN)  # Delegate to expression handling
 
