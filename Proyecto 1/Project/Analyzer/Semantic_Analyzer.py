@@ -3,24 +3,25 @@ from CompiScript.CompiscriptParser import CompiscriptParser
 from CompiScript.CompiscriptLexer import CompiscriptLexer
 
 from Include import *
+from Lace import *
 
 from GUI.Symbol_Table import *
 from GUI.Logger import *
 from .Scope import *
 
 class Semantic_Analyzer(CompiscriptVisitor):
-	def __init__(self, log: Logger, table_classes: Symbol_Table, table_functions: Symbol_Table, table_variables: Symbol_Table, parser: CompiscriptParser):
+	def __init__(self, table_c: Symbol_Table, table_f: Symbol_Table, table_v: Symbol_Table, parser: CompiscriptParser):
 		super().__init__()
-		self.log = log
 		self.parser = parser
 
+		self.debug = Lace()
 		self.count = 0
 		self.graph = Digraph()
 		self.scope_tracker = Scope_Tracker()
 
-		self.table_classes   = table_classes
-		self.table_functions = table_functions
-		self.table_variables = table_variables
+		self.table_c = table_c
+		self.table_f = table_f
+		self.table_v = table_v
 
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
@@ -29,12 +30,44 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitClassDecl(self, ctx:CompiscriptParser.ClassDeclContext):
+		self.scope_tracker.enterScope()
+
+		struct = Class()
+		struct.ID = ctx.IDENTIFIER(0).getText()
+		self.addSymbolToTable(struct)
+
+		self.scope_tracker.exitScope()
 		return self.visitChildren(ctx)
 
 	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext):
+		self.scope_tracker.enterScope()
+
+		function = Function()
+		function.ID = ctx.IDENTIFIER().getText()
+		self.addSymbolToTable(function)
+
+		self.scope_tracker.exitScope()
 		return self.visitChildren(ctx)
 
 	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
+		self.debug << NL() << "ENTER VarDecl"
+		self.debug += 1
+		self.scope_tracker.enterScope()
+#
+		var_name = ctx.IDENTIFIER().getText()
+		var_declartion = ctx.getText()
+		
+		self.debug << NL() << f"Variable [{var_name}]"
+
+		variable = Variable()
+		variable.ID = ctx.IDENTIFIER().getText()
+		self.addSymbolToTable(variable)
+
+#
+		self.scope_tracker.exitScope()
+		self.debug -= 1
+		self.debug << NL() << "EXIT  VarDecl"
+
 		return self.visitChildren(ctx)
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
@@ -48,6 +81,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitIfStmt(self, ctx:CompiscriptParser.IfStmtContext):
 		return self.visitChildren(ctx)
+
 	def visitPrintStmt(self, ctx:CompiscriptParser.PrintStmtContext):
 		return self.visitChildren(ctx)
 
@@ -110,6 +144,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		return self.visitChildren(ctx)
+
+	def addSymbolToTable(self, value: Union[Class | Function | Variable]):
+		if isinstance(value, Class):
+			self.table_c.addSymbol(value)
+		elif isinstance(value, Function):
+			self.table_f.addSymbol(value)
+		elif isinstance(value, Variable):
+			self.table_v.addSymbol(value)
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
 		node_id = f"node{self.count}"

@@ -27,7 +27,7 @@ class Logger(QTextBrowser):
 
 	def debug(self, value: str):
 		if self.should_debug:
-			self.append("\t" + str(value))
+			self.append(str(value))
 		self.debug_output.append(str(value))
 
 class Test_Logger(QScrollArea):

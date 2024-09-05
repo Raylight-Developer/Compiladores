@@ -148,18 +148,20 @@ while (juan.edad < 25) {
 			if error_listener.has_error:
 				raise Exception("Error de sintaxis detectado durante la compilación.")
 
-			visitor = Semantic_Analyzer(self.log, self.table_classes, self.table_functions, self.table_variables, parser)
-			visitor.visit(tree)
+			analyzer = Semantic_Analyzer(self.table_classes, self.table_functions, self.table_variables, parser)
+			analyzer.visit(tree)
 
 			if self.options["render"]:
 				if not os.path.exists("./Output"):
 					os.makedirs("Output")
-				visitor.nodeTree(tree)
-				visitor.graph.render("Syntax-Graph","./Output", False, True, "png")
+				analyzer.nodeTree(tree)
+				analyzer.graph.render("Syntax-Graph","./Output", False, True, "png")
 
 			self.table_classes.resizeColumnsToContents()
 			self.table_functions.resizeColumnsToContents()
 			self.table_variables.resizeColumnsToContents()
+
+			self.log.debug(str(analyzer.debug).strip())
 
 			return tree.toStringTree(recog=parser)
 
