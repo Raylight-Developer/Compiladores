@@ -19,17 +19,12 @@ class Lace:
 				count -= 1
 			if val.count > 0:
 				while tabs > 0:
-					self.data.write(self.character)
+					self.data.write("\t")
 					tabs -= 1
 		elif isinstance(val, TAB):
 			count = self.current_tab + val.count
 			while count > 0:
 				self.data.write("\t")
-				count -= 1
-		elif isinstance(val, CHR):
-			count = val.count
-			while count > 0:
-				self.data.write(self.character)
 				count -= 1
 		elif isinstance(val, DEL):
 			temp_data = self.data.getvalue()
@@ -51,14 +46,11 @@ class Lace:
 			self.data.write("true" if val else "false")
 		return self
 
-	def __rshift__(self, value):
-		return self
-
-	def __iadd__(self, value):
+	def __iadd__(self, value = 1):
 		self.current_tab += value
 		return self
 
-	def __isub__(self, value):
+	def __isub__(self, value = 1):
 		self.current_tab -= value
 		return self
 
@@ -87,10 +79,6 @@ class NL:
 		self.count = count
 
 class TAB:
-	def __init__(self, count = 1):
-		self.count = count
-
-class CHR:
 	def __init__(self, count = 1):
 		self.count = count
 

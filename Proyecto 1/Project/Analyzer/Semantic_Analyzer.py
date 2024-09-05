@@ -34,7 +34,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		struct = Class()
 		struct.ID = ctx.IDENTIFIER(0).getText()
-		self.addSymbol(struct)
+		self.addSymbolToTable(struct)
 
 		self.scope_tracker.exitScope()
 		return self.visitChildren(ctx)
@@ -44,24 +44,30 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		function = Function()
 		function.ID = ctx.IDENTIFIER().getText()
-		self.addSymbol(function)
+		self.addSymbolToTable(function)
 
 		self.scope_tracker.exitScope()
 		return self.visitChildren(ctx)
 
 	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
 		self.lace << NL() << "ENTER VarDecl"
+		self.lace += 1
 		self.scope_tracker.enterScope()
-
+#
 		var_name = ctx.IDENTIFIER().getText()
 		var_declartion = ctx.getText()
+		
+		self.lace << NL() << f"Variable [{var_name}]"
 
 		variable = Variable()
 		variable.ID = ctx.IDENTIFIER().getText()
-		self.lace << NL() << "EXIT  VarDecl"
-		self.addSymbol(variable)
+		self.addSymbolToTable(variable)
 
+#
 		self.scope_tracker.exitScope()
+		self.lace -= 1
+		self.lace << NL() << "EXIT  VarDecl"
+
 		return self.visitChildren(ctx)
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
@@ -139,7 +145,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		return self.visitChildren(ctx)
 
-	def addSymbol(self, value: Union[Class | Function | Variable]):
+	def addSymbolToTable(self, value: Union[Class | Function | Variable]):
 		if isinstance(value, Class):
 			self.table_c.addSymbol(value)
 		elif isinstance(value, Function):

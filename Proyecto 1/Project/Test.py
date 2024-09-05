@@ -52,30 +52,34 @@ class Tester(QMainWindow):
 			self.log.append("CODE: {")
 			self.log.addCode(code.strip(), 1)
 			self.log.append("}")
-			try:
-				resultado = self.compile(i, code, title_id)
-				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {resultado}\n")
+			result, output, debug = self.compile(i, code, title_id)
+			if result:
+				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {output}\n")
 				if should_pass:
 					self.log.append(f"{G}Compilation Succesful{RESET}<br>")
 					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
 				else:
 					self.title_failures.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{R}Compilation Should Have Failed{RESET}")
-			except Exception as e:
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
+					self.log.addCollapse("Full Traceback", f"{traceback.format_exc()}", 1)
+			else:
 				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {e}\n")
 				if should_pass == False:
 					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{G}Compilation ''Succesful''{RESET}{Y}(Should fail and did fail){RESET}" + " {")
+					self.log.append(f"{output}", 1)
+					self.log.append("}")
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
 				else:
 					self.title_failures.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{R}Compilation Failed{RESET}" + " {")
-
-				self.log.append(f"{e}", 1)
-				self.log.append(f"{traceback.format_exc().splitlines()[-3]}", 3)
-				self.log.append("}")
-				self.log.addCollapse("Full Traceback", f"{traceback.format_exc()}", 1)
-			debug = "\n".join(self.log.debug_output)
-			self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
+					self.log.append(f"{output}", 1)
+					self.log.append(f"{traceback.format_exc().splitlines()[-3]}", 3)
+					self.log.append("}")
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", debug, 1)
+					self.log.addCollapse("Full Traceback", f"{traceback.format_exc()}", 1)
 
 			self.log.addSep()
 			self.code_output.addSep()
@@ -146,7 +150,7 @@ class Tester(QMainWindow):
 			self.tabs.currentWidget().widget(2).layout().itemAt(1).widget().resizeColumnsToContents()
 			self.tabs.currentWidget().widget(3).layout().itemAt(1).widget().resizeColumnsToContents()
 
-	def compile(self, i: int, code: str, title_id: str) -> str:
+	def compile(self, i: int, code: str, title_id: str) -> Tuple[bool, str, str]:
 		self.table_classes  .append(Symbol_Table("Classes"))
 		self.table_functions.append(Symbol_Table("Functions"))
 		self.table_variables.append(Symbol_Table("Variables"))
@@ -195,23 +199,25 @@ class Tester(QMainWindow):
 			if error_listener.has_error:
 				raise Exception("Error de sintaxis detectado durante la compilación.")
 
-			visitor = Semantic_Analyzer(self.log, self.table_functions[-1], self.table_variables[-1], self.table_classes[-1], parser)
-			visitor.visit(tree)
+			analyzer = Semantic_Analyzer(self.table_classes[-1], self.table_functions[-1], self.table_variables[-1], parser)
+			analyzer.visit(tree)
 
 			if self.options["render"]:
 				if not os.path.exists("./Output/Tests"):
 					os.makedirs("Output/Tests")
-				visitor.nodeTree(tree)
-				visitor.graph.render(f"Syntax-Graph[{i}]-({title_id})","./Output/Tests", False, True, "png")
+				analyzer.nodeTree(tree)
+				analyzer.graph.render(f"Syntax-Graph[{i}]-({title_id})","./Output/Tests", False, True, "png")
 
 			self.table_classes  [-1].resizeColumnsToContents()
 			self.table_functions[-1].resizeColumnsToContents()
 			self.table_variables[-1].resizeColumnsToContents()
 
-			return tree.toStringTree(recog=parser)
+			self.log.debug(analyzer.lace)
+
+			return True, tree.toStringTree(recog=parser), str(analyzer.lace)
 
 		except Exception as e:
-			raise e
+			return False, e, str(analyzer.lace).strip()
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")
