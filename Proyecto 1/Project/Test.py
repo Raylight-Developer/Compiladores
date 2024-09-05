@@ -212,12 +212,12 @@ class Tester(QMainWindow):
 			self.table_functions[-1].resizeColumnsToContents()
 			self.table_variables[-1].resizeColumnsToContents()
 
-			self.log.debug(analyzer.lace)
+			self.log.debug(analyzer.debug)
 
-			return True, tree.toStringTree(recog=parser), str(analyzer.lace)
+			return True, tree.toStringTree(recog=parser), str(analyzer.debug)
 
 		except Exception as e:
-			return False, e, str(analyzer.lace).strip()
+			return False, e, str(analyzer.debug).strip()
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")

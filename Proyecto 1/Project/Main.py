@@ -161,7 +161,7 @@ while (juan.edad < 25) {
 			self.table_functions.resizeColumnsToContents()
 			self.table_variables.resizeColumnsToContents()
 
-			self.log.debug(str(analyzer.lace).strip())
+			self.log.debug(str(analyzer.debug).strip())
 
 			return tree.toStringTree(recog=parser)
 

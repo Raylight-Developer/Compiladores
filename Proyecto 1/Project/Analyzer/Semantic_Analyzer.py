@@ -14,7 +14,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		super().__init__()
 		self.parser = parser
 
-		self.lace = Lace()
+		self.debug = Lace()
 		self.count = 0
 		self.graph = Digraph()
 		self.scope_tracker = Scope_Tracker()
@@ -50,14 +50,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
-		self.lace << NL() << "ENTER VarDecl"
-		self.lace += 1
+		self.debug << NL() << "ENTER VarDecl"
+		self.debug += 1
 		self.scope_tracker.enterScope()
 #
 		var_name = ctx.IDENTIFIER().getText()
 		var_declartion = ctx.getText()
 		
-		self.lace << NL() << f"Variable [{var_name}]"
+		self.debug << NL() << f"Variable [{var_name}]"
 
 		variable = Variable()
 		variable.ID = ctx.IDENTIFIER().getText()
@@ -65,8 +65,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 #
 		self.scope_tracker.exitScope()
-		self.lace -= 1
-		self.lace << NL() << "EXIT  VarDecl"
+		self.debug -= 1
+		self.debug << NL() << "EXIT  VarDecl"
 
 		return self.visitChildren(ctx)
 
