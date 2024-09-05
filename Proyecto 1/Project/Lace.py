@@ -1,3 +1,4 @@
+from Include import *
 from io import StringIO
 
 class Lace:
@@ -36,6 +37,10 @@ class Lace:
 			self.data = StringIO()
 			if val.count < len(temp_data):
 				self.data.write(temp_data[:len(temp_data) - 1 - val.count])
+		elif isinstance(val, ERROR):
+			self.data.write("<!--html-->" + R)
+		elif isinstance(val, END):
+			self.data.write(RESET + "<!--/html-->")
 		elif isinstance(val, Lace):
 			self.data.write(val.data.getvalue())
 		elif isinstance(val, str):
@@ -89,3 +94,11 @@ class DEL:
 class POP:
 	def __init__(self, count = 1):
 		self.count = count
+
+class ERROR:
+	def __init__(self):
+		pass
+
+class END:
+	def __init__(self):
+		pass

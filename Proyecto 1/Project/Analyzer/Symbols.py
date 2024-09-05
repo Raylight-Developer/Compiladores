@@ -1,7 +1,6 @@
 from Include import *
 
 from enum import Enum
-import ast
 
 class Type(Enum):
 	INT = "int"

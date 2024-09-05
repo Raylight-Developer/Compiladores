@@ -14,11 +14,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def __init__(self, debug: Lace, table_c: Symbol_Table, table_f: Symbol_Table, table_v: Symbol_Table, parser: CompiscriptParser):
 		super().__init__()
 		self.parser = parser
+		self.compiled = True
 
 		self.debug = debug
 		self.count = 0
 		self.graph = Digraph()
-		self.scope_tracker = Scope_Tracker()
+		self.scope_tracker = Scope_Tracker(debug)
 
 		self.table_c = table_c
 		self.table_f = table_f
@@ -88,6 +89,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitIfStmt(self, ctx:CompiscriptParser.IfStmtContext):
+		self.scope_tracker.enterScope()
+		self.scope_tracker.exitScope()
 		return self.visitChildren(ctx)
 
 	def visitPrintStmt(self, ctx:CompiscriptParser.PrintStmtContext):
@@ -97,9 +100,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitWhileStmt(self, ctx:CompiscriptParser.WhileStmtContext):
+		self.scope_tracker.enterScope()
+		self.scope_tracker.exitScope()
 		return self.visitChildren(ctx)
 
 	def visitBlock(self, ctx:CompiscriptParser.BlockContext):
+		self.scope_tracker.enterScope()
+		self.scope_tracker.exitScope()
 		return self.visitChildren(ctx)
 
 	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
@@ -115,8 +122,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
-			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
-		self.log(left, operator, right)
+			self.debug << NL() << ERROR() << f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]" <<  END() 
+			self.error(f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
+
 		if operator == '+':
 			return left + right
 		elif operator == '-':
@@ -130,8 +138,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Si el operador no es reconocido, lanza una excepción
 		
 		else:
-			self.debug << NL() << f"Error Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]"
-			raise Exception(f"Error Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]")
+			self.debug << NL() << ERROR() << f"Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]" <<  END() 
+			self.error(f"Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]")
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
 		"""Assign Code to a Variable"""
@@ -141,10 +149,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.debug << NL() << "Assign Value to [" << var_name << "]"
 
 			if ctx.assignment() is not None:
-				# Visita la expresión a la derecha del '='
 				value = self.visit(ctx.assignment())
 			elif ctx.logic_or() is not None:
-				# Visita la lógica "or" si está presente
 				value = self.visit(ctx.logic_or())
 
 			self.scope_tracker.lookupVariable(var_name).code = value
@@ -174,13 +180,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return self.visit(ctx.factor(0))
 
 		left  : Container = self.visit(ctx.factor(0))
+		operator: str = ctx.getChild(1).getText()
 		right : Container = self.visit(ctx.factor(1))
 
 		#self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
 
 		if left is None or right is None:
-			self.debug << NL() << f"Error Evaluating Expression: None Operator. [{left}] - [{right}]"
-			raise Exception(f"Error Evaluating Expression: None Operator. [{left}] - [{right}]")
+			self.debug << NL() << ERROR() << f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]" <<  END() 
+			self.error(f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
 
 		type = Type.FLOAT
 		if left.type == Type.INT and right.type == Type.INT:
@@ -192,26 +199,27 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif left.type == Type.FLOAT and right.type == Type.FLOAT:
 			type = Type.FLOAT
 
-		if ctx.getChild(1).getText() == '+':
+		if operator == '+':
 			return Container(f"({left.code} + {right.code})", type)
-		elif ctx.getChild(1).getText() == '-':
+		elif operator == '-':
 			return Container(f"({left.code} - {right.code})", type)
 		else:
-			self.debug << NL() << f"Error Cannot operate different Types [{left.type}]({left.code}) - [{right.type}]({right.code})"
-			raise Exception(f"Error Cannot operate different Types [{left.type}]({left.code}) - [{right.type}]({right.code})")
+			self.debug << NL() << ERROR() << f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})"
+			self.error(f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})")
 
 	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
 		if ctx.getChildCount() == 1:
 			return self.visit(ctx.unary(0))
 
 		left  : Container = self.visit(ctx.unary(0))
+		operator: str = ctx.getChild(1).getText()
 		right : Container = self.visit(ctx.unary(1))
 
 		#self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
 
 		if left is None or right is None:
-			self.debug << NL() << f"Error Evaluating Expression: None Operator. [{left}] - [{right}]"
-			raise Exception(f"Error Evaluating Expression: None Operator. [{left}] - [{right}]")
+			self.debug << NL() << ERROR() << f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]" <<  END() 
+			self.error(f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
 
 		type = Type.FLOAT
 		if left.type == Type.INT and right.type == Type.INT:
@@ -223,14 +231,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif left.type == Type.FLOAT and right.type == Type.FLOAT:
 			type = Type.FLOAT
 		else:
-			self.debug << NL() << f"Error Cannot operate different Types [{left.type}]({left.code}) - [{right.type}]({right.code})"
-			raise Exception(f"Error Cannot operate different Types [{left.type}]({left.code}) - [{right.type}]({right.code})")
+			self.debug << NL() << ERROR() << f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})"
+			self.error(f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})")
 
-		if ctx.getChild(1).getText() == '*':
+		if operator == '*':
 			return Container(f"({left.code} * {right.code})", type)
-		elif ctx.getChild(1).getText() == '/':
+		elif operator == '/':
 			return Container(f"({left.code} / {right.code})", type)
-		elif ctx.getChild(1).getText() == '%':
+		elif operator == '%':
 			return Container(f"({left.code} % {right.code})", type)
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext):
@@ -268,12 +276,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			if self.scope_tracker.checkVariable(var_name):
 				return self.scope_tracker.lookupVariable(var_name)
 			else:
-				self.debug << NL() << f"Variable '{var_name}' out of scope."
-				self.debug << NL() << f"Variables declaradas in the current scope:"
+				self.debug << NL() << ERROR() << f"Variable '{var_name}' out of scope." <<  END() 
 				self.debug += 1
-				for variable in self.scope_tracker.global_variables.forward_map:
+				self.debug << NL() << f"Variables in the current scope:"
+				self.debug += 1
+				for variable in self.scope_tracker.current_scope.variables.forward_map:
 					self.debug << NL() << f"{variable}"
-				raise Exception(f"Variable '{var_name}' out of scope.")
+				self.debug -= 2
+				self.error(f"Variable '{var_name}' out of scope.")
 		elif ctx.getText() == "true":
 			return Container("true", Type.BOOL)
 		elif ctx.getText() == "false":
@@ -299,6 +309,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.table_f.addSymbol(value)
 		elif isinstance(value, Variable):
 			self.table_v.addSymbol(value)
+
+	def error(self, message: str):
+		raise Exception(message)
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
 		node_id = f"node{self.count}"

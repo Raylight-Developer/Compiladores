@@ -25,9 +25,25 @@ class Logger(QTextBrowser):
 		self.should_debug = debug
 		self.debug_output = []
 
-	def debug(self, value: str):
+	def log(self, value: str):
 		if self.should_debug:
-			self.append(str(value))
+			value = str(value)
+			pattern = f"({re.escape('<!--html-->')}|{re.escape('<!--/html-->')})"
+			parts = re.split(pattern, value)
+			
+			is_html = False
+			for part in parts:
+				if part == "<!--html-->":
+					# Starting an HTML section
+					is_html = True
+				elif part == "<!--/html-->":
+					# Ending an HTML section
+					is_html = False
+				else:
+					if is_html:
+						self.insertHtml(part)
+					else:
+						self.append(part)
 		self.debug_output.append(str(value))
 
 class Test_Logger(QScrollArea):

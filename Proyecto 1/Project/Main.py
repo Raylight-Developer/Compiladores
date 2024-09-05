@@ -15,7 +15,9 @@ class Display(QMainWindow):
 		self.code_input.setTabStopDistance(40)
 		self.code_input.setPlaceholderText("Code to compile...")
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
-		self.code_input.setText("""
+		self.code_input.setText((
+"""
+
 var menor = 3 < 5; // true
 var mayorIgual = 10 >= 10; // true
 var igual = 1 == 1; // true
@@ -27,7 +29,15 @@ var min = 0;
 var max = 10;
 var promedio = ( min + max ) / 2;
 var string = "Hola Mundo";
-""")
+for (var i = 0; i < 2; i = i + 1) {
+	var i;
+	var j =2;
+	if (j < 2) {
+		var j;
+	}
+}
+
+""").strip())
 
 		self.code_output = Logger()
 		Antlr_Syntax_Highlighter(self.code_output.document())
@@ -35,7 +45,6 @@ var string = "Hola Mundo";
 
 		self.log = Logger()
 		self.log.setPlaceholderText("Log")
-		self.debug = Lace()
 
 		self.tables = QTabWidget()
 
@@ -65,7 +74,7 @@ var string = "Hola Mundo";
 		main_splitter.setSizes([500,500,200])
 
 		button_compile = QPushButton("Compile")
-		button_compile.clicked.connect(self.parse)
+		button_compile.clicked.connect(self.compile)
 
 		main_layout = QVBoxLayout()
 		main_layout.addWidget(main_splitter)
@@ -82,21 +91,14 @@ var string = "Hola Mundo";
 			self.table_functions.resizeColumnsToContents(),
 			self.table_variables.resizeColumnsToContents()
 		))
-		self.parse()
+		self.compile()
 
-	def parse(self):
-		codigo = self.code_input.toPlainText()
+	def compile(self):
+		code = self.code_input.toPlainText()
 		self.code_output.clear()
 		self.log.clear()
-		try:
-			resultado = self.compile(codigo)
-			self.log.append(f"{G}Comiplation Succesful{RESET}")
-			self.code_output.insertPlainText(resultado)
-		except Exception as e:
-			self.code_output.insertPlainText(str(e))
-			self.code_output.append(f"{R}Compilation Failed{RESET}<br><br>{e}<br>{traceback.format_exc()}")
-
-	def compile(self, code: str):
+		self.debug = Lace()
+	
 		self.log.append("Compiling...")
 		self.table_functions.clearContents()
 		self.table_variables.clearContents()
@@ -110,17 +112,7 @@ var string = "Hola Mundo";
 			token_stream = CommonTokenStream(lexer)
 			parser = CompiscriptParser(token_stream)
 
-			# Añadir el ErrorListener personalizado
-			error_listener = SyntaxErrorListener(self.log)
-			parser.removeErrorListeners()  # Quitar el listener de errores por defecto
-			parser.addErrorListener(error_listener)
-			
 			tree = parser.program()
-
-			# Si hubo errores de sintaxis, lanzar una excepción
-			if error_listener.has_error:
-				raise Exception("Error de sintaxis detectado durante la compilación.")
-
 			analyzer = Semantic_Analyzer(self.debug, self.table_classes, self.table_functions, self.table_variables, parser)
 			analyzer.visit(tree)
 
@@ -134,14 +126,14 @@ var string = "Hola Mundo";
 			self.table_functions.resizeColumnsToContents()
 			self.table_variables.resizeColumnsToContents()
 
-			self.log.debug(str(self.debug).strip())
-
-			return tree.toStringTree(recog=parser)
+			self.log.log(str(self.debug).strip())
+			self.log.append(f"{G}Comiplation Succesful{RESET}")
+			self.code_output.insertPlainText(tree.toStringTree(recog=parser))
 
 		except Exception as e:
-			self.log.debug(str(self.debug).strip())
-			raise Exception(str(e))
-
+			self.log.log(str(self.debug).strip())
+			self.log.append(f"{R}Compilation Failed{RESET}<br><br>{e}")
+			self.code_output.append(f"{R}Compilation Failed{RESET}<br><br>{e}<br>{'<br>'.join(traceback.format_exc().splitlines())}")
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")
