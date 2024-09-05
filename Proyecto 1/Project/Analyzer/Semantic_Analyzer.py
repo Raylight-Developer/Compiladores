@@ -130,7 +130,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Si el operador no es reconocido, lanza una excepción
 		
 		else:
-			raise Exception(f"Operador desconocido: {operator}")
+			self.debug << NL() << f"Error Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]"
+			raise Exception(f"Error Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]")
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
 		"""Assign Code to a Variable"""
@@ -178,7 +179,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		#self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
 
 		if left is None or right is None:
-			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
+			self.debug << NL() << f"Error Evaluating Expression: None Operator. [{left}] - [{right}]"
+			raise Exception(f"Error Evaluating Expression: None Operator. [{left}] - [{right}]")
 
 		type = Type.FLOAT
 		if left.type == Type.INT and right.type == Type.INT:
@@ -208,7 +210,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		#self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
 
 		if left is None or right is None:
-			raise Exception("Error en la evaluación de la expresión: uno de los operandos es None.")
+			self.debug << NL() << f"Error Evaluating Expression: None Operator. [{left}] - [{right}]"
+			raise Exception(f"Error Evaluating Expression: None Operator. [{left}] - [{right}]")
 
 		type = Type.FLOAT
 		if left.type == Type.INT and right.type == Type.INT:
@@ -265,12 +268,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			if self.scope_tracker.checkVariable(var_name):
 				return self.scope_tracker.lookupVariable(var_name)
 			else:
-				self.debug << NL() << f"Variable '{var_name}' no declarada en el ámbito."
-				self.debug << NL() << f"Variables declaradas en el ámbito:"
+				self.debug << NL() << f"Variable '{var_name}' out of scope."
+				self.debug << NL() << f"Variables declaradas in the current scope:"
 				self.debug += 1
 				for variable in self.scope_tracker.global_variables.forward_map:
 					self.debug << NL() << f"{variable}"
-				raise Exception(f"Variable '{var_name}' no declarada en el ámbito.")
+				raise Exception(f"Variable '{var_name}' out of scope.")
 		elif ctx.getText() == "true":
 			return Container("true", Type.BOOL)
 		elif ctx.getText() == "false":
