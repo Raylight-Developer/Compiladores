@@ -1,6 +1,6 @@
-from CompiscriptVisitor import CompiscriptVisitor
-from CompiscriptParser import CompiscriptParser
-from CompiscriptLexer import CompiscriptLexer
+from CompiScript.CompiscriptVisitor import CompiscriptVisitor
+from CompiScript.CompiscriptParser import CompiscriptParser
+from CompiScript.CompiscriptLexer import CompiscriptLexer
 from Symbol_Table import Symbol_Table, Symbol_Property
 from Logger import *
 import re
