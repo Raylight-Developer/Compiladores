@@ -14,9 +14,9 @@ class Tester(QMainWindow):
 		self.options = parse_args(args)
 		self.setWindowTitle("Semantic Compiler")
 
-		self.code_output = Test_Logger(False)
+		self.code_output = Test_Logger()
 
-		self.log = Test_Logger(False)
+		self.log = Test_Logger()
 		self.debug = Lace()
 
 		self.table_functions : List[Symbol_Table] = []
@@ -50,32 +50,34 @@ class Tester(QMainWindow):
 		for i, (title, should_pass, code, expected_classes, expected_functions, expected_variables) in enumerate(self.code):
 			title_id = title.split()[1]
 			self.log.append(f"<h2>{title}</h2>")
-			self.log.append(f"<h4>Compiling [{i}] - ({title_id})...</h4>")
 			self.log.append("CODE: {")
 			self.log.addCode(code.strip(), 1)
 			self.log.append("}")
+			self.log.append(f"<h4>Compiling [{i}] - ({title_id})...</h4>")
 			result, output, error = self.compile(i, code, title_id)
 			if result:
-				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {output}\n")
+				self.code_output.append(f"<br>{G}[{i}] - ({title_id}){RESET}")
+				self.code_output.insertPlainText(f"\n{output}\n", 1)
 				if should_pass:
 					self.log.append(f"{G}Compilation Succesful{RESET}<br>")
 					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
-					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug, 1)
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug)
 				else:
 					self.title_failures.append((i, title, expected_classes, expected_functions, expected_variables))
-					self.log.append(f"{R}Compilation Should Have Failed{RESET}")
-					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug, 1)
+					self.log.append(f"{R}Compilation Failed{RESET}{Y}(Should fail and did not fail){RESET}")
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug)
 			else:
-				self.code_output.insertAntlrText(f"\n[{i}] - ({title_id}) {output}\n")
+				self.code_output.append(f"<br>{R}[{i}] - ({title_id}){RESET}")
+				self.code_output.insertPlainText(f"\n{output}\n", 1)
 				if should_pass == False:
 					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
-					self.log.append(f"{G}Compilation ''Succesful''{RESET}{Y}(Should fail and did fail){RESET}")
-					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug, 1)
+					self.log.append(f"{G}Compilation Succesful{RESET}{Y}(Should fail and did fail){RESET}")
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug)
 				else:
 					self.title_failures.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{R}Compilation Failed{RESET}")
-					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug, 1)
-					self.log.addCollapse(f"Traceback", f"{error}", 3)
+					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug)
+					self.log.addCollapse(f"Traceback", f"{error}")
 
 			self.log.addSep()
 			self.code_output.addSep()
@@ -148,6 +150,7 @@ class Tester(QMainWindow):
 
 	def compile(self, i: int, code: str, title_id: str) -> Tuple[bool, str, str]:
 		self.debug.clear()
+		self.debug += 1
 		self.table_classes  .append(Symbol_Table("Classes"))
 		self.table_functions.append(Symbol_Table("Functions"))
 		self.table_variables.append(Symbol_Table("Variables"))

@@ -39,7 +39,6 @@ for (var i = 0; i < 2; i = i + 1) {
 """).strip())
 
 		self.code_output = Logger()
-		Antlr_Syntax_Highlighter(self.code_output.document())
 		self.code_output.setPlaceholderText("Compiled code")
 
 		self.log = Logger()
@@ -97,9 +96,10 @@ for (var i = 0; i < 2; i = i + 1) {
 		code = self.code_input.toPlainText()
 		self.code_output.clear()
 		self.debug.clear()
+		self.debug += 1
 		self.log.clear()
 	
-		self.log.append("Compiling...")
+		self.log.append("Compiling...\n{")
 		self.table_functions.clearContents()
 		self.table_variables.clearContents()
 		self.table_classes.clearContents()
@@ -127,7 +127,7 @@ for (var i = 0; i < 2; i = i + 1) {
 			self.table_variables.resizeColumnsToContents()
 
 			self.log.log(str(self.debug).strip())
-			self.log.insertHtml(f"<br><br>{G}Comiplation Succesful{RESET}<br>")
+			self.log.insertHtml("<br>}" + f"<br>{G}Comiplation Succesful{RESET}<br>")
 			self.code_output.insertPlainText(tree.toStringTree(recog=parser))
 
 		except Exception as e:

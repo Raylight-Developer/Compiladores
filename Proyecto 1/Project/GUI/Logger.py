@@ -34,10 +34,8 @@ class Logger(QTextBrowser):
 			is_html = False
 			for part in parts:
 				if part == "<COLOR>":
-					# Starting an HTML section
 					is_html = True
 				elif part == "</COLOR>":
-					# Ending an HTML section
 					is_html = False
 				else:
 					if is_html:
@@ -47,10 +45,9 @@ class Logger(QTextBrowser):
 		self.debug_output.append(str(value))
 
 class Test_Logger(QScrollArea):
-	def __init__(self, debug: bool = True, parent: QWidget = None):
+	def __init__(self, parent: QWidget = None):
 		super().__init__(parent)
 		self.setWidgetResizable(True)
-		self.should_debug = debug
 		self.debug_output = []
 		self.contents = QVBoxLayout()
 		self.contents.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -61,51 +58,40 @@ class Test_Logger(QScrollArea):
 		self.setWidget(content)
 
 	def log(self, value: str, indent: int = 0):
-		if self.should_debug:
-			Text = Viewer()
-			Text.setStyleSheet(f"padding-left: {5 + indent * 40}px")
-			value = str(value)
-			pattern = f"({re.escape('<COLOR>')}|{re.escape('</COLOR>')})"
-			parts = re.split(pattern, value)
-			
-			is_html = False
-			for part in parts:
-				if part == "<COLOR>":
-					# Starting an HTML section
-					is_html = True
-				elif part == "</COLOR>":
-					# Ending an HTML section
-					is_html = False
+		Text = Viewer()
+		Text.setStyleSheet(f"padding-left: {5 + indent * 40}px")
+		value = str(value)
+		pattern = f"({re.escape('<COLOR>')}|{re.escape('</COLOR>')})"
+		parts = re.split(pattern, value)
+		
+		is_html = False
+		for part in parts:
+			if part == "<COLOR>":
+				is_html = True
+			elif part == "</COLOR>":
+				is_html = False
+			else:
+				if is_html:
+					Text.insertHtml(part)
 				else:
-					if is_html:
-						Text.insertHtml(part)
-					else:
-						Text.append(part)
-			self.contents.addWidget(Text)
-		self.debug_output.append(str(value))
+					Text.append(part)
+		self.contents.addWidget(Text)
 
-	def append(self, value:str, indent: int = 0):
+	def append(self, value: str, indent: int = 0):
 		Text = Viewer()
 		Text.append(value)
-		Text.setStyleSheet(f"padding-left: {5 +indent * 40}px")
+		Text.setStyleSheet(f"padding-left: {5 + indent * 40}px")
 		self.contents.addWidget(Text)
 
-	def insertPlainText(self, value:str, indent: int = 0):
+	def insertPlainText(self, value: str, indent: int = 0):
 		Text = Viewer()
 		Text.insertPlainText(value)
-		Text.setStyleSheet(f"padding-left: {5 +indent * 40}px")
+		Text.setStyleSheet(f"padding-left: {5 + indent * 40}px")
 		self.contents.addWidget(Text)
 
-	def insertAntlrText(self, value:str, indent: int = 0):
+	def addCode(self, value: str, indent: int = 0):
 		Text = Viewer()
-		Text.insertPlainText(value)
-		Antlr_Syntax_Highlighter(Text.document())
-		Text.setStyleSheet(f"padding-left: {5 +indent * 40}px")
-		self.contents.addWidget(Text)
-
-	def addCode(self, value:str, indent: int = 0):
-		Text = Viewer()
-		Text.setStyleSheet(f"padding-left: {5 +indent * 40}px")
+		Text.setStyleSheet(f"padding-left: {5 + indent * 40}px")
 		Syntax_Highlighter(Text.document())
 
 		Text.append(value)
@@ -115,27 +101,25 @@ class Test_Logger(QScrollArea):
 		button = QPushButton(title)
 
 		Text = Viewer()
-		value = str(value)
+		Text.setStyleSheet(f"margin-left: {5 + indent * 40}px; background:rgb(50,50,50);")
+		value = str(value).strip()
 		pattern = f"({re.escape('<COLOR>')}|{re.escape('</COLOR>')})"
 		parts = re.split(pattern, value)
 		
 		is_html = False
 		for part in parts:
 			if part == "<COLOR>":
-				# Starting an HTML section
 				is_html = True
 			elif part == "</COLOR>":
-				# Ending an HTML section
 				is_html = False
 			else:
 				if is_html:
 					Text.insertHtml(part)
 				else:
 					Text.append(part)
-		Text.setStyleSheet(f"margin-left: {5 +indent * 40}px; background:rgb(50,50,50);")
 
 		container = QWidget()
-		container.setStyleSheet("margin: 0px; margin-top:4px; margin-bottom:4px;")
+		container.setStyleSheet("margin: 0px; margin-bottom:5px;")
 		layout = QVBoxLayout()
 		layout.setSpacing(0)
 		layout.setContentsMargins(0,0,0,0)

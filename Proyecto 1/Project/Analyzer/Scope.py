@@ -14,8 +14,7 @@ class Scope:
 	def declareClass(self, value: Class, debug: Lace):
 		"""Declare a new Class in the current scope."""
 		if self.checkClass(value.ID, debug):
-			debug << NL() << ERROR() << f"Class [{value.ID}] Redifinition" << END()
-			raise Exception()
+			error(debug, f"Class [{value.ID}] Redifinition")
 		value.scope_depth = self.scopeDepth()
 		self.classes.add(value.ID, value)
 		return True
@@ -36,14 +35,12 @@ class Scope:
 		elif self.parent is not None:
 			return self.parent.lookupClass(ID, debug)
 		else:
-			debug << NL() << ERROR() << f"Class [{ID}] not declared in this scope" << END()
-			raise Exception()
+			error(debug, f"Class [{ID}] not declared in this scope")
 
 	def declareFunction(self, value: Function, debug: Lace):
 		"""Declare a new Function in the current scope."""
 		if self.checkFunction(value.ID, debug):
-			debug << NL() << ERROR() << f"Function [{value.ID}] Redifinition" << END()
-			raise Exception()
+			error(debug, f"Function [{value.ID}] Redifinition")
 		value.scope_depth = self.scopeDepth()
 		self.functions.add(value.ID, value)
 
@@ -63,14 +60,12 @@ class Scope:
 		elif self.parent is not None:
 			return self.parent.lookupFunction(ID, debug)
 		else:
-			debug << NL() << ERROR() << f"Function [{ID}] not declared in this scope" << END()
-			raise Exception()
+			error(debug, f"Function [{ID}] not declared in this scope")
 
 	def declareVariable(self, value: Variable, debug: Lace):
 		"""Declare a new Variable in the current scope."""
 		if self.checkVariable(value.ID, debug):
-			debug << NL() << ERROR() << f"Variable [{value.ID}] Redifinition" << END()
-			raise Exception()
+			error(debug, f"Variable [{value.ID}] Redifinition")
 		value.scope_depth = self.scopeDepth()
 		self.variables.add(value.ID, value)
 
@@ -90,8 +85,7 @@ class Scope:
 		elif self.parent is not None:
 			return self.parent.lookupVariable(ID, debug)
 		else:
-			debug << NL() << ERROR() << f"Variable [{ID}] not declared in this scope" << END()
-			raise Exception()
+			error(debug, f"Variable [{ID}] not declared in this scope")
 
 	def scopeDepth(self) -> int:
 		"""Count how deep the current scope is relative to the global scope."""
@@ -119,7 +113,7 @@ class Scope_Tracker:
 		if self.current_scope.parent is not None:
 			self.current_scope = self.current_scope.parent
 		else:
-			raise RuntimeError("Attempted to exit global scope")
+			error(self.debug, "Attempted to exit global scope")
 
 	def declareClass(self, value: Class):
 		self.current_scope.declareClass(value, self.debug)

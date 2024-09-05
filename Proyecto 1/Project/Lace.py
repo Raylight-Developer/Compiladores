@@ -1,6 +1,10 @@
 from Include import *
 from io import StringIO
 
+def error(debug: 'Lace', message: str):
+	debug << NL() << ERROR() << message << END()
+	raise Exception(message)
+
 class Lace:
 	def __init__(self):
 		self.data = StringIO()
