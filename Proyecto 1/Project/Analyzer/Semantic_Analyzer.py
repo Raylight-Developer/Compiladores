@@ -11,13 +11,16 @@ from .Scope import *
 class Semantic_Analyzer(CompiscriptVisitor):
 	def __init__(self, log: Logger, table_classes: Symbol_Table, table_functions: Symbol_Table, table_variables: Symbol_Table, parser: CompiscriptParser):
 		super().__init__()
-		self.parser = parser
-		self.graph = Digraph()
 		self.log = log
+		self.parser = parser
+
+		self.count = 0
+		self.graph = Digraph()
+		self.scope_tracker = Scope_Tracker()
+
 		self.table_classes   = table_classes
 		self.table_functions = table_functions
 		self.table_variables = table_variables
-		self.scope_tracker   = Scope_Tracker()
 
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
@@ -109,8 +112,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def nodeTree(self, ctx: Union[ParserRuleContext]):
-		node_id = f"node{self.counter}"
-		self.counter += 1
+		node_id = f"node{self.count}"
+		self.count += 1
 
 		if isinstance(ctx, ParserRuleContext):
 			rule_name = self.parser.ruleNames[ctx.getRuleIndex()]
