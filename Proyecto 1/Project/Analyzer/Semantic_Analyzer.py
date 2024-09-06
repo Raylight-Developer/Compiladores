@@ -187,9 +187,33 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return visited
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext):
+		self.enterFull("Or")
+		
+		for i in range(ctx.getChildCount()):
+			operator = self.visit(ctx.getChild(i))
+
+			if operator == None:
+				left  : Container = self.visit(ctx.getChild(i-1))
+				right : Container = self.visit(ctx.getChild(i+1))
+				operator = "or"
+				return Container(f"{left.code} {operator} {right.code}", Type.BOOL)
+
+		self.exitFull("Or")
 		return self.visitChildren(ctx)
 
 	def visitLogic_and(self, ctx:CompiscriptParser.Logic_andContext):
+		self.enterFull("And")
+		
+		for i in range(ctx.getChildCount()):
+			operator = self.visit(ctx.getChild(i))
+
+			if operator == None:
+				left  : Container = self.visit(ctx.getChild(i-1))
+				right : Container = self.visit(ctx.getChild(i+1))
+				operator = "and"
+				return Container(f"{left.code} {operator} {right.code}", Type.BOOL)
+
+		self.exitFull("And")
 		return self.visitChildren(ctx)
 
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):

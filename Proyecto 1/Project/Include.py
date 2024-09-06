@@ -10,7 +10,7 @@ import re
 from PySide6.QtWidgets import QWidget
 from graphviz import Digraph
 from antlr4 import *
-from typing import List, Dict, Tuple, Union, Generic, TypeVar
+from typing import List, Dict, Tuple, Set, Union, Generic, TypeVar
 
 RESET  = "</span>"
 R      = "<span style = 'color:rgb(250,50,50);'   >"
