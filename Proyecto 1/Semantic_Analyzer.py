@@ -23,8 +23,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.current_scope = "global_0"
 		self.variables_scope = {"global_0": {}}
 
-		self.global_variables: Dict[str, ParserRuleContext] = {}
-		self.local_variables: Dict[str, ParserRuleContext] = {}
 		self.declared_functions: Set[str] = set()
 		# self.functions_parameters = Set[str] = set()
 
@@ -80,26 +78,51 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		
 	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
 		var_name = ctx.IDENTIFIER().getText()
-		var_declaration = ctx.getText()
+		var_declartion = ctx.getText()
 		arreglo = []
 		var_type = "unknown"
 		var_value = None
 		scope = "global"
+		
+		# Capturar el contenido del arreglo
+		patron_array = r'\[([^\]]+)\]'
+		coincidencia_array = re.search(patron_array, var_declartion)
+		if coincidencia_array:
+			elementos = coincidencia_array.group(1).split(',')
+			arreglo = [elemento for elemento in elementos]
+			var_type = "array"
 
+		print("LLEGO ACA")
 		# Determina si estamos en un scope local o global
 		is_local_scope = len(self.table_variables.scopes) > 1
 		current_scope_id = self.current_scope if is_local_scope else "global_0"
-
+		print(f"RECURRENTE: {current_scope_id}")
 		# Inicializa el scope en variables_scope si no existe
 		if current_scope_id not in self.variables_scope:
 			self.variables_scope[current_scope_id] = {}
+		print("PASO POR ACA")
+		if not self.variables_scope:
+			print("NO HAY VARIABLES")
+		else:
+			print("SI ESTA LLENO")
+		# Verifica si la variable ya está declarada globalmente (en global_0)
+		if var_name in self.variables_scope["global_0"]:
+			self.log.debug(f"'{var_name}' ya está declarada como global, no se sobrescribirá.")
+			# Si la variable ya existe globalmente, no permitimos redeclararla localmente
+			if is_local_scope:
+				raise Exception(f"Error: Variable '{var_name}' ya está declarada globalmente y no puede ser redeclarada localmente.")
+			# Si estamos en el scope global y la variable ya existe, lanzamos una excepción
+			raise Exception(f"Error: Variable '{var_name}' ya está declarada en el scope global.")
+		print("NO HAY PROBLEMA POR ACA")
+		# Verifica si la variable ya está declarada en el scope actual (local)
+		if is_local_scope and var_name in self.variables_scope[current_scope_id]:
+			raise Exception(f"Error: Variable '{var_name}' ya declarada en el scope '{current_scope_id}'.")
 
-		# Verifica si la variable ya está declarada en el scope actual o en scopes superiores
-		for scope in reversed(self.table_variables.scopes):
-			scope_id = scope.id
-			if var_name in self.variables_scope.get(scope_id, {}):
-				raise Exception(f"Error: Variable '{var_name}' ya declarada en el scope '{scope_id}'.")
-
+		# Asignar None si no hay expresión
+		if ctx.expression():
+			var_value = self.visit(ctx.expression())
+		else:
+			var_value = None  # Asignación tardía
 		# Asigna el tipo y el valor de la variable si hay una expresión asociada
 		if ctx.expression():
 			if var_type == "unknown":
@@ -116,12 +139,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.variables_scope[current_scope_id][var_name] = variable_entry
 
-		# Persistencia entre el tipo de scope
+		self.log.debug(f"variables_scope: {self.variables_scope}")
+
+		'''
+		 	Esto ayuda a poder mantener la persistencia entre el tipo de scope que se encuentra la variable
+			pues al no tenerlo, las globales cambiaban de global a local.
+		'''
 		if is_local_scope:
+			# Si la variable ya está declarada globalmente, no se permite cambiarla a local
 			if var_name in self.variables_scope.get("global_0", {}):
-				scope = "global"
+				self.log.debug(f"'{var_name}' ya está declarada como global, no se sobrescribirá en el scope local.")
+				scope = "global"# No permitir redeclarar globales en scopes locales
 			else:
 				scope = "local"
+
 
 		# Agrega la variable a la tabla de símbolos
 		property = Symbol_Property()
@@ -135,7 +166,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		node_id = self.nodeTree(ctx)
 
 		return node_id
-
 
 
 	def determine_type(self, value):
@@ -179,16 +209,15 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 
-	def visitExprStmt(self, ctx: CompiscriptParser.ExprStmtContext):	
-		# Si no es una llamada, delega a la visita de los hijos (otras expresiones)
-		print(f"IDENTIFICADOR: {ctx.IDENTIFIER()}")
-		if ctx.IDENTIFIER() is not None:
-			var_name = ctx.IDENTIFIER().getText()
-			if not self.symbol_table.lookup(var_name):
-				raise Exception(f"Error: Variable '{var_name}' no declarada en el scope actual.")
-		
-		# Procesar el resto de la expresión
-		return self.visitChildren(ctx)
+	def visitExprStmt(self, ctx: CompiscriptParser.ExprStmtContext):
+		# Verifica si la expresión es una asignación
+		if isinstance(ctx.expression(), CompiscriptParser.AssignmentContext):
+			# Si es una asignación, procesa la asignación tardía
+			self.visitAssignment(ctx.expression())
+		else:
+			# Si no es una asignación, simplemente delega a los hijos
+			self.visitChildren(ctx)
+
 
 
 	def visitForStmt(self, ctx: CompiscriptParser.ForStmtContext):
@@ -382,8 +411,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return result
 
 
-
-
 	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
 		return self.visitChildren(ctx)
 
@@ -416,28 +443,71 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			raise Exception(f"VISIT EXPRESION TYPE ERROR. Operador desconocido: {operator}")
 
 
-	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
-		""" Este sirve para poder hacer la asignacion de valores"""
+	def visitAssignment(self, ctx: CompiscriptParser.AssignmentContext):
+		""" Este método maneja la asignación de valores a las variables """
 		
-		if ctx.IDENTIFIER() is not None:
-			var_name = str(ctx.IDENTIFIER())
-			self.log.debug(f"VARNAME: {var_name}")
+		# Depuración para inspeccionar el contexto completo
+		print(f"Contexto completo: {ctx.getText()}")  # Esto imprime el texto completo de la asignación
+		
+		# Obtener el nombre de la variable
+		var_name = ctx.IDENTIFIER()
 
-			current_scope_vars = self.variables_scope.get(self.current_scope)
-			self.log.debug(current_scope_vars)
-			if var_name not in current_scope_vars:
-				raise Exception(f"Error: La variable '{var_name}' no esta en el scope actual.")
+		if var_name is None:
+			print(f"COSA RARA: {var_name}")  # Esto debería ayudarte a ver cuándo ocurre el None
+		else:
+			print(f"COSA RARA: {var_name.getText()}")
 
-			if ctx.assignment() is not None:
-				# Visita la expresión a la derecha del '='
-				value = self.visit(ctx.assignment())
-			elif ctx.logic_or() is not None:
-				# Visita la lógica "or" si está presente
-				value = self.visit(ctx.logic_or())
-
-			current_scope_vars[var_name]['value'] = value
+		# Convierte var_name a string si no es None
+		if var_name is not None:
+			var_name = var_name.getText()
+	
+		# Verificar si la variable existe en el scope actual o en el global
+		current_scope_vars = self.variables_scope.get(self.current_scope, {})
+		global_scope_vars = self.variables_scope.get('global_0', {})
+		
+		# Buscar la variable primero en el scope actual, luego en el global
+		if var_name in current_scope_vars:
+			symbol = current_scope_vars[var_name]
+		elif var_name in global_scope_vars:
+			symbol = global_scope_vars[var_name]
+		else:
+			raise Exception(f"Error: La variable '{var_name}' no está declarada en el scope actual o global.")
+		
+		# Evaluar el valor a asignar (lado derecho del '=')
+		assigned_value = None
+		if ctx.assignment() is not None:
+			assigned_value = self.visit(ctx.assignment())
+		elif ctx.logic_or() is not None:
+			assigned_value = self.visit(ctx.logic_or())
+		
+		# Actualizar el valor de la variable en el scope correspondiente
+		symbol['value'] = assigned_value
+		
+		# Actualizar la tabla de símbolos en el scope correcto
+		if var_name in current_scope_vars:
+			current_scope_vars[var_name] = symbol
 			self.variables_scope[self.current_scope] = current_scope_vars
-		return self.visitChildren(ctx)
+		elif var_name in global_scope_vars:
+			global_scope_vars[var_name] = symbol
+			self.variables_scope['global_0'] = global_scope_vars
+		
+		self.log.debug(f"Variable '{var_name}' asignada con el valor: {assigned_value}")
+		
+		return assigned_value
+
+
+	def lookup_variable(self, var_name):
+		# Verificar si la variable está en el scope actual
+		if self.current_scope in self.variables_scope and var_name in self.variables_scope[self.current_scope]:
+			return self.variables_scope[self.current_scope][var_name]
+		
+		# Si no está en el scope actual, buscar en el global
+		if 'global_0' in self.variables_scope and var_name in self.variables_scope['global_0']:
+			return self.variables_scope['global_0'][var_name]
+		
+		# Si no se encuentra en ningún scope, devolver None
+		return None
+
 
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext):

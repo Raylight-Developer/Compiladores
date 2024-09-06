@@ -105,6 +105,7 @@ class Symbol_Table(QTableWidget):
 		# Primero busca en los scopes locales, desde el más interno hacia afuera.
 		for scope in reversed(self.scopes):
 			if var_name in scope.symbols:
+				# print(f"VARIABLES EN EL SYMBOL TABLE: {var_name}")
 				return scope.symbols[var_name]
 
 		# Si no se encuentra, lanza una excepción.
