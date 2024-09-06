@@ -28,8 +28,8 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row, 0, QTableWidgetItem(str(value.ID)))
 			self.setItem(row, 1, QTableWidgetItem(str(value.parent)))
 			self.setItem(row, 2, QTableWidgetItem(str(value.code)))
-			self.setItem(row, 3, QTableWidgetItem('\n'.join(value.member_functions)))
-			self.setItem(row, 4, QTableWidgetItem('\n'.join(value.member_variables)))
+			self.setItem(row, 3, QTableWidgetItem('\n'.join([str(item) for item in value.member_functions])))
+			self.setItem(row, 4, QTableWidgetItem('\n'.join([str(item) for item in value.member_variables])))
 		elif isinstance(value, Function):
 			self.setItem(row, 0, QTableWidgetItem(str(value.ID)))
 			self.setItem(row, 1, QTableWidgetItem(value.return_type.value))

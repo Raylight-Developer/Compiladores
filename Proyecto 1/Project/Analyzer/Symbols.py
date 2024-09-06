@@ -111,14 +111,6 @@ class Function:
 	def __str__(self):
 		return f"Function {self.ID}"
 
-class Member:
-	def __init__(self, data : Union[Function, Variable] = None, type : Type = Type.UNKNOWN):
-		self.data = data
-		self.type = Type
-	
-	def __str__(self):
-		return f"Function {self.ID}"
-
 class Class:
 	def __init__(self):
 		self.ID          : str   = None

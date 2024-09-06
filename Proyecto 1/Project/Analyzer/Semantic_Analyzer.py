@@ -42,13 +42,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.debug << NL() << f"Class [{struct.ID}]"
 
-		members: List[Member] = self.visit(ctx.classBody(), visiting_class = struct)
+		members: List[Union[Function, Variable]] = self.visit(ctx.classBody(), visiting_class = struct, visitor = struct)
 		for member in members:
-			if member.type == Type.FUNCTION:
-				member: Variable
+			if isinstance(member, Function):
 				struct.member_functions.append(member)
-			elif member.type == Type.VARIABLE:
-				member: Function
+			elif isinstance(member, Variable):
 				struct.member_variables.append(member)
 #
 		self.scope_tracker.declareFunction(struct)
@@ -60,9 +58,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitClassBody(self, ctx:CompiscriptParser.ClassBodyContext, **kwargs):
 		self.enter("Class Body")
-		members: List[Member] = []
+		members: List[Union[Function, Variable]] = []
 		for i in range(len(ctx.classMember())):
-			member: Member = self.visit(ctx.classMember(i), **kwargs)
+			member = self.visit(ctx.classMember(i), **kwargs)
 			members.append(member)
 		self.exit("Class Body")
 		return members
@@ -73,13 +71,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		if ctx.varDecl() is not None:
 			self.exit("Member Declaration")
-			variable: Variable = self.visit(ctx.varDecl(), visitor = "Class Member", visiting_class = kwargs["visiting_class"])
+			variable: Variable = self.visit(ctx.varDecl(), **kwargs)
 
-			return Member(variable, Type.VARIABLE)
+			return variable
 		elif ctx.function() is not None:
 			self.exit("Member Declaration")
-			function: Function = self.visit(ctx.function(), visitor = "Class Member", visiting_class = kwargs["visiting_class"])
-			return Member(function, Type.FUNCTION)
+			function: Function = self.visit(ctx.function(), **kwargs)
+			return function
 
 	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext, **kwargs):
 		self.enter("Function Declaration")
@@ -96,7 +94,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		variable.ID = str(ctx.IDENTIFIER())
 		variable.code = ctx.getText()
 #
-		if "visitor" in kwargs and kwargs["visitor"] == "Class Member":
+		if "visitor" in kwargs and isinstance(kwargs["visitor"], Class):
 			variable.member = kwargs["visiting_class"]
 #
 		if ctx.expression():
@@ -398,9 +396,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		function = Function()
 		function.ID = str(ctx.IDENTIFIER())
-		if "visitor" in kwargs and kwargs["visitor"] == "Class Member":
+		if "visitor" in kwargs and isinstance(kwargs["visitor"], Class):
 			function.member = kwargs["visiting_class"]
-			#TODOif function.ID == "init"
+			#TODO if function.ID == "init"
+			#TODO this. variables
+			if function.ID == "init":
+				kwargs["visitor"].initializer = function
+			
 #
 		self.scope_tracker.declareFunction(function)
 		self.addSymbolToTable(function)
