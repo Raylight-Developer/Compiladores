@@ -12,9 +12,9 @@ class Symbol_Table(QTableWidget):
 		if type == "Classes":
 			self.columns = ["ID", "Parent", "Code", "Initializer", "Functions", "Variables"]
 		if type == "Functions":
-			self.columns = ["ID", "Return Type", "Code", "Scope"]
+			self.columns = ["ID", "Return Type", "Code", "Scope", "Depth"]
 		if type == "Variables":
-			self.columns = ["ID", "Type", "Code", "Scope"]
+			self.columns = ["ID", "Type", "Code", "Scope", "Depth"]
 
 		self.setRowCount(0)
 		self.setColumnCount(len(self.columns))
@@ -36,8 +36,10 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row, 1, QTableWidgetItem(value.return_type.value))
 			self.setItem(row, 2, QTableWidgetItem(str(value.code)))
 			self.setItem(row, 3, QTableWidgetItem(str(value.member) if value.member else "Global"))
+			self.setItem(row, 4, QTableWidgetItem(str(value.scope_depth)))
 		elif isinstance(value, Variable):
 			self.setItem(row, 0, QTableWidgetItem(str(value.ID)))
 			self.setItem(row, 1, QTableWidgetItem(value.type.value))
 			self.setItem(row, 2, QTableWidgetItem(str(value.code)))
 			self.setItem(row, 3, QTableWidgetItem(str(value.member) if value.member else "Global"))
+			self.setItem(row, 4, QTableWidgetItem(str(value.scope_depth)))

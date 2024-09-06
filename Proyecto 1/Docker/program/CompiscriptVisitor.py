@@ -159,6 +159,11 @@ class CompiscriptVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by CompiscriptParser#variable.
+    def visitVariable(self, ctx:CompiscriptParser.VariableContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by CompiscriptParser#parameters.
     def visitParameters(self, ctx:CompiscriptParser.ParametersContext):
         return self.visitChildren(ctx)

@@ -10,11 +10,11 @@ declaration     : classDecl
 classDecl       : 'class' IDENTIFIER ('extends' IDENTIFIER)? '{' classBody '}' ;
 
 classBody       : classMember* ;
-classMember     : varDecl
+classMember     : 'this.' variable
                 | function ;
 
 funDecl         : 'fun' function ;
-varDecl         : 'var' IDENTIFIER ('=' expression)? ';' ;
+varDecl         : 'var' variable ;
 
 statement       : exprStmt
                 | forStmt
@@ -60,6 +60,7 @@ primary         : 'true' | 'false' | 'nil' | 'this'
                 | array | instantiation;
 
 function        : IDENTIFIER '(' parameters? ')' block ;
+variable        : IDENTIFIER ('=' expression)? ';' ;
 parameters      : IDENTIFIER ( ',' IDENTIFIER )* ;
 arguments       : expression ( ',' expression )* ;
 

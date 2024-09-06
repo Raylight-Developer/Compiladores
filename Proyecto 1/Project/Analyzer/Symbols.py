@@ -54,11 +54,11 @@ def operationType(debug: Lace, left: 'Container', operator: str, right: 'Contain
 			return Type.STRING
 
 		if left.type == Type.VARIABLE and right.type == Type.VARIABLE:
-			return operationType(debug, Container(left.data.code, left.data.type), operator, Container(right.data.code, right.data.type))
+			return operationType(debug, Container(left.getCode(), left.data.type), operator, Container(right.getCode(), right.data.type))
 		if left.type == Type.VARIABLE and right.type != Type.VARIABLE:
-			return operationType(debug, Container(left.data.code, left.data.type), operator, right)
+			return operationType(debug, Container(left.getCode(), left.data.type), operator, right)
 		if left.type != Type.VARIABLE and right.type == Type.VARIABLE:
-			return operationType(debug, left, operator, Container(right.data.code, right.data.type))
+			return operationType(debug, left, operator, Container(right.getCode(), right.data.type))
 
 		error(debug, f"Cannot operate different Types ⟪{left.type}⟫({left.getCode()}) {operator} ⟪{right.type}⟫({right.getCode()})")
 	error(debug, f"Cannot operate Unkown Types {type(left)}({left}) {operator} {type(right)}({right})".replace("<", "⟪").replace(">", "⟫"))
@@ -84,7 +84,8 @@ class Variable:
 		self.code        : str  = None
 		self.scope_depth : int = 0
 
-		self.member : Class = None
+		self.member     : Class = None
+		self.class_type : Class = None
 
 	def __str__(self):
 		return f"Variable {self.ID}"

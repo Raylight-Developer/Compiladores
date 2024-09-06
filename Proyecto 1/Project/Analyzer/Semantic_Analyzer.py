@@ -71,12 +71,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.enter("Member Declaration")
 		self.scope_tracker.enterScope()
 
-		if ctx.varDecl() is not None:
+		if ctx.varDecl():
 			variable: Container = self.visit(ctx.varDecl(), **kwargs)
 			self.exit("Member Declaration")
 			return variable
 
-		elif ctx.function() is not None:
+		elif ctx.function():
 			function: Container = self.visit(ctx.function(), **kwargs)
 			self.exit("Member Declaration")
 			return function
@@ -216,6 +216,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						variable: Variable = struct.lookupVariable(var_name, struct)
 						variable.member = struct.ID
 						variable.code = self.visit(ctx.assignment(), **kwargs)
+						variable.class_type = struct
 						return variable.code
 
 					else:
@@ -223,6 +224,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						variable.ID = var_name
 						variable.member = struct.ID
 						variable.code = self.visit(ctx.assignment(), **kwargs)
+						variable.class_type = struct
 
 						struct.member_variables.append(variable)
 						self.scope_tracker.declareVariable(variable, struct)
@@ -345,13 +347,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return Container(f"({left.getCode()} % {right.getCode()})", type)
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext, **kwargs):
+		self.enterFull("Array")
 		elements: List[Container] = []
 		if ctx.expression():
 			for expr in ctx.expression():
 				elements.append(self.visit(expr, **kwargs))
+		self.exitFull("Array")
 		return Container(elements, Type.ARRAY)
 
 	def visitInstantiation(self, ctx:CompiscriptParser.InstantiationContext, **kwargs):
+		self.enterFull("Instantiation")
 
 		class_name = ctx.IDENTIFIER().getText()
 
@@ -359,7 +364,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if ctx.arguments():
 			args = self.visit(ctx.arguments(), **kwargs)
 		
-		return Container(self.scope_tracker.lookupClass(class_name), Type.VARIABLE)
+		self.exitFull("Instantiation")
+		return Container(self.scope_tracker.lookupClass(class_name), Type.CLASS)
 
 	def visitUnary(self, ctx:CompiscriptParser.UnaryContext, **kwargs):
 		self.enterFull("Unary")
@@ -380,8 +386,19 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitCall(self, ctx:CompiscriptParser.CallContext, **kwargs):
 		self.enterFull("Call")
+		if ctx.getChildCount() > 1 and ctx.getChild(1).getText() == '.':
+			instance: Container = self.visit(ctx.getChild(0))  # visit the instance (e.g., myclassinstance)
+			member_variable = ctx.getChild(2).getText()   # get the member variable name (e.g., variable_a)
+			
+			scope = kwargs["struct"] if "struct" in kwargs else None
+			if self.scope_tracker.checkVariable(instance, scope):
+				variable: Variable = self.scope_tracker.lookupVariable(instance, scope)
+				if self.scope_tracker.checkClass(variable.class_type, scope):
+					struct: Class = self.scope_tracker.lookupClass(variable.class_type, scope)
+					print(f"Accessing member variable '{member_variable}' of variable '{variable}' whidch instantiates '{struct}'")
+		
 		self.exitFull("Call")
-		return self.visitChildren(ctx, **kwargs)
+		return self.visitChildren(ctx)
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext, **kwargs):
 		self.enterFull("Primary")
