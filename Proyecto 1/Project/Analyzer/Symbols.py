@@ -41,9 +41,18 @@ def operationType(debug: Lace, left: 'Container', operator: str, right: 'Contain
 		return Type.FLOAT
 	elif left.type == Type.FLOAT and right.type == Type.FLOAT:
 		return Type.FLOAT
+
+	elif left.type == Type.FLOAT and right.type == Type.STRING:
+		return Type.STRING
+	elif left.type == Type.STRING and right.type == Type.FLOAT:
+		return Type.STRING
+	elif left.type == Type.INT and right.type == Type.STRING:
+		return Type.STRING
+	elif left.type == Type.STRING and right.type == Type.INT:
+		return Type.STRING
+
 	elif left.type == Type.VARIABLE and right.type == Type.VARIABLE:
 		return operationType(debug, left.data, operator, right.data)
-
 	elif left.type == Type.VARIABLE and right.type != Type.VARIABLE:
 		return operationType(debug, left.data, operator, right)
 	elif left.type != Type.VARIABLE and right.type == Type.VARIABLE:

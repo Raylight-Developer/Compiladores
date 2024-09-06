@@ -34,30 +34,40 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return self.visitChildren(ctx)
 
 	def visitClassDecl(self, ctx:CompiscriptParser.ClassDeclContext):
+		self.enter("Class Declaration")
 		self.scope_tracker.enterScope()
 
 		struct = Class()
 		struct.ID = str(ctx.IDENTIFIER(0))
 		self.addSymbolToTable(struct)
 
-		children = self.visitChildren(ctx)
+#
+		self.scope_tracker.declareFunction(struct)
+		self.addSymbolToTable(struct)
 		self.scope_tracker.exitScope()
-		return children
+#
+		self.exit("Class Declaration")
+		return Container(struct, Type.FUNCTION)
 
 	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext):
+		self.enter("Function Declaration")
 		self.scope_tracker.enterScope()
 
 		function = Function()
 		function.ID = str(ctx.IDENTIFIER())
 		self.addSymbolToTable(function)
 
-		children = self.visitChildren(ctx)
+#
+		self.scope_tracker.declareFunction(function)
+		self.addSymbolToTable(function)
 		self.scope_tracker.exitScope()
-		return children
+#
+		self.exit("Function Declaration")
+		return Container(function, Type.FUNCTION)
 
 
 	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
-		self.enter("VarDecl")
+		self.enter("Variable Declaration")
 #
 		variable = Variable()
 		variable.ID = str(ctx.IDENTIFIER())
@@ -77,8 +87,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.declareVariable(variable)
 		self.addSymbolToTable(variable)
 #
-		self.exit("VarDecl")
-
+		self.exit("Variable Declaration")
 		return Container(variable, Type.VARIABLE)
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
@@ -148,7 +157,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
-			error(self.debug, f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
+			error(self.debug, f"Error Expression. Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
 
 		if operator == '+':
 			return left + right
@@ -163,7 +172,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		# Si el operador no es reconocido, lanza una excepción
 		
 		else:
-			error(self.debug, f"Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]")
+			error(self.debug, f"Error Expression. Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]")
 
 		self.exitFull("Expression")
 
@@ -221,9 +230,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			operator = ctx.getChild(2 * i - 1).getText()
 			right: Container = self.visit(ctx.comparison(i))
 			if not isinstance(left, Container):
-				error(self.debug, f"Error Comparing {left} {operator} {right}")
+				error(self.debug, f"Error Equality. {left} {operator} {right}")
 			if not isinstance(right, Container):
-				error(self.debug, f"Error Comparing {left} {operator} {right}")
+				error(self.debug, f"Error Equality. {left} {operator} {right}")
 			self.exitFull("Equality")
 			return Container(f"{left.getCode()} {operator} {right.getCode()}", Type.BOOL)
 
@@ -240,9 +249,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			operator = ctx.getChild(2 * i - 1).getText()
 			right: Container = self.visit(ctx.term(i))
 			if not isinstance(left, Container):
-				error(self.debug, f"Error Comparing {left} {operator} {right}")
+				error(self.debug, f"Error Comparison. {left} {operator} {right}")
 			if not isinstance(right, Container):
-				error(self.debug, f"Error Comparing {left} {operator} {right}")
+				error(self.debug, f"Error Comparison. {left} {operator} {right}")
 			self.exitFull("Comparison")
 			return Container(f"{left.getCode()} {operator} {right.getCode()}", Type.BOOL)
 
@@ -259,7 +268,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		right : Container = self.visit(ctx.factor(1))
 
 		if left is None or right is None:
-			error(self.debug, f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
+			error(self.debug, f"Error Term. Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
 
 		type = operationType(self.debug, left, operator, right)
 
@@ -283,7 +292,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		right : Container = self.visit(ctx.unary(1))
 
 		if left is None or right is None:
-			error(self.debug, f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
+			error(self.debug, f"Error Factor. Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
 
 		type = operationType(self.debug, left, operator, right)
 
@@ -342,7 +351,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				self.exitFull("Primary")
 				return Container(self.scope_tracker.lookupVariable(var_name), Type.VARIABLE)
 			else:
-				error(self.debug, f"Variable '{var_name}' out of scope.")
+				error(self.debug, f"Error Primary. Variable '{var_name}' out of scope.")
 		if ctx.expression():
 			visited = self.visit(ctx.expression())
 
