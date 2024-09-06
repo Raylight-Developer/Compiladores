@@ -66,7 +66,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if ctx.expression():
 			var = self.visit(ctx.expression())
 			if isinstance(var, Container):
-				variable.code = var.code
+				variable.code = var.getCode()
 				variable.type = var.type
 			else:
 				variable.code = var
@@ -79,7 +79,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 #
 		self.exit("VarDecl")
 
-		return self.visitChildren(ctx)
+		return Container(variable, Type.VARIABLE)
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		return self.visitChildren(ctx)
@@ -188,30 +188,22 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext):
 		self.enterFull("Or")
-		
-		for i in range(ctx.getChildCount()):
-			operator = self.visit(ctx.getChild(i))
 
-			if operator == None:
-				left  : Container = self.visit(ctx.getChild(i-1))
-				right : Container = self.visit(ctx.getChild(i+1))
-				operator = "or"
-				return Container(f"{left.code} {operator} {right.code}", Type.BOOL)
+		left: Container = self.visit(ctx.logic_and(0))
+		for i in range(1, len(ctx.logic_and())):
+			right: Container = self.visit(ctx.logic_and(i))
+			return Container(f"{left.getCode()} or {right.getCode()}", Type.BOOL)
 
 		self.exitFull("Or")
 		return self.visitChildren(ctx)
 
 	def visitLogic_and(self, ctx:CompiscriptParser.Logic_andContext):
 		self.enterFull("And")
-		
-		for i in range(ctx.getChildCount()):
-			operator = self.visit(ctx.getChild(i))
 
-			if operator == None:
-				left  : Container = self.visit(ctx.getChild(i-1))
-				right : Container = self.visit(ctx.getChild(i+1))
-				operator = "and"
-				return Container(f"{left.code} {operator} {right.code}", Type.BOOL)
+		left: Container = self.visit(ctx.equality(0))
+		for i in range(1, len(ctx.equality())):
+			right: Container = self.visit(ctx.equality(i))
+			return Container(f"{left.getCode()} and {right.getCode()}", Type.BOOL)
 
 		self.exitFull("And")
 		return self.visitChildren(ctx)
@@ -219,33 +211,48 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
 		self.enterFull("Equality")
 
-		text = ctx.getText()
+		if ctx.getChildCount() == 1:
+			value: Container = self.visit(ctx.comparison(0))
+			self.exitFull("Equality")
+			return value
 
-		visited = self.visitChildren(ctx)
-		self.exitFull("Equality")
-
-		if any(item in ["!=", "=="] for item in text):
-			return Container(ctx.getText(), Type.BOOL)
-		return visited
+		left: Container = self.visit(ctx.comparison(0))
+		for i in range(1, len(ctx.comparison())):
+			operator = ctx.getChild(2 * i - 1).getText()
+			right: Container = self.visit(ctx.comparison(i))
+			if not isinstance(left, Container):
+				error(self.debug, f"Error Comparing {left} {operator} {right}")
+			if not isinstance(right, Container):
+				error(self.debug, f"Error Comparing {left} {operator} {right}")
+			self.exitFull("Equality")
+			return Container(f"{left.getCode()} {operator} {right.getCode()}", Type.BOOL)
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		self.enterFull("Comparison")
 
-		text = ctx.getText()
+		if ctx.getChildCount() == 1:
+			value: Container = self.visit(ctx.term(0))
+			self.exitFull("Comparison")
+			return value
 
-		visited = self.visitChildren(ctx)
-		self.exitFull("Comparison")
-
-		if any(item in ["<=", ">=", "<", ">", "!=", "==", "!"] for item in text):
-			return Container(ctx.getText(), Type.BOOL)
-		return visited
+		left: Container = self.visit(ctx.term(0))
+		for i in range(1, len(ctx.term())):
+			operator = ctx.getChild(2 * i - 1).getText()
+			right: Container = self.visit(ctx.term(i))
+			if not isinstance(left, Container):
+				error(self.debug, f"Error Comparing {left} {operator} {right}")
+			if not isinstance(right, Container):
+				error(self.debug, f"Error Comparing {left} {operator} {right}")
+			self.exitFull("Comparison")
+			return Container(f"{left.getCode()} {operator} {right.getCode()}", Type.BOOL)
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
 		self.enterFull("Term")
 
 		if ctx.getChildCount() == 1:
+			value: Container = self.visit(ctx.factor(0))
 			self.exitFull("Term")
-			return self.visit(ctx.factor(0))
+			return value
 
 		left  : Container = self.visit(ctx.factor(0))
 		operator: str = ctx.getChild(1).getText()
@@ -254,21 +261,22 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if left is None or right is None:
 			error(self.debug, f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
 
-		type = operationType(self.debug, left.type, operator, right.type)
+		type = operationType(self.debug, left, operator, right)
 
 		self.exitFull("Term")
 
 		if operator == '+':
-			return Container(f"({left.code} + {right.code})", type)
+			return Container(f"({left.getCode()} + {right.getCode()})", type)
 		elif operator == '-':
-			return Container(f"({left.code} - {right.code})", type)
+			return Container(f"({left.getCode()} - {right.getCode()})", type)
 
 	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
 		self.enterFull("Factor")
 
 		if ctx.getChildCount() == 1:
+			value: Container = self.visit(ctx.unary(0))
 			self.exitFull("Factor")
-			return self.visit(ctx.unary(0))
+			return value
 
 		left  : Container = self.visit(ctx.unary(0))
 		operator: str = ctx.getChild(1).getText()
@@ -277,16 +285,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if left is None or right is None:
 			error(self.debug, f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
 
-		type = operationType(self.debug, left.type, operator, right.type)
+		type = operationType(self.debug, left, operator, right)
 
 		self.exitFull("Factor")
 
 		if operator == '*':
-			return Container(f"({left.code} * {right.code})", type)
+			return Container(f"({left.getCode()} * {right.getCode()})", type)
 		elif operator == '/':
-			return Container(f"({left.code} / {right.code})", type)
+			return Container(f"({left.getCode()} / {right.getCode()})", type)
 		elif operator == '%':
-			return Container(f"({left.code} % {right.code})", type)
+			return Container(f"({left.getCode()} % {right.getCode()})", type)
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext):
 		return self.visitChildren(ctx)
@@ -299,15 +307,15 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		if ctx.getChildCount() == 2:
 			operator = str(ctx.getChild(0))
-			operand = self.visit(ctx.getChild(1))
+			operand: Container = self.visit(ctx.getChild(1))
 			if operator == '-':
 				self.exitFull("Unary")
-				return -operand
+				return Container(f"-{operand.getCode()}", operand.type)
 			elif operator == '!':
 				self.exitFull("Unary")
-				return not operand
+				return Container(f"!{operand.getCode()}", operand.type)
 		else:
-			visited = self.visit(ctx.getChild(0))
+			visited: Container = self.visit(ctx.getChild(0))
 			self.exitFull("Unary")
 			return visited
 
@@ -332,7 +340,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			var_name = str(ctx.IDENTIFIER())
 			if self.scope_tracker.checkVariable(var_name):
 				self.exitFull("Primary")
-				return self.scope_tracker.lookupVariable(var_name)
+				return Container(self.scope_tracker.lookupVariable(var_name), Type.VARIABLE)
 			else:
 				error(self.debug, f"Variable '{var_name}' out of scope.")
 		if ctx.expression():
