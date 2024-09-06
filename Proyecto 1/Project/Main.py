@@ -73,6 +73,11 @@ for (var i = 1; i <= 5; i = i + 1) {
 	}
 }
 
+/*
+	deberia ignorar
+	var hola = "hola";
+*/
+
 while (juan.edad < 25) {
 	juan.edad = juan.edad + 1;
 	print "Edad de Juan: " + juan.edad;

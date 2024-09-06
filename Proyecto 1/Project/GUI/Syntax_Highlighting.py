@@ -105,9 +105,33 @@ class Syntax_Highlighter(QSyntaxHighlighter) :
 			)
 			self.highlightingRules.append(rule)
 
+		self.multi_line_start = QRegularExpression(r"/\*")
+		self.multi_line_end = QRegularExpression(r"\*/")
+
 	def highlightBlock(self, text: str):
 		for rule in self.highlightingRules:
 			matchIterator: QRegularExpressionMatchIterator = rule.pattern.globalMatch(text)
 			while matchIterator.hasNext():
 				match: QRegularExpressionMatch = matchIterator.next()
 				self.setFormat(match.capturedStart(), match.capturedLength(), rule.format)
+
+		# Handle multi-line comments
+		self.setCurrentBlockState(0)
+
+		start_idx = 0
+		if self.previousBlockState() != 1:
+			start_match = self.multi_line_start.match(text)
+			start_idx = start_match.capturedStart() if start_match.hasMatch() else -1
+
+		while start_idx >= 0:
+			end_match = self.multi_line_end.match(text, start_idx)
+			end_idx = end_match.capturedEnd() if end_match.hasMatch() else -1
+
+			if end_idx == -1:
+				self.setCurrentBlockState(1)  # Comment block continues to the next line
+				self.setFormat(start_idx, len(text) - start_idx, self.comments)
+				break
+			else:
+				self.setFormat(start_idx, end_idx - start_idx, self.comments)
+				start_match = self.multi_line_start.match(text, end_idx)
+				start_idx = start_match.capturedStart() if start_match.hasMatch() else -1
