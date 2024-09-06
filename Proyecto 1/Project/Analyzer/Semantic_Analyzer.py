@@ -42,14 +42,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.debug << NL() << f"Class [{struct.ID}]"
 
-		members: List[Union[Function, Variable]] = self.visit(ctx.classBody(), visiting_class = struct, visitor = struct)
+		members: List[Union[Function, Variable]] = self.visit(ctx.classBody(), **kwargs, visiting_class = struct, visitor = struct)
 		for member in members:
 			if isinstance(member, Function):
 				struct.member_functions.append(member)
 			elif isinstance(member, Variable):
 				struct.member_variables.append(member)
+			else:
+				print(member)
 #
-		self.scope_tracker.declareFunction(struct)
+		self.scope_tracker.declareClass(struct)
 		self.addSymbolToTable(struct)
 		self.scope_tracker.exitScope()
 #
@@ -70,19 +72,19 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.enterScope()
 
 		if ctx.varDecl() is not None:
-			self.exit("Member Declaration")
 			variable: Variable = self.visit(ctx.varDecl(), **kwargs)
-
-			return variable
-		elif ctx.function() is not None:
 			self.exit("Member Declaration")
+			return variable
+
+		elif ctx.function() is not None:
 			function: Function = self.visit(ctx.function(), **kwargs)
+			self.exit("Member Declaration")
 			return function
 
 	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext, **kwargs):
 		self.enter("Function Declaration")
 
-		function = self.visit(ctx.function())
+		function = self.visit(ctx.function(), **kwargs)
 
 		self.exit("Function Declaration")
 		return Container(function, Type.FUNCTION)
@@ -98,7 +100,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			variable.member = kwargs["visiting_class"]
 #
 		if ctx.expression():
-			var = self.visit(ctx.expression())
+			var = self.visit(ctx.expression(), **kwargs)
 			if isinstance(var, Container):
 				variable.code = var.getCode()
 				variable.type = var.type
@@ -173,11 +175,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.enterFull("Expression")
 
 		if ctx.getChildCount() == 1:
-			return self.visit(ctx.getChild(0))
+			return self.visit(ctx.getChild(0), **kwargs)
 
-		left = self.visit(ctx.getChild(0))
+		left = self.visit(ctx.getChild(0), **kwargs)
 		operator = ctx.getChild(1).getText()
-		right = self.visit(ctx.getChild(2))
+		right = self.visit(ctx.getChild(2), **kwargs)
 
 		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
@@ -209,9 +211,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.debug << NL() << "Assign Value to [" << var_name << "]"
 
 			if ctx.assignment() is not None:
-				value = self.visit(ctx.assignment())
+				value = self.visit(ctx.assignment(), **kwargs)
 			elif ctx.logic_or() is not None:
-				value = self.visit(ctx.logic_or())
+				value = self.visit(ctx.logic_or(), **kwargs)
 
 			self.scope_tracker.lookupVariable(var_name).code = value
 
@@ -222,9 +224,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext, **kwargs):
 		self.enterFull("Or")
 
-		left: Container = self.visit(ctx.logic_and(0))
+		left: Container = self.visit(ctx.logic_and(0), **kwargs)
 		for i in range(1, len(ctx.logic_and())):
-			right: Container = self.visit(ctx.logic_and(i))
+			right: Container = self.visit(ctx.logic_and(i), **kwargs)
 			return Container(f"{left.getCode()} or {right.getCode()}", Type.BOOL)
 
 		self.exitFull("Or")
@@ -233,9 +235,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitLogic_and(self, ctx:CompiscriptParser.Logic_andContext, **kwargs):
 		self.enterFull("And")
 
-		left: Container = self.visit(ctx.equality(0))
+		left: Container = self.visit(ctx.equality(0), **kwargs)
 		for i in range(1, len(ctx.equality())):
-			right: Container = self.visit(ctx.equality(i))
+			right: Container = self.visit(ctx.equality(i), **kwargs)
 			return Container(f"{left.getCode()} and {right.getCode()}", Type.BOOL)
 
 		self.exitFull("And")
@@ -245,14 +247,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.enterFull("Equality")
 
 		if ctx.getChildCount() == 1:
-			value: Container = self.visit(ctx.comparison(0))
+			value: Container = self.visit(ctx.comparison(0), **kwargs)
 			self.exitFull("Equality")
 			return value
 
-		left: Container = self.visit(ctx.comparison(0))
+		left: Container = self.visit(ctx.comparison(0), **kwargs)
 		for i in range(1, len(ctx.comparison())):
 			operator = ctx.getChild(2 * i - 1).getText()
-			right: Container = self.visit(ctx.comparison(i))
+			right: Container = self.visit(ctx.comparison(i), **kwargs)
 			if not isinstance(left, Container):
 				error(self.debug, f"Error Equality. {left} {operator} {right}")
 			if not isinstance(right, Container):
@@ -268,10 +270,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.exitFull("Comparison")
 			return value
 
-		left: Container = self.visit(ctx.term(0))
+		left: Container = self.visit(ctx.term(0), **kwargs)
 		for i in range(1, len(ctx.term())):
 			operator = ctx.getChild(2 * i - 1).getText()
-			right: Container = self.visit(ctx.term(i))
+			right: Container = self.visit(ctx.term(i), **kwargs)
 			if not isinstance(left, Container):
 				error(self.debug, f"Error Comparison. {left} {operator} {right}")
 			if not isinstance(right, Container):
@@ -283,13 +285,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.enterFull("Term")
 
 		if ctx.getChildCount() == 1:
-			value: Container = self.visit(ctx.factor(0))
+			value: Container = self.visit(ctx.factor(0), **kwargs)
 			self.exitFull("Term")
 			return value
 
-		left  : Container = self.visit(ctx.factor(0))
+		left  : Container = self.visit(ctx.factor(0), **kwargs)
 		operator: str = ctx.getChild(1).getText()
-		right : Container = self.visit(ctx.factor(1))
+		right : Container = self.visit(ctx.factor(1), **kwargs)
 
 		if left is None or right is None:
 			error(self.debug, f"Error Term. Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
@@ -307,13 +309,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.enterFull("Factor")
 
 		if ctx.getChildCount() == 1:
-			value: Container = self.visit(ctx.unary(0))
+			value: Container = self.visit(ctx.unary(0), **kwargs)
 			self.exitFull("Factor")
 			return value
 
-		left  : Container = self.visit(ctx.unary(0))
+		left  : Container = self.visit(ctx.unary(0), **kwargs)
 		operator: str = ctx.getChild(1).getText()
-		right : Container = self.visit(ctx.unary(1))
+		right : Container = self.visit(ctx.unary(1), **kwargs)
 
 		if left is None or right is None:
 			error(self.debug, f"Error Factor. Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
@@ -330,17 +332,17 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return Container(f"({left.getCode()} % {right.getCode()})", type)
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext, **kwargs):
-		return self.visitChildren(ctx)
+		return self.visitChildren(ctx, **kwargs)
 
 	def visitInstantiation(self, ctx:CompiscriptParser.InstantiationContext, **kwargs):
-		return self.visitChildren(ctx)
+		return self.visitChildren(ctx, **kwargs)
 
 	def visitUnary(self, ctx:CompiscriptParser.UnaryContext, **kwargs):
 		self.enterFull("Unary")
 
 		if ctx.getChildCount() == 2:
 			operator = str(ctx.getChild(0))
-			operand: Container = self.visit(ctx.getChild(1))
+			operand: Container = self.visit(ctx.getChild(1), **kwargs)
 			if operator == '-':
 				self.exitFull("Unary")
 				return Container(f"-{operand.getCode()}", operand.type)
@@ -348,12 +350,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				self.exitFull("Unary")
 				return Container(f"!{operand.getCode()}", operand.type)
 		else:
-			visited: Container = self.visit(ctx.getChild(0))
+			visited: Container = self.visit(ctx.getChild(0), **kwargs)
 			self.exitFull("Unary")
 			return visited
 
 	def visitCall(self, ctx:CompiscriptParser.CallContext, **kwargs):
-		return self.visitChildren(ctx)
+		return self.visitChildren(ctx, **kwargs)
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext, **kwargs):
 		self.enterFull("Primary")
@@ -401,8 +403,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			#TODO if function.ID == "init"
 			#TODO this. variables
 			if function.ID == "init":
-				kwargs["visitor"].initializer = function
-			
+				kwargs["visitor"].initializer = function	
 #
 		self.scope_tracker.declareFunction(function)
 		self.addSymbolToTable(function)
@@ -417,13 +418,27 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext, **kwargs):
 		return self.visitChildren(ctx)
 
-	def generic_visit(self, node, **kwargs):
+	def visitChildren(self, node: ParserRuleContext, **kwargs):
+		result = self.defaultResult()
+		for i in range(node.getChildCount()):
+			if not self.shouldVisitNextChild(node, result):
+				return result
+
+			child = node.getChild(i)
+			if isinstance(child, TerminalNodeImpl):
+				continue
+			childResult = self.visit(child, **kwargs)
+			result = self.aggregateResult(result, childResult)
+
+		return result
+
+	def visit_default(self, node: ParserRuleContext, **kwargs):
 		for child in node.getChildren():
 			self.visit(child, **kwargs)
 
-	def visit(self, node, **kwargs):
+	def visit(self, node: ParserRuleContext, **kwargs):
 		method_name = 'visit' + node.__class__.__name__.replace('Context', '')
-		visitor_method = getattr(self, method_name, self.generic_visit)
+		visitor_method = getattr(self, method_name, self.visit_default)
 		return visitor_method(node, **kwargs)
 
 	def addSymbolToTable(self, value: Union[Class | Function | Variable]):

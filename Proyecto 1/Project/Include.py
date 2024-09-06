@@ -10,6 +10,7 @@ import re
 from PySide6.QtWidgets import QWidget
 from graphviz import Digraph
 from antlr4 import *
+from antlr4.tree.Tree import *
 from typing import List, Dict, Tuple, Set, Union, Generic, TypeVar
 
 RESET  = "</span>"
