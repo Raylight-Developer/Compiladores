@@ -1,5 +1,6 @@
 from Include import *
 
+from Lace import *
 from enum import Enum
 
 class Type(Enum):
@@ -21,6 +22,18 @@ def inferVariableType(code: str):
 		return Type.STRING
 	else:
 		return Type.UNKNOWN
+
+def operationType(debug: Lace, left: Type, operator: str, right: Type):
+	if left == Type.INT and right == Type.INT:
+		return Type.INT
+	elif left == Type.FLOAT and right == Type.INT:
+		return Type.FLOAT
+	elif left == Type.INT and right == Type.FLOAT:
+		return Type.FLOAT
+	elif left == Type.FLOAT and right == Type.FLOAT:
+		return Type.FLOAT
+	else:
+		error(debug, f"Cannot operate different Types [{left}] {operator} [{right}]")
 
 class Container:
 	def __init__(self, code: Union[str, int, float, bool, None], type: Type):

@@ -227,22 +227,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		operator: str = ctx.getChild(1).getText()
 		right : Container = self.visit(ctx.factor(1))
 
-		#self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
-
 		if left is None or right is None:
 			error(self.debug, f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
 
-		type = Type.FLOAT
-		if left.type == Type.INT and right.type == Type.INT:
-			type = Type.INT
-		elif left.type == Type.FLOAT and right.type == Type.INT:
-			type = Type.FLOAT
-		elif left.type == Type.INT and right.type == Type.FLOAT:
-			type = Type.FLOAT
-		elif left.type == Type.FLOAT and right.type == Type.FLOAT:
-			type = Type.FLOAT
-		else:
-			error(self.debug, f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})")
+		type = operationType(self.debug, left.type, operator, right.type)
 
 		self.exitFull("Term")
 
@@ -262,22 +250,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		operator: str = ctx.getChild(1).getText()
 		right : Container = self.visit(ctx.unary(1))
 
-		#self.debug << NL() << f"{left} " << f"[{type(left)}]" << f" - {right} " << f"[{type(right)}]"
-
 		if left is None or right is None:
 			error(self.debug, f"Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
 
-		type = Type.FLOAT
-		if left.type == Type.INT and right.type == Type.INT:
-			type = Type.INT
-		elif left.type == Type.FLOAT and right.type == Type.INT:
-			type = Type.FLOAT
-		elif left.type == Type.INT and right.type == Type.FLOAT:
-			type = Type.FLOAT
-		elif left.type == Type.FLOAT and right.type == Type.FLOAT:
-			type = Type.FLOAT
-		else:
-			error(f"Cannot operate different Types [{left.type}]({left.code}) {operator} [{right.type}]({right.code})")
+		type = operationType(self.debug, left.type, operator, right.type)
 
 		self.exitFull("Factor")
 
