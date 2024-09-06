@@ -62,8 +62,8 @@ def operationType(debug: Lace, left: 'Container', operator: str, right: 'Contain
 		error(debug, f"Cannot operate different Types [{left.type}] {operator} [{right.type}]")
 
 class Container:
-	def __init__(self, code: Union[str, int, float, bool, 'Class', 'Function', 'Variable', None], type: Type):
-		self.data = code
+	def __init__(self, data: Union[str, int, float, bool, 'Class', 'Function', 'Variable', None], type: Type):
+		self.data = data
 		self.type = type
 
 	def getCode(self):
@@ -82,10 +82,20 @@ class Variable:
 		self.code        : str  = None
 		self.scope_depth : int = 0
 
+		self.member : Class = None
+
+	def __str__(self):
+		return f"Variable {self.ID}"
+
 class Function_Parameter:
 	def __init__(self):
 		self.ID   : str  = None
 		self.type : Type = Type.UNKNOWN
+
+		self.function : Function = None
+
+	def __str__(self):
+		return f"Function Parameter {self.ID}"
 
 class Function:
 	def __init__(self):
@@ -94,8 +104,20 @@ class Function:
 		self.return_type : Type = Type.VOID
 		self.scope_depth : int  = 0
 
+		self.member : Class  = None
 		self.variables  : List[Variable]           = []
 		self.parameters : List[Function_Parameter] = []
+
+	def __str__(self):
+		return f"Function {self.ID}"
+
+class Member:
+	def __init__(self, data : Union[Function, Variable] = None, type : Type = Type.UNKNOWN):
+		self.data = data
+		self.type = Type
+	
+	def __str__(self):
+		return f"Function {self.ID}"
 
 class Class:
 	def __init__(self):
@@ -107,3 +129,6 @@ class Class:
 		self.initializer      : Function       = None
 		self.member_functions : List[Function] = []
 		self.member_variables : List[Variable] = []
+
+	def __str__(self):
+		return f"Class {self.ID}"
