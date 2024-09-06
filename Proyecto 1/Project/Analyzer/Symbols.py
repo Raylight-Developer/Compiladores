@@ -7,14 +7,15 @@ class Type(Enum):
 	INT = "int"
 	NONE = "nullptr"
 	BOOL = "bool"
-	LIST = "list"
 	VOID = "void"
+	ARRAY = "array"
 	FLOAT = "float"
 	STRING = "string"
 
 	CLASS = "class"
 	FUNCTION = "function"
 	VARIABLE = "variable"
+	MEMBER_POINTER = "this."
 
 	UNKNOWN = "unknown"
 
@@ -33,33 +34,34 @@ def inferVariableType(code: str):
 		return Type.UNKNOWN
 
 def operationType(debug: Lace, left: 'Container', operator: str, right: 'Container'):
-	if left.type == Type.INT and right.type == Type.INT:
-		return Type.INT
-	if left.type == Type.FLOAT and right.type == Type.INT:
-		return Type.FLOAT
-	if left.type == Type.INT and right.type == Type.FLOAT:
-		return Type.FLOAT
-	if left.type == Type.FLOAT and right.type == Type.FLOAT:
-		return Type.FLOAT
+	if isinstance(left, Container) and isinstance(right, Container):
+		if left.type == Type.INT and right.type == Type.INT:
+			return Type.INT
+		if left.type == Type.FLOAT and right.type == Type.INT:
+			return Type.FLOAT
+		if left.type == Type.INT and right.type == Type.FLOAT:
+			return Type.FLOAT
+		if left.type == Type.FLOAT and right.type == Type.FLOAT:
+			return Type.FLOAT
 
-	if left.type == Type.FLOAT and right.type == Type.STRING:
-		return Type.STRING
-	if left.type == Type.STRING and right.type == Type.FLOAT:
-		return Type.STRING
-	if left.type == Type.INT and right.type == Type.STRING:
-		return Type.STRING
-	if left.type == Type.STRING and right.type == Type.INT:
-		return Type.STRING
+		if left.type == Type.FLOAT and right.type == Type.STRING:
+			return Type.STRING
+		if left.type == Type.STRING and right.type == Type.FLOAT:
+			return Type.STRING
+		if left.type == Type.INT and right.type == Type.STRING:
+			return Type.STRING
+		if left.type == Type.STRING and right.type == Type.INT:
+			return Type.STRING
 
-	if left.type == Type.VARIABLE and right.type == Type.VARIABLE:
-		return operationType(debug, left.data, operator, right.data)
-	if left.type == Type.VARIABLE and right.type != Type.VARIABLE:
-		return operationType(debug, Container(left.data.code, left.data.type), operator, right)
-	if left.type != Type.VARIABLE and right.type == Type.VARIABLE:
-		return operationType(debug, left, operator, Container(right.data.code, right.data.type))
+		if left.type == Type.VARIABLE and right.type == Type.VARIABLE:
+			return operationType(debug, Container(left.data.code, left.data.type), operator, Container(right.data.code, right.data.type))
+		if left.type == Type.VARIABLE and right.type != Type.VARIABLE:
+			return operationType(debug, Container(left.data.code, left.data.type), operator, right)
+		if left.type != Type.VARIABLE and right.type == Type.VARIABLE:
+			return operationType(debug, left, operator, Container(right.data.code, right.data.type))
 
-	else:
-		error(debug, f"Cannot operate different Types <{left.type}>({left.getCode()}) {operator} <{right.type}>({right.getCode()})")
+		error(debug, f"Cannot operate different Types ⟪{left.type}⟫({left.getCode()}) {operator} ⟪{right.type}⟫({right.getCode()})")
+	error(debug, f"Cannot operate Unkown Types {type(left)}({left}) {operator} {type(right)}({right})".replace("<", "⟪").replace(">", "⟫"))
 
 class Container:
 	def __init__(self, data: Union[str, int, float, bool, 'Class', 'Function', 'Variable', None], type: Type):
