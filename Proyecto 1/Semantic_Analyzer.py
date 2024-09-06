@@ -450,50 +450,68 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		print(f"Contexto completo: {ctx.getText()}")  # Esto imprime el texto completo de la asignación
 		
 		# Obtener el nombre de la variable
-		var_name = ctx.IDENTIFIER()
+		# var_name = ctx.IDENTIFIER()
 
-		if var_name is None:
-			print(f"COSA RARA: {var_name}")  # Esto debería ayudarte a ver cuándo ocurre el None
-		else:
-			print(f"COSA RARA: {var_name.getText()}")
+		# if var_name is None:
+		# 	print(f"COSA RARA: {var_name}")  # Esto debería ayudarte a ver cuándo ocurre el None
+		# else:
+		# 	print(f"COSA RARA: {var_name.getText()}")
 
-		# Convierte var_name a string si no es None
-		if var_name is not None:
-			var_name = var_name.getText()
+		# # Convierte var_name a string si no es None
+		# if var_name is not None:
+		# 	var_name = var_name.getText()
 	
-		# Verificar si la variable existe en el scope actual o en el global
-		current_scope_vars = self.variables_scope.get(self.current_scope, {})
-		global_scope_vars = self.variables_scope.get('global_0', {})
+		# # Verificar si la variable existe en el scope actual o en el global
+		# current_scope_vars = self.variables_scope.get(self.current_scope, {})
+		# global_scope_vars = self.variables_scope.get('global_0', {})
 		
-		# Buscar la variable primero en el scope actual, luego en el global
-		if var_name in current_scope_vars:
-			symbol = current_scope_vars[var_name]
-		elif var_name in global_scope_vars:
-			symbol = global_scope_vars[var_name]
-		else:
-			raise Exception(f"Error: La variable '{var_name}' no está declarada en el scope actual o global.")
+		# # Buscar la variable primero en el scope actual, luego en el global
+		# if var_name in current_scope_vars:
+		# 	symbol = current_scope_vars[var_name]
+		# elif var_name in global_scope_vars:
+		# 	symbol = global_scope_vars[var_name]
+		# else:
+		# 	raise Exception(f"Error: La variable '{var_name}' no está declarada en el scope actual o global.")
 		
-		# Evaluar el valor a asignar (lado derecho del '=')
-		assigned_value = None
-		if ctx.assignment() is not None:
-			assigned_value = self.visit(ctx.assignment())
-		elif ctx.logic_or() is not None:
-			assigned_value = self.visit(ctx.logic_or())
+		# # Evaluar el valor a asignar (lado derecho del '=')
+		# assigned_value = None
+		# if ctx.assignment() is not None:
+		# 	assigned_value = self.visit(ctx.assignment())
+		# elif ctx.logic_or() is not None:
+		# 	assigned_value = self.visit(ctx.logic_or())
 		
-		# Actualizar el valor de la variable en el scope correspondiente
-		symbol['value'] = assigned_value
+		# # Actualizar el valor de la variable en el scope correspondiente
+		# symbol['value'] = assigned_value
 		
-		# Actualizar la tabla de símbolos en el scope correcto
-		if var_name in current_scope_vars:
-			current_scope_vars[var_name] = symbol
+		# # Actualizar la tabla de símbolos en el scope correcto
+		# if var_name in current_scope_vars:
+		# 	current_scope_vars[var_name] = symbol
+		# 	self.variables_scope[self.current_scope] = current_scope_vars
+		# elif var_name in global_scope_vars:
+		# 	global_scope_vars[var_name] = symbol
+		# 	self.variables_scope['global_0'] = global_scope_vars
+		
+		# self.log.debug(f"Variable '{var_name}' asignada con el valor: {assigned_value}")
+		
+		if ctx.IDENTIFIER() is not None:
+			var_name = str(ctx.IDENTIFIER())
+			self.log.debug(f"VARNAME: {var_name}")
+
+			current_scope_vars = self.variables_scope.get(self.current_scope)
+			self.log.debug(current_scope_vars)
+			if var_name not in current_scope_vars:
+				raise Exception(f"Error: La variable '{var_name}' no esta en el scope actual.")
+
+			if ctx.assignment() is not None:
+				# Visita la expresión a la derecha del '='
+				value = self.visit(ctx.assignment())
+			elif ctx.logic_or() is not None:
+				# Visita la lógica "or" si está presente
+				value = self.visit(ctx.logic_or())
+
+			current_scope_vars[var_name]['value'] = value
 			self.variables_scope[self.current_scope] = current_scope_vars
-		elif var_name in global_scope_vars:
-			global_scope_vars[var_name] = symbol
-			self.variables_scope['global_0'] = global_scope_vars
-		
-		self.log.debug(f"Variable '{var_name}' asignada con el valor: {assigned_value}")
-		
-		return assigned_value
+		return self.visitChildren(ctx)
 
 
 	def lookup_variable(self, var_name):
