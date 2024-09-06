@@ -17,16 +17,6 @@ class Type(Enum):
 	VARIABLE = "variable"
 
 	UNKNOWN = "unknown"
-	
-class Basic_Type(Enum):
-	INT = "int"
-	NONE = "nullptr"
-	BOOL = "bool"
-	LIST = "list"
-	VOID = "void"
-	FLOAT = "float"
-	STRING = "string"
-	UNKNOWN = "unknown"
 
 def inferVariableType(code: str):
 	if not code:
