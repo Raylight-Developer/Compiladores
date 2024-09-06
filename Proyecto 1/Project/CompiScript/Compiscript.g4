@@ -7,12 +7,7 @@ declaration     : classDecl
                 | varDecl
                 | statement ;
 
-classDecl       : 'class' IDENTIFIER ('extends' IDENTIFIER)? '{' classBody '}' ;
-
-classBody       : classMember* ;
-classMember     : varDecl
-                | function ;
-
+classDecl       : 'class' IDENTIFIER ('extends' IDENTIFIER)? '{' function* '}' ;
 funDecl         : 'fun' function ;
 varDecl         : 'var' IDENTIFIER ('=' expression)? ';' ;
 
@@ -39,8 +34,8 @@ expression      : assignment
 assignment      : (call '.')? IDENTIFIER '=' assignment
                 | logic_or;
 
-logic_or        : logic_and (('or' | '||') logic_and)* ;
-logic_and       : equality (('and' | '&&') equality)* ;
+logic_or        : logic_and ('or' logic_and)* ;
+logic_and       : equality ('and' equality)* ;
 equality        : comparison (( '!=' | '==' ) comparison)* ;
 comparison      : term (( '>' | '>=' | '<' | '<=' ) term)* ;
 term            : factor (( '-' | '+' ) factor)* ;
@@ -70,4 +65,3 @@ fragment ALPHA  : [a-zA-Z_] ;
 fragment DIGIT  : [0-9] ;
 WS              : [ \t\r\n]+ -> skip ;
 ONE_LINE_COMMENT: '//' (~ '\n')* '\n'? -> skip;
-MULTI_LINE_COMMENT: '/*' .*? '*/' -> skip;  // This is the new rule for multi-line comments
