@@ -150,7 +150,6 @@ class Tester(QMainWindow):
 
 	def compile(self, i: int, code: str, title_id: str) -> Tuple[bool, str, str]:
 		self.debug.clear()
-		self.debug += 1
 		self.table_classes  .append(Symbol_Table("Classes"))
 		self.table_functions.append(Symbol_Table("Functions"))
 		self.table_variables.append(Symbol_Table("Variables"))

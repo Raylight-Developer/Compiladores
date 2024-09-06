@@ -182,8 +182,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 			self.scope_tracker.lookupVariable(var_name).code = value
 
+		visited = self.visitChildren(ctx)
 		self.exitFull("Assignment")
-		return self.visitChildren(ctx)
+		return visited
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext):
 		return self.visitChildren(ctx)
@@ -196,22 +197,24 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		text = ctx.getText()
 
+		visited = self.visitChildren(ctx)
 		self.exitFull("Equality")
 
 		if any(item in ["!=", "=="] for item in text):
 			return Container(ctx.getText(), Type.BOOL)
-		return self.visitChildren(ctx)
+		return visited
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		self.enterFull("Comparison")
 
 		text = ctx.getText()
 
+		visited = self.visitChildren(ctx)
 		self.exitFull("Comparison")
 
 		if any(item in ["<=", ">=", "<", ">", "!=", "==", "!"] for item in text):
 			return Container(ctx.getText(), Type.BOOL)
-		return self.visitChildren(ctx)
+		return visited
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
 		self.enterFull("Term")
@@ -304,8 +307,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				self.exitFull("Unary")
 				return not operand
 		else:
+			visited = self.visit(ctx.getChild(0))
 			self.exitFull("Unary")
-			return self.visit(ctx.getChild(0))
+			return visited
 
 	def visitCall(self, ctx:CompiscriptParser.CallContext):
 		return self.visitChildren(ctx)
@@ -331,6 +335,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				return self.scope_tracker.lookupVariable(var_name)
 			else:
 				error(self.debug, f"Variable '{var_name}' out of scope.")
+		if ctx.expression():
+			visited = self.visit(ctx.expression())
 
 		self.exitFull("Primary")
 		if ctx.getText() == "true":
@@ -340,7 +346,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.getText() == "nil":
 			return Container("nil", Type.NONE)
 		elif ctx.expression():
-			return self.visit(ctx.expression())  # Delegate to expression handling
+			return visited  # Delegate to expression handling
 
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
 		return self.visitChildren(ctx)

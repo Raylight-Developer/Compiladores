@@ -29,10 +29,10 @@ var max = 10;
 var promedio = ( min + max ) / 2;
 var string = "Hola Mundo";
 for (var i = 0; i < 2; i = i + 1) {
-	var i;
+	//var i;
 	var j = 2;
 	if (j < 2) {
-		var j;
+		//var j;
 	}
 }
 
@@ -96,7 +96,7 @@ for (var i = 0; i < 2; i = i + 1) {
 		code = self.code_input.toPlainText()
 		self.code_output.clear()
 		self.debug.clear()
-		self.debug += 1
+		self.debug.current_tab = 1
 		self.log.clear()
 	
 		self.log.append("Compiling...\n{")
@@ -126,12 +126,12 @@ for (var i = 0; i < 2; i = i + 1) {
 			self.table_functions.resizeColumnsToContents()
 			self.table_variables.resizeColumnsToContents()
 
-			self.log.log(str(self.debug).strip())
+			self.log.log("\t" + str(self.debug).strip())
 			self.log.insertHtml("<br>}" + f"<br>{G}Comiplation Succesful{RESET}<br>")
 			self.code_output.insertPlainText(tree.toStringTree(recog=parser))
 
 		except Exception as e:
-			self.log.log(str(self.debug).strip())
+			self.log.log("\t" + str(self.debug).strip())
 			self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>{e}")
 			self.code_output.insertHtml(f"{R}Compilation Failed{RESET}<br><br>{e}<br>")
 			self.code_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
