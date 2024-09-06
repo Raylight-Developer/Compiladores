@@ -71,8 +71,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.enter("Member Declaration")
 		self.scope_tracker.enterScope()
 
-		if ctx.varDecl():
-			variable: Container = self.visit(ctx.varDecl(), **kwargs)
+		if ctx.variable():
+			variable: Container = self.visit(ctx.variable(), **kwargs, member = True)
 			self.exit("Member Declaration")
 			return variable
 
@@ -84,33 +84,18 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext, **kwargs):
 		self.enter("Function Declaration")
 
-		function = self.visit(ctx.function(), **kwargs)
+		function: Container = self.visit(ctx.function(), **kwargs)
 
 		self.exit("Function Declaration")
-		return Container(function, Type.FUNCTION)
+		return function
 
 	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext, **kwargs):
 		self.enter("Variable Declaration")
-#
-		variable = Variable()
-		variable.ID = str(ctx.IDENTIFIER())
-		variable.code = ctx.getText()
-#
-		if "struct" in kwargs and isinstance(kwargs["struct"], Class):
-			variable.member = kwargs["visiting_class"]
-#
-		if ctx.expression():
-			var: Container = self.visit(ctx.expression(), **kwargs)
-			variable.code = var.getCode()
-			variable.type = var.type
 
-		self.debug << NL() << f"Variable [{variable.ID}]"
-#
-		self.scope_tracker.declareVariable(variable, None)
-		self.addSymbolToTable(variable)
-#
+		variable: Container = self.visit(ctx.variable(),**kwargs)
+
 		self.exit("Variable Declaration")
-		return Container(variable, Type.VARIABLE)
+		return variable
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext, **kwargs):
 		return self.visitChildren(ctx)
@@ -200,7 +185,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext, **kwargs):
 		"""Assign Code to a Variable"""
-		self.enterFull("Assignment")
+		self.enter("Assignment")
 
 		if ctx.getChildCount() == 1:
 			return self.visit(ctx.logic_or(), **kwargs)
@@ -208,7 +193,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if ctx.call():
 			if ctx.IDENTIFIER():
 				var_name = str(ctx.IDENTIFIER())
-				self.debug << NL() << "Assign Value to Class Member [" << var_name << "]"
+				self.debug << NL() << "Assigning Value to Class Member [" << var_name << "]"
 
 				struct = kwargs["struct"] if "struct" in kwargs else None
 				if isinstance(struct, Class):
@@ -232,13 +217,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		else:
 			if ctx.IDENTIFIER():
 				var_name = str(ctx.IDENTIFIER())
-				self.debug << NL() << "Assign Value to [" << var_name << "]"
+				self.debug << NL() << "Assigning Value to [" << var_name << "]"
 
-				code = self.visit(ctx.assignment(), **kwargs)
+				if ctx.assignment():
+					code = self.visit(ctx.assignment(), **kwargs)
+				elif ctx.logic_or() is not None:
+					code = self.visit(ctx.logic_or(), **kwargs)
 				self.scope_tracker.lookupVariable(var_name, None).code = code
 				return code
  
-		self.exitFull("Assignment")
+		self.exit("Assignment")
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext, **kwargs):
 		self.enterFull("Or")
@@ -461,6 +449,30 @@ class Semantic_Analyzer(CompiscriptVisitor):
 #
 		self.exit("Function")
 		return Container(function, Type.FUNCTION)
+
+	def visitVariable(self, ctx:CompiscriptParser.VariableContext, **kwargs):
+		"""Assign Variable Member to Class or create Variable"""
+		self.enter("Variable")
+#
+		variable = Variable()
+		variable.ID = ctx.IDENTIFIER().getText()
+		variable.code = ctx.getText()
+#
+		if "member" in kwargs:
+			variable.member = kwargs["struct"]
+#
+		if ctx.expression():
+			var: Container = self.visit(ctx.expression(), **kwargs)
+			variable.code = var.getCode()
+			variable.type = var.type
+
+		self.debug << NL() << f"Variable [{variable.ID}]"
+#
+		self.scope_tracker.declareVariable(variable, None)
+		self.addSymbolToTable(variable)
+#
+		self.exit("Variable")
+		return Container(variable, Type.VARIABLE)
 
 	def visitParameters(self, ctx:CompiscriptParser.ParametersContext, **kwargs):
 		parameters: List[str] = []

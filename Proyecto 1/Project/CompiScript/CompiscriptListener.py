@@ -278,6 +278,15 @@ class CompiscriptListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CompiscriptParser#variable.
+    def enterVariable(self, ctx:CompiscriptParser.VariableContext):
+        pass
+
+    # Exit a parse tree produced by CompiscriptParser#variable.
+    def exitVariable(self, ctx:CompiscriptParser.VariableContext):
+        pass
+
+
     # Enter a parse tree produced by CompiscriptParser#parameters.
     def enterParameters(self, ctx:CompiscriptParser.ParametersContext):
         pass

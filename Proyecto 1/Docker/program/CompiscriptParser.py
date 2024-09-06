@@ -10,127 +10,127 @@ else:
 
 def serializedATN():
     return [
-        4,1,49,337,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,48,338,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
         7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
         2,27,7,27,2,28,7,28,2,29,7,29,2,30,7,30,2,31,7,31,2,32,7,32,1,0,
         5,0,68,8,0,10,0,12,0,71,9,0,1,0,1,0,1,1,1,1,1,1,1,1,3,1,79,8,1,1,
         2,1,2,1,2,1,2,3,2,85,8,2,1,2,1,2,1,2,1,2,1,3,5,3,92,8,3,10,3,12,
-        3,95,9,3,1,4,1,4,1,4,3,4,100,8,4,1,5,1,5,1,5,1,6,1,6,1,6,1,7,1,7,
-        1,7,1,7,1,7,1,7,1,7,3,7,115,8,7,1,8,1,8,1,8,1,9,1,9,1,9,1,9,1,9,
-        3,9,125,8,9,1,9,3,9,128,8,9,1,9,1,9,3,9,132,8,9,1,9,1,9,1,9,1,10,
-        1,10,1,10,1,10,1,10,1,10,1,10,3,10,144,8,10,1,11,1,11,1,11,1,11,
-        1,12,1,12,3,12,152,8,12,1,12,1,12,1,13,1,13,1,13,1,13,1,13,1,13,
-        1,14,1,14,5,14,164,8,14,10,14,12,14,167,9,14,1,14,1,14,1,15,1,15,
-        1,15,3,15,174,8,15,1,15,1,15,1,15,1,16,1,16,3,16,181,8,16,1,17,1,
-        17,1,17,3,17,186,8,17,1,17,1,17,1,17,1,17,3,17,192,8,17,1,18,1,18,
-        1,18,5,18,197,8,18,10,18,12,18,200,9,18,1,19,1,19,1,19,5,19,205,
-        8,19,10,19,12,19,208,9,19,1,20,1,20,1,20,5,20,213,8,20,10,20,12,
-        20,216,9,20,1,21,1,21,1,21,5,21,221,8,21,10,21,12,21,224,9,21,1,
-        22,1,22,1,22,5,22,229,8,22,10,22,12,22,232,9,22,1,23,1,23,1,23,5,
-        23,237,8,23,10,23,12,23,240,9,23,1,24,1,24,1,24,1,24,5,24,246,8,
-        24,10,24,12,24,249,9,24,3,24,251,8,24,1,24,1,24,1,25,1,25,1,25,1,
-        25,3,25,259,8,25,1,25,1,25,1,26,1,26,1,26,3,26,266,8,26,1,27,1,27,
-        1,27,3,27,271,8,27,1,27,1,27,1,27,1,27,1,27,1,27,1,27,5,27,280,8,
-        27,10,27,12,27,283,9,27,1,27,3,27,286,8,27,1,28,1,28,1,28,1,28,1,
-        28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,3,28,304,
-        8,28,1,29,1,29,1,29,3,29,309,8,29,1,29,1,29,1,29,1,30,1,30,1,30,
-        3,30,317,8,30,1,30,1,30,1,31,1,31,1,31,5,31,324,8,31,10,31,12,31,
-        327,9,31,1,32,1,32,1,32,5,32,332,8,32,10,32,12,32,335,9,32,1,32,
-        0,0,33,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,
-        42,44,46,48,50,52,54,56,58,60,62,64,0,7,1,0,19,20,1,0,21,22,1,0,
-        23,24,1,0,25,28,1,0,29,30,1,0,31,33,2,0,29,29,38,38,356,0,69,1,0,
-        0,0,2,78,1,0,0,0,4,80,1,0,0,0,6,93,1,0,0,0,8,99,1,0,0,0,10,101,1,
-        0,0,0,12,104,1,0,0,0,14,114,1,0,0,0,16,116,1,0,0,0,18,119,1,0,0,
-        0,20,136,1,0,0,0,22,145,1,0,0,0,24,149,1,0,0,0,26,155,1,0,0,0,28,
-        161,1,0,0,0,30,170,1,0,0,0,32,180,1,0,0,0,34,191,1,0,0,0,36,193,
-        1,0,0,0,38,201,1,0,0,0,40,209,1,0,0,0,42,217,1,0,0,0,44,225,1,0,
-        0,0,46,233,1,0,0,0,48,241,1,0,0,0,50,254,1,0,0,0,52,265,1,0,0,0,
-        54,285,1,0,0,0,56,303,1,0,0,0,58,305,1,0,0,0,60,313,1,0,0,0,62,320,
-        1,0,0,0,64,328,1,0,0,0,66,68,3,2,1,0,67,66,1,0,0,0,68,71,1,0,0,0,
+        3,95,9,3,1,4,1,4,1,4,1,4,3,4,101,8,4,1,5,1,5,1,5,1,6,1,6,1,6,1,7,
+        1,7,1,7,1,7,1,7,1,7,1,7,3,7,116,8,7,1,8,1,8,1,8,1,9,1,9,1,9,1,9,
+        1,9,3,9,126,8,9,1,9,3,9,129,8,9,1,9,1,9,3,9,133,8,9,1,9,1,9,1,9,
+        1,10,1,10,1,10,1,10,1,10,1,10,1,10,3,10,145,8,10,1,11,1,11,1,11,
+        1,11,1,12,1,12,3,12,153,8,12,1,12,1,12,1,13,1,13,1,13,1,13,1,13,
+        1,13,1,14,1,14,5,14,165,8,14,10,14,12,14,168,9,14,1,14,1,14,1,15,
+        1,15,1,15,3,15,175,8,15,1,15,1,15,1,15,1,16,1,16,3,16,182,8,16,1,
+        17,1,17,1,17,3,17,187,8,17,1,17,1,17,1,17,1,17,3,17,193,8,17,1,18,
+        1,18,1,18,5,18,198,8,18,10,18,12,18,201,9,18,1,19,1,19,1,19,5,19,
+        206,8,19,10,19,12,19,209,9,19,1,20,1,20,1,20,5,20,214,8,20,10,20,
+        12,20,217,9,20,1,21,1,21,1,21,5,21,222,8,21,10,21,12,21,225,9,21,
+        1,22,1,22,1,22,5,22,230,8,22,10,22,12,22,233,9,22,1,23,1,23,1,23,
+        5,23,238,8,23,10,23,12,23,241,9,23,1,24,1,24,1,24,1,24,5,24,247,
+        8,24,10,24,12,24,250,9,24,3,24,252,8,24,1,24,1,24,1,25,1,25,1,25,
+        1,25,3,25,260,8,25,1,25,1,25,1,26,1,26,1,26,3,26,267,8,26,1,27,1,
+        27,1,27,3,27,272,8,27,1,27,1,27,1,27,1,27,1,27,1,27,1,27,5,27,281,
+        8,27,10,27,12,27,284,9,27,1,27,3,27,287,8,27,1,28,1,28,1,28,1,28,
+        1,28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,1,28,3,28,
+        305,8,28,1,29,1,29,1,29,3,29,310,8,29,1,29,1,29,1,29,1,30,1,30,1,
+        30,3,30,318,8,30,1,30,1,30,1,31,1,31,1,31,5,31,325,8,31,10,31,12,
+        31,328,9,31,1,32,1,32,1,32,5,32,333,8,32,10,32,12,32,336,9,32,1,
+        32,0,0,33,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,
+        40,42,44,46,48,50,52,54,56,58,60,62,64,0,7,1,0,19,20,1,0,21,22,1,
+        0,23,24,1,0,25,28,1,0,29,30,1,0,31,33,2,0,29,29,38,38,357,0,69,1,
+        0,0,0,2,78,1,0,0,0,4,80,1,0,0,0,6,93,1,0,0,0,8,100,1,0,0,0,10,102,
+        1,0,0,0,12,105,1,0,0,0,14,115,1,0,0,0,16,117,1,0,0,0,18,120,1,0,
+        0,0,20,137,1,0,0,0,22,146,1,0,0,0,24,150,1,0,0,0,26,156,1,0,0,0,
+        28,162,1,0,0,0,30,171,1,0,0,0,32,181,1,0,0,0,34,192,1,0,0,0,36,194,
+        1,0,0,0,38,202,1,0,0,0,40,210,1,0,0,0,42,218,1,0,0,0,44,226,1,0,
+        0,0,46,234,1,0,0,0,48,242,1,0,0,0,50,255,1,0,0,0,52,266,1,0,0,0,
+        54,286,1,0,0,0,56,304,1,0,0,0,58,306,1,0,0,0,60,314,1,0,0,0,62,321,
+        1,0,0,0,64,329,1,0,0,0,66,68,3,2,1,0,67,66,1,0,0,0,68,71,1,0,0,0,
         69,67,1,0,0,0,69,70,1,0,0,0,70,72,1,0,0,0,71,69,1,0,0,0,72,73,5,
         0,0,1,73,1,1,0,0,0,74,79,3,4,2,0,75,79,3,10,5,0,76,79,3,12,6,0,77,
         79,3,14,7,0,78,74,1,0,0,0,78,75,1,0,0,0,78,76,1,0,0,0,78,77,1,0,
-        0,0,79,3,1,0,0,0,80,81,5,1,0,0,81,84,5,46,0,0,82,83,5,2,0,0,83,85,
-        5,46,0,0,84,82,1,0,0,0,84,85,1,0,0,0,85,86,1,0,0,0,86,87,5,3,0,0,
+        0,0,79,3,1,0,0,0,80,81,5,1,0,0,81,84,5,45,0,0,82,83,5,2,0,0,83,85,
+        5,45,0,0,84,82,1,0,0,0,84,85,1,0,0,0,85,86,1,0,0,0,86,87,5,3,0,0,
         87,88,3,6,3,0,88,89,5,4,0,0,89,5,1,0,0,0,90,92,3,8,4,0,91,90,1,0,
         0,0,92,95,1,0,0,0,93,91,1,0,0,0,93,94,1,0,0,0,94,7,1,0,0,0,95,93,
-        1,0,0,0,96,97,5,5,0,0,97,100,3,60,30,0,98,100,3,58,29,0,99,96,1,
-        0,0,0,99,98,1,0,0,0,100,9,1,0,0,0,101,102,5,6,0,0,102,103,3,58,29,
-        0,103,11,1,0,0,0,104,105,5,7,0,0,105,106,3,60,30,0,106,13,1,0,0,
-        0,107,115,3,16,8,0,108,115,3,18,9,0,109,115,3,20,10,0,110,115,3,
-        22,11,0,111,115,3,24,12,0,112,115,3,26,13,0,113,115,3,28,14,0,114,
-        107,1,0,0,0,114,108,1,0,0,0,114,109,1,0,0,0,114,110,1,0,0,0,114,
-        111,1,0,0,0,114,112,1,0,0,0,114,113,1,0,0,0,115,15,1,0,0,0,116,117,
-        3,32,16,0,117,118,5,8,0,0,118,17,1,0,0,0,119,120,5,9,0,0,120,124,
-        5,10,0,0,121,125,3,12,6,0,122,125,3,16,8,0,123,125,5,8,0,0,124,121,
-        1,0,0,0,124,122,1,0,0,0,124,123,1,0,0,0,125,127,1,0,0,0,126,128,
-        3,32,16,0,127,126,1,0,0,0,127,128,1,0,0,0,128,129,1,0,0,0,129,131,
-        5,8,0,0,130,132,3,32,16,0,131,130,1,0,0,0,131,132,1,0,0,0,132,133,
-        1,0,0,0,133,134,5,11,0,0,134,135,3,14,7,0,135,19,1,0,0,0,136,137,
-        5,12,0,0,137,138,5,10,0,0,138,139,3,32,16,0,139,140,5,11,0,0,140,
-        143,3,14,7,0,141,142,5,13,0,0,142,144,3,14,7,0,143,141,1,0,0,0,143,
-        144,1,0,0,0,144,21,1,0,0,0,145,146,5,14,0,0,146,147,3,32,16,0,147,
-        148,5,8,0,0,148,23,1,0,0,0,149,151,5,15,0,0,150,152,3,32,16,0,151,
-        150,1,0,0,0,151,152,1,0,0,0,152,153,1,0,0,0,153,154,5,8,0,0,154,
-        25,1,0,0,0,155,156,5,16,0,0,156,157,5,10,0,0,157,158,3,32,16,0,158,
-        159,5,11,0,0,159,160,3,14,7,0,160,27,1,0,0,0,161,165,5,3,0,0,162,
-        164,3,2,1,0,163,162,1,0,0,0,164,167,1,0,0,0,165,163,1,0,0,0,165,
-        166,1,0,0,0,166,168,1,0,0,0,167,165,1,0,0,0,168,169,5,4,0,0,169,
-        29,1,0,0,0,170,171,5,6,0,0,171,173,5,10,0,0,172,174,3,62,31,0,173,
-        172,1,0,0,0,173,174,1,0,0,0,174,175,1,0,0,0,175,176,5,11,0,0,176,
-        177,3,28,14,0,177,31,1,0,0,0,178,181,3,34,17,0,179,181,3,30,15,0,
-        180,178,1,0,0,0,180,179,1,0,0,0,181,33,1,0,0,0,182,183,3,54,27,0,
-        183,184,5,17,0,0,184,186,1,0,0,0,185,182,1,0,0,0,185,186,1,0,0,0,
-        186,187,1,0,0,0,187,188,5,46,0,0,188,189,5,18,0,0,189,192,3,34,17,
-        0,190,192,3,36,18,0,191,185,1,0,0,0,191,190,1,0,0,0,192,35,1,0,0,
-        0,193,198,3,38,19,0,194,195,7,0,0,0,195,197,3,38,19,0,196,194,1,
-        0,0,0,197,200,1,0,0,0,198,196,1,0,0,0,198,199,1,0,0,0,199,37,1,0,
-        0,0,200,198,1,0,0,0,201,206,3,40,20,0,202,203,7,1,0,0,203,205,3,
-        40,20,0,204,202,1,0,0,0,205,208,1,0,0,0,206,204,1,0,0,0,206,207,
-        1,0,0,0,207,39,1,0,0,0,208,206,1,0,0,0,209,214,3,42,21,0,210,211,
-        7,2,0,0,211,213,3,42,21,0,212,210,1,0,0,0,213,216,1,0,0,0,214,212,
-        1,0,0,0,214,215,1,0,0,0,215,41,1,0,0,0,216,214,1,0,0,0,217,222,3,
-        44,22,0,218,219,7,3,0,0,219,221,3,44,22,0,220,218,1,0,0,0,221,224,
-        1,0,0,0,222,220,1,0,0,0,222,223,1,0,0,0,223,43,1,0,0,0,224,222,1,
-        0,0,0,225,230,3,46,23,0,226,227,7,4,0,0,227,229,3,46,23,0,228,226,
-        1,0,0,0,229,232,1,0,0,0,230,228,1,0,0,0,230,231,1,0,0,0,231,45,1,
-        0,0,0,232,230,1,0,0,0,233,238,3,52,26,0,234,235,7,5,0,0,235,237,
-        3,52,26,0,236,234,1,0,0,0,237,240,1,0,0,0,238,236,1,0,0,0,238,239,
-        1,0,0,0,239,47,1,0,0,0,240,238,1,0,0,0,241,250,5,34,0,0,242,247,
-        3,32,16,0,243,244,5,35,0,0,244,246,3,32,16,0,245,243,1,0,0,0,246,
-        249,1,0,0,0,247,245,1,0,0,0,247,248,1,0,0,0,248,251,1,0,0,0,249,
-        247,1,0,0,0,250,242,1,0,0,0,250,251,1,0,0,0,251,252,1,0,0,0,252,
-        253,5,36,0,0,253,49,1,0,0,0,254,255,5,37,0,0,255,256,5,46,0,0,256,
-        258,5,10,0,0,257,259,3,64,32,0,258,257,1,0,0,0,258,259,1,0,0,0,259,
-        260,1,0,0,0,260,261,5,11,0,0,261,51,1,0,0,0,262,263,7,6,0,0,263,
-        266,3,52,26,0,264,266,3,54,27,0,265,262,1,0,0,0,265,264,1,0,0,0,
-        266,53,1,0,0,0,267,281,3,56,28,0,268,270,5,10,0,0,269,271,3,64,32,
-        0,270,269,1,0,0,0,270,271,1,0,0,0,271,272,1,0,0,0,272,280,5,11,0,
-        0,273,274,5,17,0,0,274,280,5,46,0,0,275,276,5,34,0,0,276,277,3,32,
-        16,0,277,278,5,36,0,0,278,280,1,0,0,0,279,268,1,0,0,0,279,273,1,
-        0,0,0,279,275,1,0,0,0,280,283,1,0,0,0,281,279,1,0,0,0,281,282,1,
-        0,0,0,282,286,1,0,0,0,283,281,1,0,0,0,284,286,3,30,15,0,285,267,
-        1,0,0,0,285,284,1,0,0,0,286,55,1,0,0,0,287,304,5,39,0,0,288,304,
-        5,40,0,0,289,304,5,41,0,0,290,304,5,42,0,0,291,304,5,44,0,0,292,
-        304,5,45,0,0,293,304,5,46,0,0,294,295,5,10,0,0,295,296,3,32,16,0,
-        296,297,5,11,0,0,297,304,1,0,0,0,298,299,5,43,0,0,299,300,5,17,0,
-        0,300,304,5,46,0,0,301,304,3,48,24,0,302,304,3,50,25,0,303,287,1,
-        0,0,0,303,288,1,0,0,0,303,289,1,0,0,0,303,290,1,0,0,0,303,291,1,
-        0,0,0,303,292,1,0,0,0,303,293,1,0,0,0,303,294,1,0,0,0,303,298,1,
-        0,0,0,303,301,1,0,0,0,303,302,1,0,0,0,304,57,1,0,0,0,305,306,5,46,
-        0,0,306,308,5,10,0,0,307,309,3,62,31,0,308,307,1,0,0,0,308,309,1,
-        0,0,0,309,310,1,0,0,0,310,311,5,11,0,0,311,312,3,28,14,0,312,59,
-        1,0,0,0,313,316,5,46,0,0,314,315,5,18,0,0,315,317,3,32,16,0,316,
-        314,1,0,0,0,316,317,1,0,0,0,317,318,1,0,0,0,318,319,5,8,0,0,319,
-        61,1,0,0,0,320,325,5,46,0,0,321,322,5,35,0,0,322,324,5,46,0,0,323,
-        321,1,0,0,0,324,327,1,0,0,0,325,323,1,0,0,0,325,326,1,0,0,0,326,
-        63,1,0,0,0,327,325,1,0,0,0,328,333,3,32,16,0,329,330,5,35,0,0,330,
-        332,3,32,16,0,331,329,1,0,0,0,332,335,1,0,0,0,333,331,1,0,0,0,333,
-        334,1,0,0,0,334,65,1,0,0,0,335,333,1,0,0,0,35,69,78,84,93,99,114,
-        124,127,131,143,151,165,173,180,185,191,198,206,214,222,230,238,
-        247,250,258,265,270,279,281,285,303,308,316,325,333
+        1,0,0,0,96,97,5,5,0,0,97,98,5,6,0,0,98,101,3,60,30,0,99,101,3,58,
+        29,0,100,96,1,0,0,0,100,99,1,0,0,0,101,9,1,0,0,0,102,103,5,7,0,0,
+        103,104,3,58,29,0,104,11,1,0,0,0,105,106,5,8,0,0,106,107,3,60,30,
+        0,107,13,1,0,0,0,108,116,3,16,8,0,109,116,3,18,9,0,110,116,3,20,
+        10,0,111,116,3,22,11,0,112,116,3,24,12,0,113,116,3,26,13,0,114,116,
+        3,28,14,0,115,108,1,0,0,0,115,109,1,0,0,0,115,110,1,0,0,0,115,111,
+        1,0,0,0,115,112,1,0,0,0,115,113,1,0,0,0,115,114,1,0,0,0,116,15,1,
+        0,0,0,117,118,3,32,16,0,118,119,5,9,0,0,119,17,1,0,0,0,120,121,5,
+        10,0,0,121,125,5,11,0,0,122,126,3,12,6,0,123,126,3,16,8,0,124,126,
+        5,9,0,0,125,122,1,0,0,0,125,123,1,0,0,0,125,124,1,0,0,0,126,128,
+        1,0,0,0,127,129,3,32,16,0,128,127,1,0,0,0,128,129,1,0,0,0,129,130,
+        1,0,0,0,130,132,5,9,0,0,131,133,3,32,16,0,132,131,1,0,0,0,132,133,
+        1,0,0,0,133,134,1,0,0,0,134,135,5,12,0,0,135,136,3,14,7,0,136,19,
+        1,0,0,0,137,138,5,13,0,0,138,139,5,11,0,0,139,140,3,32,16,0,140,
+        141,5,12,0,0,141,144,3,14,7,0,142,143,5,14,0,0,143,145,3,14,7,0,
+        144,142,1,0,0,0,144,145,1,0,0,0,145,21,1,0,0,0,146,147,5,15,0,0,
+        147,148,3,32,16,0,148,149,5,9,0,0,149,23,1,0,0,0,150,152,5,16,0,
+        0,151,153,3,32,16,0,152,151,1,0,0,0,152,153,1,0,0,0,153,154,1,0,
+        0,0,154,155,5,9,0,0,155,25,1,0,0,0,156,157,5,17,0,0,157,158,5,11,
+        0,0,158,159,3,32,16,0,159,160,5,12,0,0,160,161,3,14,7,0,161,27,1,
+        0,0,0,162,166,5,3,0,0,163,165,3,2,1,0,164,163,1,0,0,0,165,168,1,
+        0,0,0,166,164,1,0,0,0,166,167,1,0,0,0,167,169,1,0,0,0,168,166,1,
+        0,0,0,169,170,5,4,0,0,170,29,1,0,0,0,171,172,5,7,0,0,172,174,5,11,
+        0,0,173,175,3,62,31,0,174,173,1,0,0,0,174,175,1,0,0,0,175,176,1,
+        0,0,0,176,177,5,12,0,0,177,178,3,28,14,0,178,31,1,0,0,0,179,182,
+        3,34,17,0,180,182,3,30,15,0,181,179,1,0,0,0,181,180,1,0,0,0,182,
+        33,1,0,0,0,183,184,3,54,27,0,184,185,5,6,0,0,185,187,1,0,0,0,186,
+        183,1,0,0,0,186,187,1,0,0,0,187,188,1,0,0,0,188,189,5,45,0,0,189,
+        190,5,18,0,0,190,193,3,34,17,0,191,193,3,36,18,0,192,186,1,0,0,0,
+        192,191,1,0,0,0,193,35,1,0,0,0,194,199,3,38,19,0,195,196,7,0,0,0,
+        196,198,3,38,19,0,197,195,1,0,0,0,198,201,1,0,0,0,199,197,1,0,0,
+        0,199,200,1,0,0,0,200,37,1,0,0,0,201,199,1,0,0,0,202,207,3,40,20,
+        0,203,204,7,1,0,0,204,206,3,40,20,0,205,203,1,0,0,0,206,209,1,0,
+        0,0,207,205,1,0,0,0,207,208,1,0,0,0,208,39,1,0,0,0,209,207,1,0,0,
+        0,210,215,3,42,21,0,211,212,7,2,0,0,212,214,3,42,21,0,213,211,1,
+        0,0,0,214,217,1,0,0,0,215,213,1,0,0,0,215,216,1,0,0,0,216,41,1,0,
+        0,0,217,215,1,0,0,0,218,223,3,44,22,0,219,220,7,3,0,0,220,222,3,
+        44,22,0,221,219,1,0,0,0,222,225,1,0,0,0,223,221,1,0,0,0,223,224,
+        1,0,0,0,224,43,1,0,0,0,225,223,1,0,0,0,226,231,3,46,23,0,227,228,
+        7,4,0,0,228,230,3,46,23,0,229,227,1,0,0,0,230,233,1,0,0,0,231,229,
+        1,0,0,0,231,232,1,0,0,0,232,45,1,0,0,0,233,231,1,0,0,0,234,239,3,
+        52,26,0,235,236,7,5,0,0,236,238,3,52,26,0,237,235,1,0,0,0,238,241,
+        1,0,0,0,239,237,1,0,0,0,239,240,1,0,0,0,240,47,1,0,0,0,241,239,1,
+        0,0,0,242,251,5,34,0,0,243,248,3,32,16,0,244,245,5,35,0,0,245,247,
+        3,32,16,0,246,244,1,0,0,0,247,250,1,0,0,0,248,246,1,0,0,0,248,249,
+        1,0,0,0,249,252,1,0,0,0,250,248,1,0,0,0,251,243,1,0,0,0,251,252,
+        1,0,0,0,252,253,1,0,0,0,253,254,5,36,0,0,254,49,1,0,0,0,255,256,
+        5,37,0,0,256,257,5,45,0,0,257,259,5,11,0,0,258,260,3,64,32,0,259,
+        258,1,0,0,0,259,260,1,0,0,0,260,261,1,0,0,0,261,262,5,12,0,0,262,
+        51,1,0,0,0,263,264,7,6,0,0,264,267,3,52,26,0,265,267,3,54,27,0,266,
+        263,1,0,0,0,266,265,1,0,0,0,267,53,1,0,0,0,268,282,3,56,28,0,269,
+        271,5,11,0,0,270,272,3,64,32,0,271,270,1,0,0,0,271,272,1,0,0,0,272,
+        273,1,0,0,0,273,281,5,12,0,0,274,275,5,6,0,0,275,281,5,45,0,0,276,
+        277,5,34,0,0,277,278,3,32,16,0,278,279,5,36,0,0,279,281,1,0,0,0,
+        280,269,1,0,0,0,280,274,1,0,0,0,280,276,1,0,0,0,281,284,1,0,0,0,
+        282,280,1,0,0,0,282,283,1,0,0,0,283,287,1,0,0,0,284,282,1,0,0,0,
+        285,287,3,30,15,0,286,268,1,0,0,0,286,285,1,0,0,0,287,55,1,0,0,0,
+        288,305,5,39,0,0,289,305,5,40,0,0,290,305,5,41,0,0,291,305,5,5,0,
+        0,292,305,5,43,0,0,293,305,5,44,0,0,294,305,5,45,0,0,295,296,5,11,
+        0,0,296,297,3,32,16,0,297,298,5,12,0,0,298,305,1,0,0,0,299,300,5,
+        42,0,0,300,301,5,6,0,0,301,305,5,45,0,0,302,305,3,48,24,0,303,305,
+        3,50,25,0,304,288,1,0,0,0,304,289,1,0,0,0,304,290,1,0,0,0,304,291,
+        1,0,0,0,304,292,1,0,0,0,304,293,1,0,0,0,304,294,1,0,0,0,304,295,
+        1,0,0,0,304,299,1,0,0,0,304,302,1,0,0,0,304,303,1,0,0,0,305,57,1,
+        0,0,0,306,307,5,45,0,0,307,309,5,11,0,0,308,310,3,62,31,0,309,308,
+        1,0,0,0,309,310,1,0,0,0,310,311,1,0,0,0,311,312,5,12,0,0,312,313,
+        3,28,14,0,313,59,1,0,0,0,314,317,5,45,0,0,315,316,5,18,0,0,316,318,
+        3,32,16,0,317,315,1,0,0,0,317,318,1,0,0,0,318,319,1,0,0,0,319,320,
+        5,9,0,0,320,61,1,0,0,0,321,326,5,45,0,0,322,323,5,35,0,0,323,325,
+        5,45,0,0,324,322,1,0,0,0,325,328,1,0,0,0,326,324,1,0,0,0,326,327,
+        1,0,0,0,327,63,1,0,0,0,328,326,1,0,0,0,329,334,3,32,16,0,330,331,
+        5,35,0,0,331,333,3,32,16,0,332,330,1,0,0,0,333,336,1,0,0,0,334,332,
+        1,0,0,0,334,335,1,0,0,0,335,65,1,0,0,0,336,334,1,0,0,0,35,69,78,
+        84,93,100,115,125,128,132,144,152,166,174,181,186,192,199,207,215,
+        223,231,239,248,251,259,266,271,280,282,286,304,309,317,326,334
     ]
 
 class CompiscriptParser ( Parser ):
@@ -144,12 +144,12 @@ class CompiscriptParser ( Parser ):
     sharedContextCache = PredictionContextCache()
 
     literalNames = [ "<INVALID>", "'class'", "'extends'", "'{'", "'}'", 
-                     "'this.'", "'fun'", "'var'", "';'", "'for'", "'('", 
-                     "')'", "'if'", "'else'", "'print'", "'return'", "'while'", 
-                     "'.'", "'='", "'or'", "'||'", "'and'", "'&&'", "'!='", 
-                     "'=='", "'>'", "'>='", "'<'", "'<='", "'-'", "'+'", 
-                     "'/'", "'*'", "'%'", "'['", "','", "']'", "'new'", 
-                     "'!'", "'true'", "'false'", "'nil'", "'this'", "'super'" ]
+                     "'this'", "'.'", "'fun'", "'var'", "';'", "'for'", 
+                     "'('", "')'", "'if'", "'else'", "'print'", "'return'", 
+                     "'while'", "'='", "'or'", "'||'", "'and'", "'&&'", 
+                     "'!='", "'=='", "'>'", "'>='", "'<'", "'<='", "'-'", 
+                     "'+'", "'/'", "'*'", "'%'", "'['", "','", "']'", "'new'", 
+                     "'!'", "'true'", "'false'", "'nil'", "'super'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
@@ -161,9 +161,8 @@ class CompiscriptParser ( Parser ):
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "NUMBER", "STRING", "IDENTIFIER", "WS", "ONE_LINE_COMMENT", 
-                      "MULTI_LINE_COMMENT" ]
+                      "<INVALID>", "<INVALID>", "<INVALID>", "NUMBER", "STRING", 
+                      "IDENTIFIER", "WS", "ONE_LINE_COMMENT", "MULTI_LINE_COMMENT" ]
 
     RULE_program = 0
     RULE_declaration = 1
@@ -250,13 +249,12 @@ class CompiscriptParser ( Parser ):
     T__39=40
     T__40=41
     T__41=42
-    T__42=43
-    NUMBER=44
-    STRING=45
-    IDENTIFIER=46
-    WS=47
-    ONE_LINE_COMMENT=48
-    MULTI_LINE_COMMENT=49
+    NUMBER=43
+    STRING=44
+    IDENTIFIER=45
+    WS=46
+    ONE_LINE_COMMENT=47
+    MULTI_LINE_COMMENT=48
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -314,7 +312,7 @@ class CompiscriptParser ( Parser ):
             self.state = 69
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 140617766262474) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 70249022205354) != 0):
                 self.state = 66
                 self.declaration()
                 self.state = 71
@@ -534,7 +532,7 @@ class CompiscriptParser ( Parser ):
             self.state = 93
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==5 or _la==46:
+            while _la==5 or _la==45:
                 self.state = 90
                 self.classMember()
                 self.state = 95
@@ -590,7 +588,7 @@ class CompiscriptParser ( Parser ):
         localctx = CompiscriptParser.ClassMemberContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_classMember)
         try:
-            self.state = 99
+            self.state = 100
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [5]:
@@ -598,11 +596,13 @@ class CompiscriptParser ( Parser ):
                 self.state = 96
                 self.match(CompiscriptParser.T__4)
                 self.state = 97
+                self.match(CompiscriptParser.T__5)
+                self.state = 98
                 self.variable()
                 pass
-            elif token in [46]:
+            elif token in [45]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 98
+                self.state = 99
                 self.function()
                 pass
             else:
@@ -654,9 +654,9 @@ class CompiscriptParser ( Parser ):
         self.enterRule(localctx, 10, self.RULE_funDecl)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 101
-            self.match(CompiscriptParser.T__5)
             self.state = 102
+            self.match(CompiscriptParser.T__6)
+            self.state = 103
             self.function()
         except RecognitionException as re:
             localctx.exception = re
@@ -704,9 +704,9 @@ class CompiscriptParser ( Parser ):
         self.enterRule(localctx, 12, self.RULE_varDecl)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 104
-            self.match(CompiscriptParser.T__6)
             self.state = 105
+            self.match(CompiscriptParser.T__7)
+            self.state = 106
             self.variable()
         except RecognitionException as re:
             localctx.exception = re
@@ -777,42 +777,42 @@ class CompiscriptParser ( Parser ):
         localctx = CompiscriptParser.StatementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 14, self.RULE_statement)
         try:
-            self.state = 114
+            self.state = 115
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [6, 10, 29, 34, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]:
+            if token in [5, 7, 11, 29, 34, 37, 38, 39, 40, 41, 42, 43, 44, 45]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 107
+                self.state = 108
                 self.exprStmt()
                 pass
-            elif token in [9]:
+            elif token in [10]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 108
+                self.state = 109
                 self.forStmt()
                 pass
-            elif token in [12]:
+            elif token in [13]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 109
+                self.state = 110
                 self.ifStmt()
                 pass
-            elif token in [14]:
+            elif token in [15]:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 110
+                self.state = 111
                 self.printStmt()
                 pass
-            elif token in [15]:
+            elif token in [16]:
                 self.enterOuterAlt(localctx, 5)
-                self.state = 111
+                self.state = 112
                 self.returnStmt()
                 pass
-            elif token in [16]:
+            elif token in [17]:
                 self.enterOuterAlt(localctx, 6)
-                self.state = 112
+                self.state = 113
                 self.whileStmt()
                 pass
             elif token in [3]:
                 self.enterOuterAlt(localctx, 7)
-                self.state = 113
+                self.state = 114
                 self.block()
                 pass
             else:
@@ -864,10 +864,10 @@ class CompiscriptParser ( Parser ):
         self.enterRule(localctx, 16, self.RULE_exprStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 116
-            self.expression()
             self.state = 117
-            self.match(CompiscriptParser.T__7)
+            self.expression()
+            self.state = 118
+            self.match(CompiscriptParser.T__8)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -930,49 +930,49 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 119
-            self.match(CompiscriptParser.T__8)
             self.state = 120
             self.match(CompiscriptParser.T__9)
-            self.state = 124
+            self.state = 121
+            self.match(CompiscriptParser.T__10)
+            self.state = 125
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [7]:
-                self.state = 121
+            if token in [8]:
+                self.state = 122
                 self.varDecl()
                 pass
-            elif token in [6, 10, 29, 34, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]:
-                self.state = 122
+            elif token in [5, 7, 11, 29, 34, 37, 38, 39, 40, 41, 42, 43, 44, 45]:
+                self.state = 123
                 self.exprStmt()
                 pass
-            elif token in [8]:
-                self.state = 123
-                self.match(CompiscriptParser.T__7)
+            elif token in [9]:
+                self.state = 124
+                self.match(CompiscriptParser.T__8)
                 pass
             else:
                 raise NoViableAltException(self)
 
-            self.state = 127
+            self.state = 128
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 140617766143040) != 0):
-                self.state = 126
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 70249021966496) != 0):
+                self.state = 127
                 self.expression()
 
 
-            self.state = 129
-            self.match(CompiscriptParser.T__7)
-            self.state = 131
+            self.state = 130
+            self.match(CompiscriptParser.T__8)
+            self.state = 132
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 140617766143040) != 0):
-                self.state = 130
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 70249021966496) != 0):
+                self.state = 131
                 self.expression()
 
 
-            self.state = 133
-            self.match(CompiscriptParser.T__10)
             self.state = 134
+            self.match(CompiscriptParser.T__11)
+            self.state = 135
             self.statement()
         except RecognitionException as re:
             localctx.exception = re
@@ -1027,23 +1027,23 @@ class CompiscriptParser ( Parser ):
         self.enterRule(localctx, 20, self.RULE_ifStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 136
-            self.match(CompiscriptParser.T__11)
             self.state = 137
-            self.match(CompiscriptParser.T__9)
+            self.match(CompiscriptParser.T__12)
             self.state = 138
-            self.expression()
-            self.state = 139
             self.match(CompiscriptParser.T__10)
+            self.state = 139
+            self.expression()
             self.state = 140
+            self.match(CompiscriptParser.T__11)
+            self.state = 141
             self.statement()
-            self.state = 143
+            self.state = 144
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,9,self._ctx)
             if la_ == 1:
-                self.state = 141
-                self.match(CompiscriptParser.T__12)
                 self.state = 142
+                self.match(CompiscriptParser.T__13)
+                self.state = 143
                 self.statement()
 
 
@@ -1093,12 +1093,12 @@ class CompiscriptParser ( Parser ):
         self.enterRule(localctx, 22, self.RULE_printStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 145
-            self.match(CompiscriptParser.T__13)
             self.state = 146
-            self.expression()
+            self.match(CompiscriptParser.T__14)
             self.state = 147
-            self.match(CompiscriptParser.T__7)
+            self.expression()
+            self.state = 148
+            self.match(CompiscriptParser.T__8)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1146,18 +1146,18 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 149
-            self.match(CompiscriptParser.T__14)
-            self.state = 151
+            self.state = 150
+            self.match(CompiscriptParser.T__15)
+            self.state = 152
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 140617766143040) != 0):
-                self.state = 150
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 70249021966496) != 0):
+                self.state = 151
                 self.expression()
 
 
-            self.state = 153
-            self.match(CompiscriptParser.T__7)
+            self.state = 154
+            self.match(CompiscriptParser.T__8)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1208,15 +1208,15 @@ class CompiscriptParser ( Parser ):
         self.enterRule(localctx, 26, self.RULE_whileStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 155
-            self.match(CompiscriptParser.T__15)
             self.state = 156
-            self.match(CompiscriptParser.T__9)
+            self.match(CompiscriptParser.T__16)
             self.state = 157
-            self.expression()
-            self.state = 158
             self.match(CompiscriptParser.T__10)
+            self.state = 158
+            self.expression()
             self.state = 159
+            self.match(CompiscriptParser.T__11)
+            self.state = 160
             self.statement()
         except RecognitionException as re:
             localctx.exception = re
@@ -1268,19 +1268,19 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 161
+            self.state = 162
             self.match(CompiscriptParser.T__2)
-            self.state = 165
+            self.state = 166
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 140617766262474) != 0):
-                self.state = 162
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 70249022205354) != 0):
+                self.state = 163
                 self.declaration()
-                self.state = 167
+                self.state = 168
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 168
+            self.state = 169
             self.match(CompiscriptParser.T__3)
         except RecognitionException as re:
             localctx.exception = re
@@ -1333,21 +1333,21 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 170
-            self.match(CompiscriptParser.T__5)
             self.state = 171
-            self.match(CompiscriptParser.T__9)
-            self.state = 173
+            self.match(CompiscriptParser.T__6)
+            self.state = 172
+            self.match(CompiscriptParser.T__10)
+            self.state = 174
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==46:
-                self.state = 172
+            if _la==45:
+                self.state = 173
                 self.parameters()
 
 
-            self.state = 175
-            self.match(CompiscriptParser.T__10)
             self.state = 176
+            self.match(CompiscriptParser.T__11)
+            self.state = 177
             self.block()
         except RecognitionException as re:
             localctx.exception = re
@@ -1398,18 +1398,18 @@ class CompiscriptParser ( Parser ):
         localctx = CompiscriptParser.ExpressionContext(self, self._ctx, self.state)
         self.enterRule(localctx, 32, self.RULE_expression)
         try:
-            self.state = 180
+            self.state = 181
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,13,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 178
+                self.state = 179
                 self.assignment()
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 179
+                self.state = 180
                 self.funAnon()
                 pass
 
@@ -1470,32 +1470,32 @@ class CompiscriptParser ( Parser ):
         localctx = CompiscriptParser.AssignmentContext(self, self._ctx, self.state)
         self.enterRule(localctx, 34, self.RULE_assignment)
         try:
-            self.state = 191
+            self.state = 192
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,15,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 185
+                self.state = 186
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,14,self._ctx)
                 if la_ == 1:
-                    self.state = 182
-                    self.call()
                     self.state = 183
-                    self.match(CompiscriptParser.T__16)
+                    self.call()
+                    self.state = 184
+                    self.match(CompiscriptParser.T__5)
 
 
-                self.state = 187
-                self.match(CompiscriptParser.IDENTIFIER)
                 self.state = 188
-                self.match(CompiscriptParser.T__17)
+                self.match(CompiscriptParser.IDENTIFIER)
                 self.state = 189
+                self.match(CompiscriptParser.T__17)
+                self.state = 190
                 self.assignment()
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 190
+                self.state = 191
                 self.logic_or()
                 pass
 
@@ -1550,22 +1550,22 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 193
+            self.state = 194
             self.logic_and()
-            self.state = 198
+            self.state = 199
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==19 or _la==20:
-                self.state = 194
+                self.state = 195
                 _la = self._input.LA(1)
                 if not(_la==19 or _la==20):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 195
+                self.state = 196
                 self.logic_and()
-                self.state = 200
+                self.state = 201
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1619,22 +1619,22 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 201
+            self.state = 202
             self.equality()
-            self.state = 206
+            self.state = 207
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==21 or _la==22:
-                self.state = 202
+                self.state = 203
                 _la = self._input.LA(1)
                 if not(_la==21 or _la==22):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 203
+                self.state = 204
                 self.equality()
-                self.state = 208
+                self.state = 209
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1688,22 +1688,22 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 209
+            self.state = 210
             self.comparison()
-            self.state = 214
+            self.state = 215
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==23 or _la==24:
-                self.state = 210
+                self.state = 211
                 _la = self._input.LA(1)
                 if not(_la==23 or _la==24):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 211
+                self.state = 212
                 self.comparison()
-                self.state = 216
+                self.state = 217
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1757,22 +1757,22 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 217
+            self.state = 218
             self.term()
-            self.state = 222
+            self.state = 223
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & 503316480) != 0):
-                self.state = 218
+                self.state = 219
                 _la = self._input.LA(1)
                 if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 503316480) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 219
+                self.state = 220
                 self.term()
-                self.state = 224
+                self.state = 225
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1826,22 +1826,22 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 225
+            self.state = 226
             self.factor()
-            self.state = 230
+            self.state = 231
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==29 or _la==30:
-                self.state = 226
+                self.state = 227
                 _la = self._input.LA(1)
                 if not(_la==29 or _la==30):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 227
+                self.state = 228
                 self.factor()
-                self.state = 232
+                self.state = 233
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1895,22 +1895,22 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 233
+            self.state = 234
             self.unary()
-            self.state = 238
+            self.state = 239
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & 15032385536) != 0):
-                self.state = 234
+                self.state = 235
                 _la = self._input.LA(1)
                 if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 15032385536) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 235
+                self.state = 236
                 self.unary()
-                self.state = 240
+                self.state = 241
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1964,29 +1964,29 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 241
+            self.state = 242
             self.match(CompiscriptParser.T__33)
-            self.state = 250
+            self.state = 251
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 140617766143040) != 0):
-                self.state = 242
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 70249021966496) != 0):
+                self.state = 243
                 self.expression()
-                self.state = 247
+                self.state = 248
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==35:
-                    self.state = 243
-                    self.match(CompiscriptParser.T__34)
                     self.state = 244
+                    self.match(CompiscriptParser.T__34)
+                    self.state = 245
                     self.expression()
-                    self.state = 249
+                    self.state = 250
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
 
 
-            self.state = 252
+            self.state = 253
             self.match(CompiscriptParser.T__35)
         except RecognitionException as re:
             localctx.exception = re
@@ -2038,22 +2038,22 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 254
-            self.match(CompiscriptParser.T__36)
             self.state = 255
-            self.match(CompiscriptParser.IDENTIFIER)
+            self.match(CompiscriptParser.T__36)
             self.state = 256
-            self.match(CompiscriptParser.T__9)
-            self.state = 258
+            self.match(CompiscriptParser.IDENTIFIER)
+            self.state = 257
+            self.match(CompiscriptParser.T__10)
+            self.state = 259
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 140617766143040) != 0):
-                self.state = 257
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 70249021966496) != 0):
+                self.state = 258
                 self.arguments()
 
 
-            self.state = 260
-            self.match(CompiscriptParser.T__10)
+            self.state = 261
+            self.match(CompiscriptParser.T__11)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2104,24 +2104,24 @@ class CompiscriptParser ( Parser ):
         self.enterRule(localctx, 52, self.RULE_unary)
         self._la = 0 # Token type
         try:
-            self.state = 265
+            self.state = 266
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [29, 38]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 262
+                self.state = 263
                 _la = self._input.LA(1)
                 if not(_la==29 or _la==38):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 263
+                self.state = 264
                 self.unary()
                 pass
-            elif token in [6, 10, 34, 37, 39, 40, 41, 42, 43, 44, 45, 46]:
+            elif token in [5, 7, 11, 34, 37, 39, 40, 41, 42, 43, 44, 45]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 264
+                self.state = 265
                 self.call()
                 pass
             else:
@@ -2197,60 +2197,60 @@ class CompiscriptParser ( Parser ):
         self.enterRule(localctx, 54, self.RULE_call)
         self._la = 0 # Token type
         try:
-            self.state = 285
+            self.state = 286
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [10, 34, 37, 39, 40, 41, 42, 43, 44, 45, 46]:
+            if token in [5, 11, 34, 37, 39, 40, 41, 42, 43, 44, 45]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 267
+                self.state = 268
                 self.primary()
-                self.state = 281
+                self.state = 282
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,28,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
-                        self.state = 279
+                        self.state = 280
                         self._errHandler.sync(self)
                         token = self._input.LA(1)
-                        if token in [10]:
-                            self.state = 268
-                            self.match(CompiscriptParser.T__9)
-                            self.state = 270
+                        if token in [11]:
+                            self.state = 269
+                            self.match(CompiscriptParser.T__10)
+                            self.state = 271
                             self._errHandler.sync(self)
                             _la = self._input.LA(1)
-                            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 140617766143040) != 0):
-                                self.state = 269
+                            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 70249021966496) != 0):
+                                self.state = 270
                                 self.arguments()
 
 
-                            self.state = 272
-                            self.match(CompiscriptParser.T__10)
-                            pass
-                        elif token in [17]:
                             self.state = 273
-                            self.match(CompiscriptParser.T__16)
+                            self.match(CompiscriptParser.T__11)
+                            pass
+                        elif token in [6]:
                             self.state = 274
+                            self.match(CompiscriptParser.T__5)
+                            self.state = 275
                             self.match(CompiscriptParser.IDENTIFIER)
                             pass
                         elif token in [34]:
-                            self.state = 275
-                            self.match(CompiscriptParser.T__33)
                             self.state = 276
-                            self.expression()
+                            self.match(CompiscriptParser.T__33)
                             self.state = 277
+                            self.expression()
+                            self.state = 278
                             self.match(CompiscriptParser.T__35)
                             pass
                         else:
                             raise NoViableAltException(self)
                  
-                    self.state = 283
+                    self.state = 284
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,28,self._ctx)
 
                 pass
-            elif token in [6]:
+            elif token in [7]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 284
+                self.state = 285
                 self.funAnon()
                 pass
             else:
@@ -2318,70 +2318,70 @@ class CompiscriptParser ( Parser ):
         localctx = CompiscriptParser.PrimaryContext(self, self._ctx, self.state)
         self.enterRule(localctx, 56, self.RULE_primary)
         try:
-            self.state = 303
+            self.state = 304
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [39]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 287
+                self.state = 288
                 self.match(CompiscriptParser.T__38)
                 pass
             elif token in [40]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 288
+                self.state = 289
                 self.match(CompiscriptParser.T__39)
                 pass
             elif token in [41]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 289
+                self.state = 290
                 self.match(CompiscriptParser.T__40)
                 pass
-            elif token in [42]:
+            elif token in [5]:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 290
-                self.match(CompiscriptParser.T__41)
-                pass
-            elif token in [44]:
-                self.enterOuterAlt(localctx, 5)
                 self.state = 291
-                self.match(CompiscriptParser.NUMBER)
-                pass
-            elif token in [45]:
-                self.enterOuterAlt(localctx, 6)
-                self.state = 292
-                self.match(CompiscriptParser.STRING)
-                pass
-            elif token in [46]:
-                self.enterOuterAlt(localctx, 7)
-                self.state = 293
-                self.match(CompiscriptParser.IDENTIFIER)
-                pass
-            elif token in [10]:
-                self.enterOuterAlt(localctx, 8)
-                self.state = 294
-                self.match(CompiscriptParser.T__9)
-                self.state = 295
-                self.expression()
-                self.state = 296
-                self.match(CompiscriptParser.T__10)
+                self.match(CompiscriptParser.T__4)
                 pass
             elif token in [43]:
+                self.enterOuterAlt(localctx, 5)
+                self.state = 292
+                self.match(CompiscriptParser.NUMBER)
+                pass
+            elif token in [44]:
+                self.enterOuterAlt(localctx, 6)
+                self.state = 293
+                self.match(CompiscriptParser.STRING)
+                pass
+            elif token in [45]:
+                self.enterOuterAlt(localctx, 7)
+                self.state = 294
+                self.match(CompiscriptParser.IDENTIFIER)
+                pass
+            elif token in [11]:
+                self.enterOuterAlt(localctx, 8)
+                self.state = 295
+                self.match(CompiscriptParser.T__10)
+                self.state = 296
+                self.expression()
+                self.state = 297
+                self.match(CompiscriptParser.T__11)
+                pass
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 9)
-                self.state = 298
-                self.match(CompiscriptParser.T__42)
                 self.state = 299
-                self.match(CompiscriptParser.T__16)
+                self.match(CompiscriptParser.T__41)
                 self.state = 300
+                self.match(CompiscriptParser.T__5)
+                self.state = 301
                 self.match(CompiscriptParser.IDENTIFIER)
                 pass
             elif token in [34]:
                 self.enterOuterAlt(localctx, 10)
-                self.state = 301
+                self.state = 302
                 self.array()
                 pass
             elif token in [37]:
                 self.enterOuterAlt(localctx, 11)
-                self.state = 302
+                self.state = 303
                 self.instantiation()
                 pass
             else:
@@ -2441,21 +2441,21 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 305
-            self.match(CompiscriptParser.IDENTIFIER)
             self.state = 306
-            self.match(CompiscriptParser.T__9)
-            self.state = 308
+            self.match(CompiscriptParser.IDENTIFIER)
+            self.state = 307
+            self.match(CompiscriptParser.T__10)
+            self.state = 309
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==46:
-                self.state = 307
+            if _la==45:
+                self.state = 308
                 self.parameters()
 
 
-            self.state = 310
-            self.match(CompiscriptParser.T__10)
             self.state = 311
+            self.match(CompiscriptParser.T__11)
+            self.state = 312
             self.block()
         except RecognitionException as re:
             localctx.exception = re
@@ -2507,20 +2507,20 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 313
+            self.state = 314
             self.match(CompiscriptParser.IDENTIFIER)
-            self.state = 316
+            self.state = 317
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==18:
-                self.state = 314
-                self.match(CompiscriptParser.T__17)
                 self.state = 315
+                self.match(CompiscriptParser.T__17)
+                self.state = 316
                 self.expression()
 
 
-            self.state = 318
-            self.match(CompiscriptParser.T__7)
+            self.state = 319
+            self.match(CompiscriptParser.T__8)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -2570,17 +2570,17 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 320
+            self.state = 321
             self.match(CompiscriptParser.IDENTIFIER)
-            self.state = 325
+            self.state = 326
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==35:
-                self.state = 321
-                self.match(CompiscriptParser.T__34)
                 self.state = 322
+                self.match(CompiscriptParser.T__34)
+                self.state = 323
                 self.match(CompiscriptParser.IDENTIFIER)
-                self.state = 327
+                self.state = 328
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -2634,17 +2634,17 @@ class CompiscriptParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 328
+            self.state = 329
             self.expression()
-            self.state = 333
+            self.state = 334
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==35:
-                self.state = 329
-                self.match(CompiscriptParser.T__34)
                 self.state = 330
+                self.match(CompiscriptParser.T__34)
+                self.state = 331
                 self.expression()
-                self.state = 335
+                self.state = 336
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 

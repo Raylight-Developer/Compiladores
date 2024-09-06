@@ -10,7 +10,7 @@ declaration     : classDecl
 classDecl       : 'class' IDENTIFIER ('extends' IDENTIFIER)? '{' classBody '}' ;
 
 classBody       : classMember* ;
-classMember     : 'this.' variable
+classMember     : 'this' '.' variable
                 | function ;
 
 funDecl         : 'fun' function ;

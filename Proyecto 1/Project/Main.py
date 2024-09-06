@@ -90,6 +90,7 @@ while (juan.edad < 25) {
 
 		self.log = Logger()
 		self.log.setPlaceholderText("Log")
+		self.log.setTabStopDistance(10)
 		self.debug = Lace()
 
 		self.tables = QTabWidget()
