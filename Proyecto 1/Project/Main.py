@@ -35,48 +35,6 @@ for (var i = 0; i < 2; i = i + 1) {
 		//var j;
 	}
 }
-class Persona {
-	init(nombre, edad) {
-		this.nombre = nombre;
-		this.edad = edad;
-		this.color = "rojo";
-	}
-
-	saludar() {
-		print "Hola, mi nombre es " + this.color;
-	}
-}
-
-class Estudiante extends Persona {
-	init(nombre, edad, grado) {
-		super.init(nombre, edad);
-		this.grado = grado;
-	}
-
-	estudiar() {
-		print this.nombre + " esta estudiando en " + this.grado + " grado.";
-	}
-}
-
-var nombre = "Erick";
-
-var ropero = new Persona(nombre, 20);
-var juan = new Estudiante(nombre, 20, 3);
-juan.saludar();    // Salida: Hola, mi nombre es Juan
-juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
-
-for (var i = 1; i <= 5; i = i + 1) {
-	if (i % 2 == 0) {
-		print i + " es par";
-	} else {
-		print i + " es impar";
-	}
-}
-
-while (juan.edad < 25) {
-	juan.edad = juan.edad + 1;
-	print "Edad de Juan: " + juan.edad;
-}
 
 """).strip())
 
