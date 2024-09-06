@@ -42,11 +42,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.debug << NL() << f"Class [{struct.ID}]"
 
-		members: List[Union[Function, Variable]] = self.visit(ctx.classBody(), **kwargs, visiting_class = struct, visitor = struct)
+		members: List[Container] = self.visit(ctx.classBody(), **kwargs, visiting_class = struct, struct = struct)
 		for member in members:
-			if isinstance(member, Function):
+			if member.type == Type.FUNCTION:
 				struct.member_functions.append(member)
-			elif isinstance(member, Variable):
+			elif member.type == Type.VARIABLE:
 				struct.member_variables.append(member)
 			else:
 				print(member)
@@ -60,7 +60,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitClassBody(self, ctx:CompiscriptParser.ClassBodyContext, **kwargs):
 		self.enter("Class Body")
-		members: List[Union[Function, Variable]] = []
+		members: List[Container] = []
 		for i in range(len(ctx.classMember())):
 			member = self.visit(ctx.classMember(i), **kwargs)
 			members.append(member)
@@ -72,12 +72,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.enterScope()
 
 		if ctx.varDecl() is not None:
-			variable: Variable = self.visit(ctx.varDecl(), **kwargs)
+			variable: Container = self.visit(ctx.varDecl(), **kwargs)
 			self.exit("Member Declaration")
 			return variable
 
 		elif ctx.function() is not None:
-			function: Function = self.visit(ctx.function(), **kwargs)
+			function: Container = self.visit(ctx.function(), **kwargs)
 			self.exit("Member Declaration")
 			return function
 
@@ -96,7 +96,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		variable.ID = str(ctx.IDENTIFIER())
 		variable.code = ctx.getText()
 #
-		if "visitor" in kwargs and isinstance(kwargs["visitor"], Class):
+		if "struct" in kwargs and isinstance(kwargs["struct"], Class):
 			variable.member = kwargs["visiting_class"]
 #
 		if ctx.expression():
@@ -110,7 +110,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.debug << NL() << f"Variable [{variable.ID}]"
 #
-		self.scope_tracker.declareVariable(variable)
+		self.scope_tracker.declareVariable(variable, None)
 		self.addSymbolToTable(variable)
 #
 		self.exit("Variable Declaration")
@@ -206,20 +206,45 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		"""Assign Code to a Variable"""
 		self.enterFull("Assignment")
 
-		if ctx.IDENTIFIER() is not None:
-			var_name = str(ctx.IDENTIFIER())
-			self.debug << NL() << "Assign Value to [" << var_name << "]"
+		if ctx.getChildCount() == 1:
+			return self.visit(ctx.logic_or(), **kwargs)
 
-			if ctx.assignment() is not None:
-				value = self.visit(ctx.assignment(), **kwargs)
-			elif ctx.logic_or() is not None:
-				value = self.visit(ctx.logic_or(), **kwargs)
+		if ctx.call():
+			if ctx.IDENTIFIER():
+				var_name = str(ctx.IDENTIFIER())
+				self.debug << NL() << "Assign Value to Class Member [" << var_name << "]"
 
-			self.scope_tracker.lookupVariable(var_name).code = value
+				struct = kwargs["struct"] if "struct" in kwargs else None
+				if isinstance(struct, Class):
+					if struct.checkVariable(var_name, struct):
+						variable: Variable = struct.lookupVariable(var_name, struct)
+						variable.member = struct.ID
+						if ctx.assignment():
+							value = self.visit(ctx.assignment(), **kwargs)
+						elif ctx.logic_or():
+							value = self.visit(ctx.logic_or(), **kwargs)
+						variable.code = value
 
-		visited = self.visitChildren(ctx)
+					else:
+						variable = Variable()
+						variable.ID = var_name
+						variable.member = struct.ID
+
+						struct.member_variables.append(variable)
+						self.scope_tracker.declareVariable(variable, struct)
+		else:
+			if ctx.IDENTIFIER():
+				var_name = str(ctx.IDENTIFIER())
+				self.debug << NL() << "Assign Value to [" << var_name << "]"
+
+				if ctx.assignment():
+					value = self.visit(ctx.assignment(), **kwargs)
+				elif ctx.logic_or():
+					value = self.visit(ctx.logic_or(), **kwargs)
+
+				self.scope_tracker.lookupVariable(var_name, None).code = value
+ 
 		self.exitFull("Assignment")
-		return visited
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext, **kwargs):
 		self.enterFull("Or")
@@ -355,6 +380,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return visited
 
 	def visitCall(self, ctx:CompiscriptParser.CallContext, **kwargs):
+		self.enterFull("Call")
+		self.exitFull("Call")
 		return self.visitChildren(ctx, **kwargs)
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext, **kwargs):
@@ -372,14 +399,21 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.exitFull("Primary")
 			return Container(text, Type.STRING)
 		elif ctx.IDENTIFIER():
+			print(ctx.getText())
 			var_name = str(ctx.IDENTIFIER())
-			if self.scope_tracker.checkVariable(var_name):
+			scope = kwargs["struct"] if "struct" in kwargs else None
+			if self.scope_tracker.checkVariable(var_name, scope):
 				self.exitFull("Primary")
-				return Container(self.scope_tracker.lookupVariable(var_name), Type.VARIABLE)
+				return Container(self.scope_tracker.lookupVariable(var_name, scope), Type.VARIABLE)
 			else:
 				error(self.debug, f"Error Primary. Variable '{var_name}' out of scope.")
-		if ctx.expression():
-			visited = self.visit(ctx.expression())
+
+		elif ctx.array():
+			pass
+		elif ctx.instantiation():
+			pass
+		elif ctx.expression():
+			return self.visit(ctx.expression())
 
 		self.exitFull("Primary")
 		if ctx.getText() == "true":
@@ -388,8 +422,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return Container("false", Type.BOOL)
 		elif ctx.getText() == "nil":
 			return Container("nil", Type.NONE)
-		elif ctx.expression():
-			return visited  # Delegate to expression handling
+		elif ctx.getText() == "this":
+			return Container("nil", Type.NONE)
+	
 
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext, **kwargs):
 		"""Assign Function Member to Class or create Function"""
@@ -398,19 +433,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		function = Function()
 		function.ID = str(ctx.IDENTIFIER())
-		if "visitor" in kwargs and isinstance(kwargs["visitor"], Class):
-			function.member = kwargs["visiting_class"]
+		if "struct" in kwargs and isinstance(kwargs["struct"], Class):
+			function.member = kwargs["struct"].ID
 			#TODO if function.ID == "init"
 			#TODO this. variables
 			if function.ID == "init":
-				kwargs["visitor"].initializer = function	
+				kwargs["struct"].initializer = function
 #
-		self.scope_tracker.declareFunction(function)
+		scope = kwargs["struct"] if "struct" in kwargs else None
+		self.scope_tracker.declareFunction(function, scope)
 		self.addSymbolToTable(function)
 		self.scope_tracker.exitScope()
 #
 		self.exit("Function")
-		return function
+		return Container(function, Type.FUNCTION)
 
 	def visitParameters(self, ctx:CompiscriptParser.ParametersContext, **kwargs):
 		return self.visitChildren(ctx)

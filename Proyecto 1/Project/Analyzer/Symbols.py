@@ -35,31 +35,31 @@ def inferVariableType(code: str):
 def operationType(debug: Lace, left: 'Container', operator: str, right: 'Container'):
 	if left.type == Type.INT and right.type == Type.INT:
 		return Type.INT
-	elif left.type == Type.FLOAT and right.type == Type.INT:
+	if left.type == Type.FLOAT and right.type == Type.INT:
 		return Type.FLOAT
-	elif left.type == Type.INT and right.type == Type.FLOAT:
+	if left.type == Type.INT and right.type == Type.FLOAT:
 		return Type.FLOAT
-	elif left.type == Type.FLOAT and right.type == Type.FLOAT:
+	if left.type == Type.FLOAT and right.type == Type.FLOAT:
 		return Type.FLOAT
-	elif left.type == Type.VARIABLE and right.type == Type.VARIABLE:
+
+	if left.type == Type.FLOAT and right.type == Type.STRING:
+		return Type.STRING
+	if left.type == Type.STRING and right.type == Type.FLOAT:
+		return Type.STRING
+	if left.type == Type.INT and right.type == Type.STRING:
+		return Type.STRING
+	if left.type == Type.STRING and right.type == Type.INT:
+		return Type.STRING
+
+	if left.type == Type.VARIABLE and right.type == Type.VARIABLE:
 		return operationType(debug, left.data, operator, right.data)
-
-	elif left.type == Type.FLOAT and right.type == Type.STRING:
-		return Type.STRING
-	elif left.type == Type.STRING and right.type == Type.FLOAT:
-		return Type.STRING
-	elif left.type == Type.INT and right.type == Type.STRING:
-		return Type.STRING
-	elif left.type == Type.STRING and right.type == Type.INT:
-		return Type.STRING
-
-	elif left.type == Type.VARIABLE and right.type != Type.VARIABLE:
-		return operationType(debug, left.data, operator, right)
-	elif left.type != Type.VARIABLE and right.type == Type.VARIABLE:
-		return operationType(debug, left, operator, right.data)
+	if left.type == Type.VARIABLE and right.type != Type.VARIABLE:
+		return operationType(debug, Container(left.data.code, left.data.type), operator, right)
+	if left.type != Type.VARIABLE and right.type == Type.VARIABLE:
+		return operationType(debug, left, operator, Container(right.data.code, right.data.type))
 
 	else:
-		error(debug, f"Cannot operate different Types [{left.type}] {operator} [{right.type}]")
+		error(debug, f"Cannot operate different Types <{left.type}>({left.getCode()}) {operator} <{right.type}>({right.getCode()})")
 
 class Container:
 	def __init__(self, data: Union[str, int, float, bool, 'Class', 'Function', 'Variable', None], type: Type):
@@ -121,6 +121,28 @@ class Class:
 		self.initializer      : Function       = None
 		self.member_functions : List[Function] = []
 		self.member_variables : List[Variable] = []
+
+	def checkFunction(self, ID: str):
+		for member in self.member_functions:
+			if member.ID == ID:
+				return True
+		return False
+
+	def checkVariable(self, ID: str):
+		for member in self.member_variables:
+			if member.ID == ID:
+				return True
+		return False
+
+	def lookupFunction(self, ID: str):
+		for member in self.member_functions:
+			if member.ID == ID:
+				return member
+
+	def lookupVariable(self, ID: str):
+		for member in self.member_variables:
+			if member.ID == ID:
+				return member
 
 	def __str__(self):
 		return f"Class {self.ID}"

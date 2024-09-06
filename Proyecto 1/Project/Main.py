@@ -179,8 +179,10 @@ while (juan.edad < 25) {
 
 		except Exception as e:
 			self.log.log("\t" + str(self.debug).strip())
-			self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>{e}")
-			self.code_output.insertHtml(f"{R}Compilation Failed{RESET}<br><br>{e}<br>")
+			self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>")
+			self.log.append(str(e))
+			self.code_output.insertHtml(f"{R}Compilation Failed{RESET}<br><br>")
+			self.code_output.append(str(e) + "\n")
 			self.code_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
 
 		self.log.verticalScrollBar().setValue(self.log.verticalScrollBar().maximum())
