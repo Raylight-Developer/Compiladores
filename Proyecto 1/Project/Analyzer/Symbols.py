@@ -57,6 +57,8 @@ def operationType(debug: Lace, left: 'Container', operator: str, right: 'Contain
 			return Type.STRING
 		if left.type == Type.STRING and right.type == Type.INT:
 			return Type.STRING
+		if left.type == Type.STRING and right.type == Type.STRING:
+			return Type.STRING
 
 		if left.type == Type.VARIABLE and right.type == Type.VARIABLE:
 			return operationType(debug, Container(left.data.data, left.data.type), operator, Container(right.data.data, right.data.type))
@@ -65,7 +67,10 @@ def operationType(debug: Lace, left: 'Container', operator: str, right: 'Contain
 		if left.type != Type.VARIABLE and right.type == Type.VARIABLE:
 			return operationType(debug, left, operator, Container(right.data.data, right.data.type))
 
-		error(debug, f"Cannot operate different Types <{left.type}>({left.data.data}) {operator} <{right.type}>({right.data.data})")
+		if isinstance(left, Container) and isinstance(right, Container):
+			error(debug, f"Cannot operate different Types <{left.type}>({left.data}) {operator} <{right.type}>({right.data})")
+		else:
+			error(debug, f"Cannot operate Unkown Types {type(left)}({left}) {operator} {type(right)}({right})")
 	error(debug, f"Cannot operate Unkown Types {type(left)}({left}) {operator} {type(right)}({right})")
 
 T = TypeVar('T')
