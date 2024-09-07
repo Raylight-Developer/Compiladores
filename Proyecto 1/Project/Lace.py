@@ -2,8 +2,8 @@ from Include import *
 from io import StringIO
 
 def error(debug: 'Lace', message: str):
-	debug << NL() << ERROR() << message << END()
-	raise Exception(message)
+	debug << NL() << ERROR() << str(message).replace("<", "⟪").replace(">", "⟫") << END()
+	raise Exception(str(message).replace("<", "⟪").replace(">", "⟫"))
 
 class Lace:
 	def __init__(self):

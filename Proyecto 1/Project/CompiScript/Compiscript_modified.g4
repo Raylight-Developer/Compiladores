@@ -10,8 +10,7 @@ declaration     : classDecl
 classDecl       : 'class' IDENTIFIER ('extends' IDENTIFIER)? '{' classBody '}' ;
 
 classBody       : classMember* ;
-classMember     : 'this' '.' variable
-                | function ;
+classMember     : function ;
 
 funDecl         : 'fun' function ;
 varDecl         : 'var' variable ;
@@ -58,8 +57,7 @@ super           :      'super' '.' IDENTIFIER;
 
 primary         : 'true' | 'false' | 'nil' | 'this'
                 | NUMBER | STRING | IDENTIFIER | '(' expression ')'
-                | array | instantiation
-                | super ;
+                | array | instantiation ;
 
 function        : IDENTIFIER '(' parameters? ')' block ;
 variable        : IDENTIFIER ('=' expression)? ';' ;

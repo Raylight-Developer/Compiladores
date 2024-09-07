@@ -60,8 +60,8 @@ def operationType(debug: Lace, left: 'Container', operator: str, right: 'Contain
 		if left.type != Type.VARIABLE and right.type == Type.VARIABLE:
 			return operationType(debug, left, operator, Container(right.getCode(), right.data.type))
 
-		error(debug, f"Cannot operate different Types ⟪{left.type}⟫({left.getCode()}) {operator} ⟪{right.type}⟫({right.getCode()})")
-	error(debug, f"Cannot operate Unkown Types {type(left)}({left}) {operator} {type(right)}({right})".replace("<", "⟪").replace(">", "⟫"))
+		error(debug, f"Cannot operate different Types <{left.type}>({left.getCode()}) {operator} <{right.type}>({right.getCode()})")
+	error(debug, f"Cannot operate Unkown Types {type(left)}({left}) {operator} {type(right)}({right})")
 
 class Container:
 	def __init__(self, data: Union[str, int, float, bool, 'Class', 'Function', 'Variable', None], type: Type):

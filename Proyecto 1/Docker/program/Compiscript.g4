@@ -10,8 +10,7 @@ declaration     : classDecl
 classDecl       : 'class' IDENTIFIER ('extends' IDENTIFIER)? '{' classBody '}' ;
 
 classBody       : classMember* ;
-classMember     : 'this' '.' variable
-                | function ;
+classMember     : function ;
 
 funDecl         : 'fun' function ;
 varDecl         : 'var' variable ;
@@ -54,12 +53,12 @@ unary           : ( '!' | '-' ) unary
 call            : primary ( '(' arguments? ')' | '.' IDENTIFIER | '[' expression ']')* 
                 | funAnon;
 
-super           :      'super' '.' IDENTIFIER;
+superCall       :      'super' '.' IDENTIFIER;
 
 primary         : 'true' | 'false' | 'nil' | 'this'
                 | NUMBER | STRING | IDENTIFIER | '(' expression ')'
-                | array | instantiation
-                | super ;
+                | superCall
+                | array | instantiation ;
 
 function        : IDENTIFIER '(' parameters? ')' block ;
 variable        : IDENTIFIER ('=' expression)? ';' ;

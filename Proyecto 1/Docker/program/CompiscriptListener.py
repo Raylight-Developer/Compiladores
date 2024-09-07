@@ -260,12 +260,12 @@ class CompiscriptListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by CompiscriptParser#super.
-    def enterSuper(self, ctx:CompiscriptParser.SuperContext):
+    # Enter a parse tree produced by CompiscriptParser#superCall.
+    def enterSuperCall(self, ctx:CompiscriptParser.SuperCallContext):
         pass
 
-    # Exit a parse tree produced by CompiscriptParser#super.
-    def exitSuper(self, ctx:CompiscriptParser.SuperContext):
+    # Exit a parse tree produced by CompiscriptParser#superCall.
+    def exitSuperCall(self, ctx:CompiscriptParser.SuperCallContext):
         pass
 
 

@@ -56,8 +56,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				struct.member_functions.append(member)
 			elif member.type == Type.VARIABLE:
 				struct.member_variables.append(member)
-			else:
-				print(member)
 #
 		self.scope_tracker.exitScope()
 		self.scope_tracker.declareClass(struct)
@@ -80,13 +78,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.enter("Member Declaration")
 		self.scope_tracker.enterScope()
 
-		if ctx.variable():
-			variable: Container = self.visit(ctx.variable(), member = True)
-			self.exit("Member Declaration")
-			self.scope_tracker.exitScope()
-			return variable
-
-		elif ctx.function():
+		if ctx.function():
 			function: Container = self.visit(ctx.function())
 			self.exit("Member Declaration")
 			self.scope_tracker.exitScope()
@@ -292,7 +284,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			operator = ctx.getChild(2 * i - 1).getText()
 			right: Container = self.visit(ctx.comparison(i))
 			if not isinstance(left, Container) or not isinstance(right, Container):
-				error(self.debug, f"Error Equality. ⟪{type(left)}⟫({left}) {operator} ⟪{type(right)}⟫({right})")
+				error(self.debug, f"Error Equality. <{type(left)}>({left}) {operator} <{type(right)}>({right})")
 			self.exitFull("Equality")
 			return Container(f"{left.getCode()} {operator} {right.getCode()}", Type.BOOL)
 
@@ -309,7 +301,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			operator = ctx.getChild(2 * i - 1).getText()
 			right: Container = self.visit(ctx.term(i))
 			if not isinstance(left, Container) or not isinstance(right, Container):
-				error(self.debug, f"Error Comparison. ⟪{type(left)}⟫({left}) {operator} ⟪{type(right)}⟫({right})")
+				error(self.debug, f"Error Comparison. <{type(left)}>({left}) {operator} <{type(right)}>({right})")
 			self.exitFull("Comparison")
 			return Container(f"{left.getCode()} {operator} {right.getCode()}", Type.BOOL)
 
@@ -390,12 +382,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				if operand.type == Type.INT or operand.type == Type.FLOAT:
 					self.exitFull("Unary")
 					return Container(f"-{operand.getCode()}", operand.type)
-				error(self.debug, f"Error Applying Unary operator {operator} to ⟪{operand.type}⟫({operand.getCode()})")
+				error(self.debug, f"Error Applying Unary operator {operator} to <{operand.type}>({operand.getCode()})")
 			elif operator == '!':
 				if operand.type == Type.BOOL:
 					self.exitFull("Unary")
 					return Container(f"!{operand.getCode()}", operand.type)
-				error(self.debug, f"Error Applying Unary operator {operator} to ⟪{operand.type}⟫({operand.getCode()})")
+				error(self.debug, f"Error Applying Unary operator {operator} to <{operand.type}>({operand.getCode()})")
 		else:
 			visited: Container = self.visit(ctx.call())
 			self.exitFull("Unary")
@@ -404,23 +396,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitCall(self, ctx:CompiscriptParser.CallContext):
 		self.enterFull("Call")
 
-		if ctx.getChildCount() > 1 and ctx.getChild(1).getText() == '.':
-			instance: Container = self.visit(ctx.getChild(0))  # visit the instance (e.g., myclassinstance)
-			member_variable = ctx.getChild(2).getText()   # get the member variable name (e.g., variable_a)
-			
-			member_name = ctx.IDENTIFIER(0)
-			print(f"{member_variable}.{member_name}")
+		if ctx.getChildCount() == 1:
+			if ctx.primary():
+				return self.visit(ctx.primary())
 
-			if self.scope_tracker.checkVariable(instance, self.current_class):
-				variable: Variable = self.scope_tracker.lookupVariable(instance, self.current_class)
-				if self.scope_tracker.checkClass(variable.class_type, self.current_class):
-					struct: Class = self.scope_tracker.lookupClass(variable.class_type, self.current_class)
-					print(f"Accessing member variable '{member_variable}' of variable '{variable}' whidch instantiates '{struct}'")
+		elif ctx.primary():
+			primary: Container = self.visit(ctx.primary())
+			if primary.type == Type.FUNCTION:
+				pass
+				#if(!(CurrFuncName.equals(((Function) primary).getFunName()) || currCallName.equals(((Function) primary).getFunName()))){
 		
 		self.exitFull("Call")
 		return self.visitChildren(ctx)
 
-	def visitSuper(self, ctx: CompiscriptParser.SuperContext):
+	def visitSuperCall(self, ctx: CompiscriptParser.SuperCallContext):
 		return self.visitChildren(ctx)
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
@@ -451,8 +440,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return self.visit(ctx.instantiation())
 		if ctx.expression():
 			return self.visit(ctx.expression())
-		if ctx.super_():
-			return self.visit(ctx.super_())
+		if ctx.superCall():
+			return self.visit(ctx.superCall())
 
 		self.exitFull("Primary")
 		if ctx.getText() == "true":
@@ -473,6 +462,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		function = Function()
 		function.ID = str(ctx.IDENTIFIER())
+		if ctx.parameters():
+			for param in ctx.parameters().IDENTIFIER():
+				parameter = Function_Parameter()
+				parameter.ID = param.getText()
+				parameter.function = function
+				function.parameters.append(parameter)
+
 		if self.current_class:
 			function.member = self.current_class.ID
 			#TODO if function.ID == "init"
