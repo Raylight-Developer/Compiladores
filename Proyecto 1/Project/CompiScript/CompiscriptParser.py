@@ -1417,7 +1417,7 @@ class CompiscriptParser ( Parser ):
             return self.getTypedRuleContext(CompiscriptParser.AssignmentContext,0)
 
 
-        def call(self):
+        def call(self) -> 'CompiscriptParser.CallContext':
             return self.getTypedRuleContext(CompiscriptParser.CallContext,0)
 
 
