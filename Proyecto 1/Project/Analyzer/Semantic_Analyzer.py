@@ -455,10 +455,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.IDENTIFIER():
 			var_name = ctx.IDENTIFIER().getText()
 			if self.current_function:
-				if var_name in [param.ID for param in self.current_function.parameters]:
-					for param in  self.current_function.parameters:
-						if param.ID == var_name:
-							return Container(param, Type.PARAMETER)
+				if self.current_function.checkParameter(var_name):
+					return Container(self.current_function.lookupParameter(var_name), Type.PARAMETER)
 				error(self.debug, f"Error Primary. Parameter '{var_name}' not defined.")
 			else:
 				if self.scope_tracker.checkVariable(var_name, self.current_class):
