@@ -53,14 +53,15 @@ unary           : ( '!' | '-' ) unary
 call            : primary ( '(' arguments? ')' | '.' IDENTIFIER | '[' expression ']')* 
                 | funAnon;
 
-super           :      'super' '.' IDENTIFIER;
+superCall       :      'super' '.' IDENTIFIER;
 
 primary         : 'true' | 'false' | 'nil' | 'this'
                 | NUMBER | STRING | IDENTIFIER | '(' expression ')'
+                | superCall
                 | array | instantiation ;
 
 function        : IDENTIFIER '(' parameters? ')' block ;
-variable        : IDENTIFIER ('=' expression)? ';' ;
+variable        : IDENTIFIER ( '=' expression )? ';' ;
 parameters      : IDENTIFIER ( ',' IDENTIFIER )* ;
 arguments       : expression ( ',' expression )* ;
 

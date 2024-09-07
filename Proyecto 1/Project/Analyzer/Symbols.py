@@ -1,7 +1,8 @@
 from Include import *
 
+from CompiScript.CompiscriptParser import CompiscriptParser
+
 from Lace import *
-from enum import Enum
 
 class Type(Enum):
 	INT = "int"
@@ -63,7 +64,8 @@ def operationType(debug: Lace, left: 'Container', operator: str, right: 'Contain
 		error(debug, f"Cannot operate different Types <{left.type}>({left.getCode()}) {operator} <{right.type}>({right.getCode()})")
 	error(debug, f"Cannot operate Unkown Types {type(left)}({left}) {operator} {type(right)}({right})")
 
-class Container:
+T = TypeVar('T')
+class Container(Generic[T]):
 	def __init__(self, data: Union[str, int, float, bool, 'Class', 'Function', 'Variable', None], type: Type):
 		self.data = data
 		self.type = type
@@ -79,10 +81,12 @@ class Container:
 
 class Variable:
 	def __init__(self):
+		self.ctx         : CompiscriptParser.VariableContext = None
+
 		self.ID          : str  = None
 		self.type        : Type = Type.UNKNOWN
 		self.code        : str  = None
-		self.scope_depth : int = 0
+		self.scope_depth : int  = 0
 
 		self.member     : Class = None
 		self.class_type : Class = None
@@ -102,6 +106,8 @@ class Function_Parameter:
 
 class Function:
 	def __init__(self):
+		self.ctx         : CompiscriptParser.FunctionContext = None
+
 		self.ID          : str  = None
 		self.code        : str  = None
 		self.return_type : Type = Type.VOID
@@ -116,6 +122,8 @@ class Function:
 
 class Class:
 	def __init__(self):
+		self.ctx         : CompiscriptParser.ClassDeclContext = None
+
 		self.ID          : str   = None
 		self.code        : str   = None
 		self.parent      : Class = None

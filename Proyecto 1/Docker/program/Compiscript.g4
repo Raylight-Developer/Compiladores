@@ -61,7 +61,7 @@ primary         : 'true' | 'false' | 'nil' | 'this'
                 | array | instantiation ;
 
 function        : IDENTIFIER '(' parameters? ')' block ;
-variable        : IDENTIFIER ('=' expression)? ';' ;
+variable        : IDENTIFIER ( '=' expression )? ';' ;
 parameters      : IDENTIFIER ( ',' IDENTIFIER )* ;
 arguments       : expression ( ',' expression )* ;
 

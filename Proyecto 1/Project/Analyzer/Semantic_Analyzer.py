@@ -25,6 +25,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.anonymous_counter : int = 0
 		self.current_call      : str = None
+		self.current_instance  : str = None
 	
 		self.current_class   : Class    = None
 		self.current_function: Function = None
@@ -45,12 +46,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.enterScope()
 
 		struct = Class()
-		self.current_class = struct
+		struct.ctx = ctx
 		struct.ID = str(ctx.IDENTIFIER(0))
+		self.current_class = struct
 
 		self.debug << NL() << f"Class [{struct.ID}]"
 
-		members: Container = self.visit(ctx.classBody())
+		members: Container[List[Container]] = self.visit(ctx.classBody())
 		for member in members.data:
 			if member.type == Type.FUNCTION:
 				struct.member_functions.append(member)
@@ -85,20 +87,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return function
 
 	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext):
-		self.enter("Function Declaration")
-
-		function: Container = self.visit(ctx.function())
-
-		self.exit("Function Declaration")
-		return function
+		return self.visitChildren(ctx)
 
 	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
-		self.enter("Variable Declaration")
-
-		variable: Container = self.visit(ctx.variable())
-
-		self.exit("Variable Declaration")
-		return variable
+		return self.visitChildren(ctx)
 
 	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
 		return self.visitChildren(ctx)
@@ -109,7 +101,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitForStmt(self, ctx:CompiscriptParser.ForStmtContext):
 		self.enter("For Statement")
 		self.scope_tracker.enterScope()
-		
+
 		if ctx.varDecl():
 			self.visit(ctx.varDecl())
 		elif ctx.exprStmt():
@@ -117,9 +109,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		expression = ctx.expression(0)
 		if expression:
-			exprResult: Container = self.visit(expression)
-			if not isinstance(exprResult, Container) or not exprResult.type == Type.BOOL:
-				error(self.debug, f"Error For. Condition is not boolean. {expression}")
+			expression: Container = self.visit(expression)
+			if not isinstance(expression, Container) or not expression.type == Type.BOOL:
+				error(self.debug, f"Error For. Condition is not boolean. {expression.getCode()}")
 
 		if ctx.expression(1):
 			self.visit(ctx.expression(1))
@@ -154,7 +146,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		expression = self.visit(ctx.expression())
 		if not isinstance(expression, Container) or not expression.type == Type.BOOL:
-			error(self.debug, f"Error While. Condition is not boolean. {expression}")
+			error(self.debug, f"Error While. Condition is not boolean. {expression.getCode()}")
 		children = self.visit(ctx.statement())
 
 		self.scope_tracker.exitScope()
@@ -227,6 +219,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 					else:
 						variable = Variable()
+						variable.ctx = ctx
 						variable.ID = var_name
 						variable.member = self.current_class.ID
 						variable.code = self.visit(ctx.assignment())
@@ -403,9 +396,18 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.primary():
 			primary: Container = self.visit(ctx.primary())
 			if primary.type == Type.FUNCTION:
-				pass
-				#if(!(CurrFuncName.equals(((Function) primary).getFunName()) || currCallName.equals(((Function) primary).getFunName()))){
-		
+				if self.current_function != primary.data.ID or self.current_call != primary.data.ID:
+					self.current_call = primary.data.ID
+					call_params = []
+					if ctx.arguments() and len(ctx.arguments()) > 0:
+						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
+						for i in range(0, arguments.getChildCount(), 2):
+							call_params.append(self.visit(arguments.getChild(i)))
+					if self.current_function.parameters and len(self.current_function.parameters) != len(call_params):
+						error(self.debug, f"Error Call. Tried to call Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
+					#if self.current_function.parameters:
+
+
 		self.exitFull("Call")
 		return self.visitChildren(ctx)
 
@@ -461,7 +463,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.enterScope()
 
 		function = Function()
-		function.ID = str(ctx.IDENTIFIER())
+		function.ctx = ctx
+		function.ID = ctx.IDENTIFIER().getText()
+		self.current_function = function
+
+		self.debug << NL() << f"Function [{function.ID}]"
+
 		if ctx.parameters():
 			for param in ctx.parameters().IDENTIFIER():
 				parameter = Function_Parameter()
@@ -479,6 +486,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.exitScope()
 		self.scope_tracker.declareFunction(function, self.current_class)
 		self.addSymbolToTable(function)
+		self.current_function = None
 #
 		self.exit("Function")
 		return Container(function, Type.FUNCTION)
@@ -488,6 +496,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.enter("Variable")
 #
 		variable = Variable()
+		variable.ctx = ctx
 		variable.ID = ctx.IDENTIFIER().getText()
 		variable.code = ctx.getText()
 #
@@ -509,10 +518,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitParameters(self, ctx:CompiscriptParser.ParametersContext):
 		return self.visitChildren(ctx)
-		parameters: List[str] = []
-		for identifier in ctx.IDENTIFIER():
-			parameters.append(identifier.getText())
-		return parameters
 
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		arguments = []
