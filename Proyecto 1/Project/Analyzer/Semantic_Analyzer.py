@@ -54,10 +54,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		members: Container[List[Container]] = self.visit(ctx.classBody())
 		for member in members.data:
-			if member.type == Type.FUNCTION:
-				struct.member_functions.append(member)
-			elif member.type == Type.VARIABLE:
-				struct.member_variables.append(member)
+			struct.member_functions.append(member)
 #
 		self.scope_tracker.exitScope()
 		self.scope_tracker.declareClass(struct)
@@ -421,19 +418,18 @@ class Semantic_Analyzer(CompiscriptVisitor):
 					if self.current_function:
 						self.current_function.recursive = True
 					return Container(None, Type.PARAMETER)
-			elif primary.type == Type.THIS:
+			elif primary.type == Type.THIS: # Accesing a variable from self
 				if self.current_class is None:
 					error(self.debug, "Error Call. Calling this outside of class")
 				elif self.current_class:
-					print("THIS")
-					attr = self.current_instance + '.' + ctx.IDENTIFIER(0).getText()
-					return self.scope_tracker.lookupClass()
+					var_name = ctx.IDENTIFIER(0).getText()
+					if self.current_class.lookupVariable(var_name):
+						return self.current_class.lookupVariable(var_name)
+					error(self.debug, f"Error Call. Trying to acces undefined variable {self.current_class.ID}.{var_name}")
 			elif primary.type == Type.INSTANCE:
 				if ctx.getChildCount() > 3: # is calling a function of an instance
-					print(f"{primary.data.ID}.{ctx.IDENTIFIER(0)}()")
 					return primary
 				else: # is calling a variable of an instance
-					print(f"{primary.data.ID}.{ctx.IDENTIFIER(0)}")
 					return primary
 
 
@@ -457,13 +453,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			text = str(ctx.STRING()).strip('"')
 			return Container(text, Type.STRING)
 		elif ctx.IDENTIFIER():
-			var_name = str(ctx.IDENTIFIER())
-			if self.scope_tracker.checkVariable(var_name, self.current_class):
-				variable = self.scope_tracker.lookupVariable(var_name, self.current_class)
-				type = Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE
-				return Container(variable, type)
+			var_name = ctx.IDENTIFIER().getText()
+			if self.current_function:
+				if var_name in [param.ID for param in self.current_function.parameters]:
+					for param in  self.current_function.parameters:
+						if param.ID == var_name:
+							return Container(param, Type.PARAMETER)
+				error(self.debug, f"Error Primary. Parameter '{var_name}' not defined.")
 			else:
-				error(self.debug, f"Error Primary. Variable '{var_name}' out of scope.")
+				if self.scope_tracker.checkVariable(var_name, self.current_class):
+					variable = self.scope_tracker.lookupVariable(var_name, self.current_class)
+					type = Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE
+					return Container(variable, type)
+				else:
+					error(self.debug, f"Error Primary. Variable '{var_name}' out of scope.")
 
 		elif ctx.array():
 			return self.visit(ctx.array())
@@ -481,7 +484,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.getText() == "nil":
 			return Container("nil", Type.NONE)
 		elif ctx.getText() == "this":
-			print("THIS")
 			return Container("this", Type.THIS)
 		elif ctx.superCall():
 			return Container(ctx.superCall().getChild(2).getText(), Type.SUPER)
@@ -513,6 +515,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			#TODO this. variables
 			if function.ID == "init":
 				self.current_class.initializer = function
+
+		self.visitChildren(ctx)
 #
 		self.scope_tracker.exitScope()
 		self.scope_tracker.declareFunction(function, self.current_class)
@@ -549,16 +553,15 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		return Container(variable, Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE)
 
 	def visitParameters(self, ctx:CompiscriptParser.ParametersContext):
-		return self.visitChildren(ctx)
+		parameters: List[str] = []
+		for identifier in ctx.IDENTIFIER():
+			parameters.append(identifier.getText())
+		return parameters
 
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		arguments = []
-		for i in range(ctx.getChildCount()):
-			argument = ctx.getChild(i)
-			if isinstance(argument, CompiscriptParser.ExpressionContext):
-				arguments.append(argument)
-			else:
-				self.visit(argument)
+		for expr in ctx.expression():
+			arguments.append(self.visit(expr))  # Visit and evaluate each expression
 		return arguments
 
 	def addSymbolToTable(self, value: Union[Class | Function | Variable]):

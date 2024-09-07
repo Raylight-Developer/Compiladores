@@ -112,8 +112,18 @@ class Function:
 
 		self.member     : Class  = None
 		self.recursive  : bool   = False
-		self.variables  : List[Variable]           = []
 		self.parameters : List[Function_Parameter] = []
+
+	def checkParameter(self, ID: str):
+		for param in self.parameters:
+			if param.ID == ID:
+				return True
+		return False
+
+	def lookupParameter(self, ID: str):
+		for param in self.parameters:
+			if param.ID == ID:
+				return param
 
 	def __str__(self):
 		return f"Function {self.ID}"
