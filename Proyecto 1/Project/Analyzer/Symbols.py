@@ -71,6 +71,13 @@ def operationType(debug: Lace, left: 'Container', operator: str, right: 'Contain
 			return operationType(debug, Container(left.data.data, left.data.type), operator, right)
 		if left.type != Type.VARIABLE and right.type == Type.VARIABLE:
 			return operationType(debug, left, operator, Container(right.data.data, right.data.type))
+	
+		if left.type == Type.INSTANCE and right.type == Type.INSTANCE:
+			return operationType(debug, Container(left.data.data, left.data.type), operator, Container(right.data.data, right.data.type))
+		if left.type == Type.INSTANCE and right.type != Type.INSTANCE:
+			return operationType(debug, Container(left.data.data, left.data.type), operator, right)
+		if left.type != Type.INSTANCE and right.type == Type.INSTANCE:
+			return operationType(debug, left, operator, Container(right.data.data, right.data.type))
 
 		if isinstance(left, Container) and isinstance(right, Container):
 			error(debug, f"Cannot operate different Types <{left.type}>({left.data}) {operator} <{right.type}>({right.data})")

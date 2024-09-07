@@ -140,12 +140,17 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitIfStmt(self, ctx:CompiscriptParser.IfStmtContext):
 		self.enter("If Statement")
 
-		self.scope_tracker.enterScope()
-		children = self.visitChildren(ctx)
-		self.scope_tracker.exitScope()
+		expression = self.visit(ctx.expression())
+		
+		if not isinstance(expression, Container) or not expression.type == Type.BOOL:
+			error(self.debug, f"Error If. IF Condition is not boolean. {expression.data}")
+		self.visit(ctx.statement(0))
+
+		if ctx.statement(1):
+			return self.visit(ctx.statement(1))
 
 		self.exit("If Statement")
-		return children
+		return None
 
 	def visitPrintStmt(self, ctx:CompiscriptParser.PrintStmtContext):
 		return self.visitChildren(ctx)
@@ -259,7 +264,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				instance: Container[Variable] = self.visit(ctx.call())
 				if instance.type == Type.INSTANCE:
 					if instance.data.data.checkVariable(ctx.IDENTIFIER().getText()):
-						code = self.visit(ctx.assignment())
+						code = self.visit(ctx.assignment()) # TODO
 						instance.data.data.lookupVariable(ctx.IDENTIFIER().getText()).data = code
 					else:
 						print(str(instance.data.data.checkVariable()))

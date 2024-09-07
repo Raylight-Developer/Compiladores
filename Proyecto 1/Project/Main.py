@@ -35,6 +35,15 @@ for (var i = 0; i < 2; i = i + 1) {
 		//var j;
 	}
 }
+
+for (var i = 1; i <= 5; i = i + 1) {
+	if (i % 2) {
+		print i + " es par";
+	} else {
+		print i + " es impar";
+	}
+}
+
 class Persona {
 	init(nombre, edad) {
 		this.nombre = nombre;
