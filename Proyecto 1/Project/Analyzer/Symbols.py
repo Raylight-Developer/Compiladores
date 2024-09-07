@@ -60,6 +60,11 @@ def operationType(debug: Lace, left: 'Container', operator: str, right: 'Contain
 		if left.type == Type.STRING and right.type == Type.STRING:
 			return Type.STRING
 
+		if left.type == Type.PARAMETER:
+			return right.type
+		if right.type == Type.PARAMETER:
+			return left.type
+
 		if left.type == Type.VARIABLE and right.type == Type.VARIABLE:
 			return operationType(debug, Container(left.data.data, left.data.type), operator, Container(right.data.data, right.data.type))
 		if left.type == Type.VARIABLE and right.type != Type.VARIABLE:
@@ -150,23 +155,31 @@ class Class:
 		for member in self.member_functions:
 			if member.ID == ID:
 				return True
+		if self.parent:
+			return self.parent.checkFunction(ID)
 		return False
 
 	def checkVariable(self, ID: str):
 		for member in self.member_variables:
 			if member.ID == ID:
 				return True
+		if self.parent:
+			return self.parent.checkVariable(ID)
 		return False
 
 	def lookupFunction(self, ID: str):
 		for member in self.member_functions:
 			if member.ID == ID:
 				return member
+		if self.parent:
+			return self.parent.lookupFunction(ID)
 
 	def lookupVariable(self, ID: str):
 		for member in self.member_variables:
 			if member.ID == ID:
 				return member
+		if self.parent:
+			return self.parent.lookupVariable(ID)
 
 	def __str__(self):
 		return f"Class {self.ID}"

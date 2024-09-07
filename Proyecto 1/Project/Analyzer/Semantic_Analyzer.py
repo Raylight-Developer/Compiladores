@@ -47,14 +47,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		struct = Class()
 		struct.ctx = ctx
-		struct.ID = str(ctx.IDENTIFIER(0))
+		struct.ID = ctx.IDENTIFIER(0).getText()
+		if ctx.IDENTIFIER(1):
+			struct.parent = self.scope_tracker.lookupClass(ctx.IDENTIFIER(1).getText())
 		self.current_class = struct
 
 		self.debug << NL() << f"Declaring Class [{struct.ID}]"
 
 		members: Container[List[Container]] = self.visit(ctx.classBody())
 		for member in members.data:
-			struct.member_functions.append(member)
+			struct.member_functions.append(member.data)
 #
 		self.scope_tracker.exitScope()
 		self.scope_tracker.declareClass(struct)
@@ -419,7 +421,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
 						for i in range(0, arguments.getChildCount(), 2):
 							call_params.append(self.visit(arguments.getChild(i)))
-					if self.current_function.parameters and len(self.current_function.parameters) != len(call_params):
+					if self.current_function.ID == "init":
+						if self.current_class:
+							if self.current_class.parent: # calling super.init
+								print(f"{self.current_class.ID}.init")
+					elif self.current_function.parameters and len(self.current_function.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
 					if self.current_function.parameters:
 						self.current_call = None
@@ -442,8 +448,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				else: # is calling a variable of an instance
 					return primary
 
-
-
 		self.exitFull("Call")
 		return self.visitChildren(ctx)
 
@@ -452,13 +456,18 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		if not ctx.IDENTIFIER():
 			error(self.debug, "Error Super. Empy super call")
-		elif not self.current_class:
-			error(self.debug, "Error Super. calling super outside of class")
-		else:
-			ctx.IDENTIFIER().getText()
+		if not self.current_class:
+			error(self.debug, "Error Super. Calling super outside of class")
+		if not self.current_class.parent:
+			error(self.debug, "Error Super. Calling super in a class with no parent")
 
-		self.exitFull("Super")
-		return self.visitChildren(ctx)
+		member_name: str = ctx.IDENTIFIER().getText()
+		if self.current_class.parent.checkFunction(member_name):
+			self.exitFull("Super")
+			return Container(self.current_class.lookupFunction(member_name), Type.FUNCTION)
+		else:
+			error(self.debug, f"Error Super. No function in hierarchy named '{member_name}'")
+
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
 		#self.enterFull("Primary")

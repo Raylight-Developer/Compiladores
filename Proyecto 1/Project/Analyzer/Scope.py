@@ -165,16 +165,25 @@ class Scope_Tracker:
 	def checkClass(self, ID: str):
 		return self.current_scope.checkClass(ID, self.debug)
 	def lookupClass(self, ID: str):
-		return self.current_scope.lookupClass(ID, self.debug)
+		if self.checkClass(ID):
+			return self.current_scope.lookupClass(ID, self.debug)
+		else:
+			error(self.debug, f"Class '{ID}' does Not Exist")
 	def declareFunction(self, function: Function, parent: Class | None):
 		self.current_scope.declareFunction(function, parent, self.debug)
 	def checkFunction(self, ID: str, parent: Class | None):
 		return self.current_scope.checkFunction(ID, parent, self.debug)
 	def lookupFunction(self, ID: str, parent: Class | None):
-		return self.current_scope.lookupFunction(ID, parent, self.debug)
+		if self.checkFunction(ID, parent):
+			return self.current_scope.lookupFunction(ID, parent, self.debug)
+		else:
+			error(self.debug, f"Function '{ID}' does Not Exist in scope {parent}")
 	def declareVariable(self, variable: Variable, parent: Class | None):
 		self.current_scope.declareVariable(variable, parent, self.debug)
 	def checkVariable(self, ID: str, parent: Class | None):
 		return self.current_scope.checkVariable(ID, parent, self.debug)
 	def lookupVariable(self, ID: str, parent: Class | None):
-		return self.current_scope.lookupVariable(ID, parent, self.debug)
+		if self.checkVariable(ID, parent):
+			return self.current_scope.lookupVariable(ID, parent, self.debug)
+		else:
+			error(self.debug, f"Variable '{ID}' does Not Exist in scope {parent}")
