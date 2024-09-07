@@ -23,6 +23,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.graph = Digraph()
 		self.scope_tracker = Scope_Tracker(debug)
 
+		self.initing_child     : bool = False
 		self.anonymous_counter : int = 0
 		self.current_call      : str = None
 
@@ -50,12 +51,27 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		struct.ID = ctx.IDENTIFIER(0).getText()
 		if ctx.IDENTIFIER(1):
 			struct.parent = self.scope_tracker.lookupClass(ctx.IDENTIFIER(1).getText())
+			for member in struct.parent.member_functions:
+				member.member = struct
+				member.inherited = True
+				struct.member_functions.append(member)
+				self.scope_tracker.declareFunction(member, struct)
+				self.addSymbolToTable(member)
+
+			for member in struct.parent.member_variables:
+				member.member = struct
+				struct.member_variables.append(member)
+				self.scope_tracker.declareVariable(member, struct)
+				self.addSymbolToTable(member)
+
+			struct.parent = self.scope_tracker.lookupClass(ctx.IDENTIFIER(1).getText())
+
 		self.current_class = struct
 
 		self.debug << NL() << f"Declaring Class [{struct.ID}]"
 
-		members: Container[List[Container]] = self.visit(ctx.classBody())
-		for member in members.data:
+		members: List[Container[Function]] = self.visit(ctx.classBody())
+		for member in members:
 			struct.member_functions.append(member.data)
 #
 		self.scope_tracker.exitScope()
@@ -73,7 +89,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			member = self.visit(ctx.classMember(i))
 			members.append(member)
 		self.exit("Class Body")
-		return Container(members, Type.ARRAY)
+		return members
 
 	def visitClassMember(self, ctx:CompiscriptParser.ClassMemberContext):
 		self.enter("Member Declaration")
@@ -242,10 +258,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			else:
 				instance: Container[Variable] = self.visit(ctx.call())
 				if instance.type == Type.INSTANCE:
-					if self.scope_tracker.checkVariable(ctx.IDENTIFIER().getText(), instance.data.data):
+					if instance.data.data.checkVariable(ctx.IDENTIFIER().getText()):
 						code = self.visit(ctx.assignment())
-						self.scope_tracker.lookupVariable(ctx.IDENTIFIER().getText(), instance.data.data).data = code
+						instance.data.data.lookupVariable(ctx.IDENTIFIER().getText()).data = code
 					else:
+						print(str(instance.data.data.checkVariable()))
 						error(self.debug, f"Error Assignment. {instance.data.data.ID}.{ctx.IDENTIFIER().getText()} is not defined")
 
 		if ctx.call() is None and ctx.IDENTIFIER():
@@ -422,9 +439,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						for i in range(0, arguments.getChildCount(), 2):
 							call_params.append(self.visit(arguments.getChild(i)))
 					if self.current_function.ID == "init":
-						if self.current_class:
-							if self.current_class.parent: # calling super.init
-								print(f"{self.current_class.ID}.init")
+						if self.initing_child: # calling super.init
+							#self.current_class.member_variables = self.current_class.parent.member_variables
+							#self.current_class.member_functions = self.current_class.parent.member_functions
+							#if self.scope_tracker.checkClass(self.current_class.ID):
+							#for var in self.current_class.member_variables:
+								#var.member = self.current_class
+								#self.scope_tracker.declareVariable(var, self.current_class)
+							#for fun in self.current_class.member_functions:
+								#fun.member = self.current_class
+								#self.scope_tracker.declareFunction(fun, self.current_class)
+							#else:
+							#	error(self.debug, f"Error Call. Class {self.current_class.ID} not in scope tracker.")
+							pass
+
 					elif self.current_function.parameters and len(self.current_function.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
 					if self.current_function.parameters:
@@ -541,6 +569,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			#TODO if function.ID == "init"
 			#TODO this. variables
 			if function.ID == "init":
+				self.initing_child = True
 				self.current_class.initializer = function
 
 		self.visitChildren(ctx)
@@ -549,6 +578,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.declareFunction(function, self.current_class)
 		self.addSymbolToTable(function)
 		self.current_function = None
+		self.initing_child = False
 #
 		self.exit("Function")
 		return Container(function, Type.FUNCTION)

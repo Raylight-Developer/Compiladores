@@ -122,6 +122,7 @@ class Function:
 
 		self.member     : Class  = None
 		self.recursive  : bool   = False
+		self.inherited  : bool   = False
 		self.parameters : List[Function_Parameter] = []
 
 	def checkParameter(self, ID: str):

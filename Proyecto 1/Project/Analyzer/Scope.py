@@ -16,7 +16,7 @@ class Scope:
 	def declareClass(self, value: Class, debug: Lace):
 		"""Declare a new Class in the current scope."""
 		if self.checkClass(value.ID, debug):
-			error(debug, f"Class [{value.ID}] Redifinition")
+			error(debug, f"Class [{value.ID}] Redifinition in scope {value}")
 		value.scope_depth = self.scopeDepth()
 		self.classes.add(value.ID, value)
 		self.functions.add(value, BiMap())
@@ -44,7 +44,7 @@ class Scope:
 	def declareFunction(self, value: Function, parent: Class | None, debug: Lace):
 		"""Declare a new Function in the current scope."""
 		if self.checkFunction(value.ID, parent, debug):
-			error(debug, f"Function [{value.ID}] Redifinition")
+			error(debug, f"Function [{value.ID}] Redifinition in scope {value}")
 		value.scope_depth = self.scopeDepth()
 	
 		if parent == None:
@@ -62,7 +62,7 @@ class Scope:
 			elif self.parent is not None:
 				return self.parent.checkFunction(ID, parent, debug)
 		else:
-			for class_scope in self.variables.getKeys():
+			for class_scope in self.functions.getKeys():
 				if class_scope == parent.ID:
 					if ID in self.functions.getVal(class_scope):
 						return True
@@ -91,7 +91,7 @@ class Scope:
 	def declareVariable(self, value: Variable, parent: Class | None, debug: Lace):
 		"""Declare a new Variable in the current scope."""
 		if self.checkVariable(value.ID, parent, debug):
-			error(debug, f"Variable [{value.ID}] Redifinition")
+			error(debug, f"Variable [{value.ID}] Redifinition in scope {value}")
 		value.scope_depth = self.scopeDepth()
 		if parent == None:
 			self.variables.getVal(None).add(value.ID, value)
