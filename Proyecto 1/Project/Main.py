@@ -85,14 +85,6 @@ while (juan.edad < 25) {
 
 //Error
 
-for (var i = 0; i < 2; i = i + 1) {
-	var i;
-	var j = 2;
-	if (j < 2) {
-		var j;
-	}
-}
-
 class Tester extends Persona {
 	init(nombre, edad, grado, penco) {
 		super.init(nombre, edad, grado);
@@ -104,6 +96,14 @@ class Tester extends Persona {
 		print this.nombre + " esta estudiando en " + this.grado + " grado.";
 	}
 }
+
+//for (var i = 0; i < 2; i = i + 1) {
+//	var i;
+//	var j = 2;
+//	if (j < 2) {
+//		var j;
+//	}
+//}
 
 """).strip())
 

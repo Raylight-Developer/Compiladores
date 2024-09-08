@@ -23,7 +23,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.graph = Digraph()
 		self.scope_tracker = Scope_Tracker(debug)
 
-		self.initing_child     : bool = False
 		self.anonymous_counter : int = 0
 		self.current_call      : str = None
 
@@ -443,10 +442,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
 						for i in range(0, arguments.getChildCount(), 2):
 							call_params.append(self.visit(arguments.getChild(i)))
-					#if self.current_function.ID == "init":
-					#	if self.initing_child:
-					#		pass
-						#print(f"Called Function '{self.current_function.ID}'")
 					elif len(self.current_function.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
 					if self.current_function.parameters:
@@ -481,7 +476,17 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				else: # is calling a variable of an instance
 					return Container(self.scope_tracker.lookupVariable(ctx.IDENTIFIER(0).getText(), primary.data.data), Type.VARIABLE)
 			elif primary.type == Type.SUPER:
-				print("SUPER")
+				if not self.current_class:
+					error(self.debug, "Calling super outside of Class")
+				if not self.current_class.parent.initializer:
+					error(self.debug, f"Calling super in a Class {self.current_class} whose parent class {self.current_class.parent} does not have a init() method.")
+				call_params = []
+				if ctx.arguments() and len(ctx.arguments()) > 0:
+					arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
+					for i in range(0, arguments.getChildCount(), 2):
+						call_params.append(self.visit(arguments.getChild(i)))
+				if len(self.current_class.parent.initializer.parameters) != len(call_params):
+					error(self.debug, f"Error Call. Tried to call Super Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_class.parent.initializer.parameters)}")
 
 		self.exitFull("Call")
 		return self.visitChildren(ctx)
@@ -499,7 +504,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		member_name: str = ctx.IDENTIFIER().getText()
 		if self.current_class.parent.checkFunction(member_name):
 			self.exitFull("Super")
-			return Container(self.current_class.lookupFunction(member_name), Type.FUNCTION)
+			return Container(self.current_class.lookupFunction(member_name), Type.SUPER)
 		else:
 			error(self.debug, f"Error Super. No function in hierarchy named '{member_name}'")
 
@@ -575,7 +580,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			#TODO if function.ID == "init"
 			#TODO this. variables
 			if function.ID == "init":
-				self.initing_child = True
 				self.current_class.initializer = function
 
 		self.visitChildren(ctx)
@@ -584,7 +588,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.declareFunction(function)
 		self.addSymbolToTable(function)
 		self.current_function = None
-		self.initing_child = False
 #
 		self.exit("Function")
 		return Container(function, Type.FUNCTION)
