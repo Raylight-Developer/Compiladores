@@ -103,10 +103,11 @@ class Variable:
 		self.data        : str | Class  = None
 		self.scope_depth : int  = 0
 
-		self.member     : Class = None
+		self.member    : Class = None
+		self.inherited : bool  = False
 
 	def __str__(self):
-		return f"Variable {self.ID}"
+		return f"VARIABLE '{self.ID}'"
 
 class Function_Parameter:
 	def __init__(self):
@@ -116,7 +117,7 @@ class Function_Parameter:
 		self.function : Function = None
 
 	def __str__(self):
-		return f"Function Parameter {self.ID}"
+		return f"FUNCTION PARAMETER '{self.ID}'"
 
 class Function:
 	def __init__(self):
@@ -127,9 +128,10 @@ class Function:
 		self.return_type : Type = Type.VOID
 		self.scope_depth : int  = 0
 
-		self.member     : Class  = None
+		self.member    : Class  = None
+		self.inherited : bool   = False
+
 		self.recursive  : bool   = False
-		self.inherited  : bool   = False
 		self.parameters : List[Function_Parameter] = []
 
 	def checkParameter(self, ID: str):
@@ -144,7 +146,7 @@ class Function:
 				return param
 
 	def __str__(self):
-		return f"Function {self.ID}"
+		return f"FUNCTION_OBJECT '{self.ID}'"
 
 class Class:
 	def __init__(self):
@@ -190,4 +192,4 @@ class Class:
 			return self.parent.lookupVariable(ID)
 
 	def __str__(self):
-		return f"Class {self.ID}"
+		return f"CLASS_OBJECT '{self.ID}'"

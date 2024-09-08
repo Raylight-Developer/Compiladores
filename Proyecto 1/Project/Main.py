@@ -36,14 +36,6 @@ for (var i = 0; i < 2; i = i + 1) {
 	}
 }
 
-for (var i = 1; i <= 5; i = i + 1) {
-	if (i % 2) {
-		print i + " es par";
-	} else {
-		print i + " es impar";
-	}
-}
-
 class Persona {
 	init(nombre, edad) {
 		this.nombre = nombre;
@@ -60,6 +52,7 @@ class Estudiante extends Persona {
 	init(nombre, edad, grado) {
 		super.init(nombre, edad);
 		this.grado = grado;
+		this.edad = 10;
 	}
 
 	estudiar() {

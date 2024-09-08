@@ -49,29 +49,32 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		struct = Class()
 		struct.ctx = ctx
 		struct.ID = ctx.IDENTIFIER(0).getText()
+		self.current_class = struct
+
 		if ctx.IDENTIFIER(1):
 			struct.parent = self.scope_tracker.lookupClass(ctx.IDENTIFIER(1).getText())
 			for member in struct.parent.member_functions:
 				member.member = struct
 				member.inherited = True
 				struct.member_functions.append(member)
-				self.scope_tracker.declareFunction(member, struct)
+				self.scope_tracker.declareFunction(member, struct, 1)
 				self.addSymbolToTable(member)
 
 			for member in struct.parent.member_variables:
 				member.member = struct
 				struct.member_variables.append(member)
-				self.scope_tracker.declareVariable(member, struct)
+				self.scope_tracker.declareVariable(member, struct, 1)
 				self.addSymbolToTable(member)
 
 			struct.parent = self.scope_tracker.lookupClass(ctx.IDENTIFIER(1).getText())
-
-		self.current_class = struct
 
 		self.debug << NL() << f"Declaring Class [{struct.ID}]"
 
 		members: List[Container[Function]] = self.visit(ctx.classBody())
 		for member in members:
+			for function in struct.member_functions:
+				if member.data.ID == function.ID:
+					struct.member_functions.remove(function)
 			struct.member_functions.append(member.data)
 #
 		self.scope_tracker.exitScope()
@@ -243,8 +246,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 							variable.data = assignment.data
 							variable.type = assignment.type
 
+						
+						for member in self.current_class.member_variables:
+							if member.ID == variable.ID:
+								self.current_class.member_variables.remove(member)
 						self.current_class.member_variables.append(variable)
-						self.scope_tracker.declareVariable(variable, self.current_variable)
+						self.scope_tracker.declareVariable(variable, self.current_class)
 						self.addSymbolToTable(variable)
 					else:
 						self.debug << NL() << f"Assigning to Member Variable  [{memeber_var_name}]"
@@ -444,18 +451,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						for i in range(0, arguments.getChildCount(), 2):
 							call_params.append(self.visit(arguments.getChild(i)))
 					if self.current_function.ID == "init":
-						if self.initing_child: # calling super.init
-							#self.current_class.member_variables = self.current_class.parent.member_variables
-							#self.current_class.member_functions = self.current_class.parent.member_functions
-							#if self.scope_tracker.checkClass(self.current_class.ID):
-							#for var in self.current_class.member_variables:
-								#var.member = self.current_class
-								#self.scope_tracker.declareVariable(var, self.current_class)
-							#for fun in self.current_class.member_functions:
-								#fun.member = self.current_class
-								#self.scope_tracker.declareFunction(fun, self.current_class)
-							#else:
-							#	error(self.debug, f"Error Call. Class {self.current_class.ID} not in scope tracker.")
+						if self.initing_child:
 							pass
 
 					elif self.current_function.parameters and len(self.current_function.parameters) != len(call_params):
@@ -477,7 +473,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 					error(self.debug, f"Error Call. Trying to acces undefined variable {self.current_class.ID}.{var_name}")
 			elif primary.type == Type.INSTANCE:
 				if ctx.getChildCount() > 3: # is calling a function of an instance
-					return primary
+					function : Function = self.scope_tracker.lookupFunction(ctx.IDENTIFIER(0).getText(), primary.data.data)
+					call_params = []
+					if ctx.arguments() and len(ctx.arguments()) > 0:
+						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
+						for i in range(0, arguments.getChildCount(), 2):
+							call_params.append(self.visit(arguments.getChild(i)))
+					elif function.parameters and len(function.parameters) != len(call_params):
+						error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
+					if function.parameters:
+						self.current_call = None
 				else: # is calling a variable of an instance
 					return primary
 
@@ -570,7 +575,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				function.parameters.append(parameter)
 
 		if self.current_class:
-			function.member = self.current_class.ID
+			function.member = self.current_class
 			#TODO if function.ID == "init"
 			#TODO this. variables
 			if function.ID == "init":
