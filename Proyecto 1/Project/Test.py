@@ -54,30 +54,42 @@ class Tester(QMainWindow):
 			self.log.addCode(code.strip(), 1)
 			self.log.append("}")
 			self.log.append(f"<h4>Compiling [{i}] - ({title_id})...</h4>")
-			result, output, error = self.compile(i, code, title_id)
+			result, output, error, parse_tree, full_tree = self.compile(i, code, title_id)
 			if result:
-				self.code_output.append(f"<br>{G}[{i}] - ({title_id}){RESET}")
-				self.code_output.insertPlainText(f"\n{output}\n", 1)
 				if should_pass:
 					self.log.append(f"{G}Compilation Succesful{RESET}<br>")
 					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
+					self.log.addCollapse(f"Persistent Scope [{i}] - ({title_id})", full_tree)
 					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug)
+					self.code_output.append(f"<br>{G}[{i}] - ({title_id}){RESET}")
+					self.code_output.insertPlainText(f"\n{output}\n", 1)
 				else:
 					self.title_failures.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{R}Compilation Failed{RESET}{Y}(Should fail and did not fail){RESET}")
+					self.log.addCollapse(f"Scope [{i}] - ({title_id})", parse_tree)
+					self.log.addCollapse(f"Persistent Scope [{i}] - ({title_id})", full_tree)
 					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug)
+					self.code_output.append(f"<br>{R}[{i}] - ({title_id}){RESET}")
 			else:
-				self.code_output.append(f"<br>{R}[{i}] - ({title_id}){RESET}")
-				self.code_output.insertPlainText(f"\n{output}\n", 1)
 				if should_pass == False:
 					self.title_succeses.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{G}Compilation Succesful{RESET}{Y}(Should fail and did fail){RESET}")
+					self.log.log(f"\n\t{str(self.debug).splitlines()[-1]}")
+					self.log.addCollapse(f"Scope [{i}] - ({title_id})", parse_tree)
+					self.log.addCollapse(f"Persistent Scope [{i}] - ({title_id})", full_tree)
 					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug)
+					self.code_output.append(f"<br>{G}[{i}] - ({title_id}){RESET}")
+					self.code_output.log(str(self.debug).splitlines()[-1])
 				else:
 					self.title_failures.append((i, title, expected_classes, expected_functions, expected_variables))
 					self.log.append(f"{R}Compilation Failed{RESET}")
+					self.log.log(f"\n\t{str(self.debug).splitlines()[-1]}")
+					self.log.addCollapse(f"Scope [{i}] - ({title_id})", parse_tree)
+					self.log.addCollapse(f"Persistent Scope [{i}] - ({title_id})", full_tree)
 					self.log.addCollapse(f"Debug Output [{i}] - ({title_id})", self.debug)
 					self.log.addCollapse(f"Traceback", f"{error}")
+					self.code_output.append(f"<br>{R}[{i}] - ({title_id}){RESET}")
+					self.code_output.log(str(self.debug).splitlines()[-1])
 
 			self.log.addSep()
 			self.code_output.addSep()
@@ -194,10 +206,10 @@ class Tester(QMainWindow):
 			analyzer = Semantic_Analyzer(self.debug, self.table_classes[-1], self.table_functions[-1], self.table_variables[-1], parser)
 			analyzer.visit(tree)
 
-			return True, tree.toStringTree(recog=parser), ""
+			return True, tree.toStringTree(recog=parser), "", analyzer.scope_tracker.dumpScope(), analyzer.scope_tracker.dumpScopeTree()
 
 		except Exception as e:
-			return False, e, traceback.format_exc()
+			return False, e, traceback.format_exc(), analyzer.scope_tracker.dumpScope(), analyzer.scope_tracker.dumpScopeTree()
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")

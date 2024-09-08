@@ -28,11 +28,15 @@ class Scope_Tracker:
 		self.scope_stack: List[Dict[Tag, Any]] = []
 
 		self.current_depth = 0
+		self.depth_count: Dict[int, int] = {}
+	
 		self.current_scope: Dict[Tag, Any] = {}
 		self.scope_stack.append(self.current_scope)
 		self.persistent_tree.append("Global {")
 
 	def enterScope(self):
+		self.depth_count[self.current_depth] = self.depth_count.get(self.current_depth, 0) + 1
+
 		new_scope = {}
 		self.current_depth += 1
 		self.persistent_tree.append('    ' * self.current_depth + f"{self.current_depth}" + " {")
@@ -49,6 +53,7 @@ class Scope_Tracker:
 		computed = Tag(value.ID, Type.CLASS)
 		if computed not in self.current_scope:
 			value.scope_depth = self.current_depth
+			value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
 			self.current_scope[computed] = value
 			self.persistent_tree.append('    ' * (self.current_depth + 1) + f"cls<{value.ID}> : <{value.ID}>")
 		else:
@@ -59,6 +64,7 @@ class Scope_Tracker:
 		computed = Tag(value.ID, Type.FUNCTION)
 		if computed not in self.current_scope:
 			value.scope_depth = self.current_depth
+			value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
 			self.current_scope[computed] = value
 			self.persistent_tree.append('    ' * (self.current_depth + 1) + f"fun<{value.ID}> : <{value.ID}>")
 		else:
@@ -69,6 +75,7 @@ class Scope_Tracker:
 		computed = Tag(value.ID, Type.VARIABLE)
 		if computed not in self.current_scope:
 			value.scope_depth = self.current_depth
+			value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
 			self.current_scope[computed] = value
 			self.persistent_tree.append('    ' * (self.current_depth + 1) + f"var<{value.ID}> : <{value.ID}>")
 		else:
@@ -110,7 +117,6 @@ class Scope_Tracker:
 						return member
 			if computed in scope:
 				return scope[computed]
-			
 		self.print()
 		for scope in reversed(self.scope_stack):
 			if cls:
@@ -131,27 +137,41 @@ class Scope_Tracker:
 		computed = Tag(ID, Type.FUNCTION)
 		for scope in reversed(self.scope_stack):
 			if cls:
-				struct = self.lookupClass(cls.ID)
-				for member in struct.member_functions:
+				for member in cls.member_functions:
 					if ID == member.ID:
-						return True
-			for scope in reversed(self.scope_stack):
-				if computed in scope:
-					return True
+						return False
+			if computed in scope:
+				return True
 		return False
 
 	def checkVariable(self, ID: str, cls: Class | None = None) -> bool:
 		computed = Tag(ID, Type.VARIABLE)
 		for scope in reversed(self.scope_stack):
 			if cls:
-				struct = self.lookupClass(cls.ID)
-				for member in struct.member_variables:
+				for member in cls.member_variables:
 					if ID == member.ID:
-						return True
+						return False
 			if computed in scope:
 				return True
-		self.print()
 		return False
+
+	def dumpScope(self):
+		dump: List[str] = []
+		dump.append(f"Current Scope Level: {self.current_depth}")
+		dump.append("Scope Stack:")
+		for i, scope in enumerate(self.scope_stack):
+			dump.append(f"    {i}" + " {")
+			for key, val in scope.items():
+				dump.append(f"        {key.type}<{key.ID}> : <{val}>")
+			dump.append("    }")
+		return "\n" + "\n".join(dump)
+	
+	def dumpScopeTree(self):
+		dump: List[str] = []
+		dump.append("\nPersistent Tree:")
+		dump.append("    " + "\n    ".join(self.persistent_tree))
+		dump.append("    }")
+		return "\n" + "\n".join(dump)
 
 	def print(self):
 		print(f"Current Scope Level: {self.current_depth}")

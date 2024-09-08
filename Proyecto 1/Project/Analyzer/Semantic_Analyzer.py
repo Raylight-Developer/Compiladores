@@ -55,7 +55,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			struct.parent = self.scope_tracker.lookupClass(ctx.IDENTIFIER(1).getText())
 			for member in struct.parent.member_functions:
 				member.member = struct
-				member.inherited = True
+				member.origin = "Inherited"
 				struct.member_functions.append(member)
 				self.scope_tracker.declareFunction(member)
 				self.addSymbolToTable(member)
@@ -75,6 +75,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			for function in struct.member_functions:
 				if member.data.ID == function.ID:
 					struct.member_functions.remove(function)
+					self.removeSymbolFromTable(function)
+					member.data.origin = "Override"
+					self.updateSymbolFromTable(member.data)
 			struct.member_functions.append(member.data)
 #
 		self.scope_tracker.exitScope()
@@ -199,7 +202,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		operator = ctx.getChild(1).getText()
 		right = self.visit(ctx.getChild(2))
 
-		# Si alguno de los operandos es None, algo salió mal en el procesamiento anterior
 		if left is None or right is None:
 			error(self.debug, f"Error Expression. Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
 
@@ -213,7 +215,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return left / right
 		elif operator == '%':
 			return left % right
-		# Si el operador no es reconocido, lanza una excepción
 		
 		else:
 			error(self.debug, f"Error Expression. Evaluating Expression: Unknown Operator. [{left}] {operator} [{right}]")
@@ -246,25 +247,17 @@ class Semantic_Analyzer(CompiscriptVisitor):
 							variable.data = assignment.data
 							variable.type = assignment.type
 
-						
 						for member in self.current_class.member_variables:
 							if member.ID == variable.ID:
 								self.current_class.member_variables.remove(member)
+								self.removeSymbolFromTable(member)
+								variable.origin = "Override"
+
 						self.current_class.member_variables.append(variable)
 						self.scope_tracker.declareVariable(variable)
 						self.addSymbolToTable(variable)
 					else:
-						self.debug << NL() << f"Assigning to Member Variable  [{memeber_var_name}]"
-						print(f"ASSIGN THIS  {self.current_class}")
-						error(self.debug, "ASSIGN THIS NOT IMPLEMENTED")
-						#variable = Variable()
-						#variable.ctx = ctx
-						#variable.ID = memeber_var_name
-						#variable.member = self.current_class
-						#variable.data = self.visit(ctx.assignment())
-#
-						#self.scope_tracker.declareVariable(variable, self.current_class)
-
+						error(self.debug, "NOT IMPLEMENTED")
 				else:
 					error(self.debug, "Error Assignment. There is no parent to define a variable member to.")
 			else:
@@ -272,9 +265,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				if instance.type == Type.INSTANCE:
 					if instance.data.data.checkVariable(ctx.IDENTIFIER().getText()):
 						code = self.visit(ctx.assignment()) # TODO
-						instance.data.data.lookupVariable(ctx.IDENTIFIER().getText()).data = code
+						var = instance.data.data.lookupVariable(ctx.IDENTIFIER().getText())
+						var.data = code
+						self.updateSymbolFromTable(var)
 					else:
-						print(str(instance.data.data.checkVariable()))
 						error(self.debug, f"Error Assignment. {instance.data.data.ID}.{ctx.IDENTIFIER().getText()} is not defined")
 
 		if ctx.call() is None and ctx.IDENTIFIER():
@@ -287,7 +281,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				code = self.visit(ctx.logic_or())
 
 			if self.scope_tracker.checkVariable(var_name, None):
-				self.scope_tracker.lookupVariable(var_name, None).data = code
+				var = self.scope_tracker.lookupVariable(var_name, None)
+				var.data = code
+				self.updateSymbolFromTable(var)
 			else:
 				error(self.debug, f"Error Assignment. Cannot assign value to an undeclared variable {var_name}")
  
@@ -348,7 +344,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			if not isinstance(left, Container) or not isinstance(right, Container):
 				error(self.debug, f"Error Comparison. {type(left)}({left}) {operator.replace('<', 'less').replace('>', 'greater')} {type(right)}({right})")
 			self.exitFull("Comparison")
-			return Container(f"{left.data} {operator} {right.data}", Type.BOOL)
+			return Container(f"{left.innermostCode()} {operator} {right.innermostCode()}", Type.BOOL)
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
 		self.enterFull("Term")
@@ -365,10 +361,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 			self.exitFull("Term")
 
-			if operator == '+':
-				return Container(f"({left.data} + {right.data})", operation_type)
-			elif operator == '-':
-				return Container(f"({left.data} - {right.data})", operation_type)
+			return Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
 
 		return left
 
@@ -387,7 +380,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 			self.exitFull("Factor")
 
-			return Container(f"({left.data} {operator} {right.data})", operation_type)
+			return Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
 
 		return left
 
@@ -450,18 +443,20 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
 						for i in range(0, arguments.getChildCount(), 2):
 							call_params.append(self.visit(arguments.getChild(i)))
-					if self.current_function.ID == "init":
-						if self.initing_child:
-							pass
-
-					elif self.current_function.parameters and len(self.current_function.parameters) != len(call_params):
+					#if self.current_function.ID == "init":
+					#	if self.initing_child:
+					#		pass
+						#print(f"Called Function '{self.current_function.ID}'")
+					elif len(self.current_function.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
 					if self.current_function.parameters:
 						self.current_call = None
 
-				elif self.current_function.ID == primary.ID or self.current_call == primary.ID:
+				elif self.current_function.ID == primary.data.ID or self.current_call == primary.data.ID:
 					if self.current_function:
 						self.current_function.recursive = True
+						self.updateSymbolFromTable(self.current_function)
+					print(f"Called Function '{self.current_function.ID}'")
 					return Container(None, Type.PARAMETER)
 			elif primary.type == Type.THIS: # Accesing a variable from self
 				if self.current_class is None:
@@ -479,8 +474,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
 						for i in range(0, arguments.getChildCount(), 2):
 							call_params.append(self.visit(arguments.getChild(i)))
-					elif function.parameters and len(function.parameters) != len(call_params):
-						error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
+					if len(function.parameters) != len(call_params):
+						error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(function.parameters )}")
 					if function.parameters:
 						self.current_call = None
 				else: # is calling a variable of an instance
@@ -520,13 +515,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			text = str(ctx.STRING()).strip('"')
 			return Container(text, Type.STRING)
 		elif ctx.IDENTIFIER():
-			var_name = ctx.IDENTIFIER().getText()
-			if self.current_function:
-				return Container(self.current_function.lookupParameter(var_name), Type.PARAMETER)
-			else:
-				variable = self.scope_tracker.lookupVariable(var_name, self.current_class)
+			ID = ctx.IDENTIFIER().getText()
+			if self.scope_tracker.checkVariable(ID, self.current_class):
+				variable = self.scope_tracker.lookupVariable(ID, self.current_class)
 				type = Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE
 				return Container(variable, type)
+			if self.scope_tracker.checkFunction(ID, self.current_class):
+				function = self.scope_tracker.lookupFunction(ID, self.current_class)
+				return Container(function, Type.FUNCTION)
+			if self.current_function:
+				return Container(self.current_function.lookupParameter(ID), Type.PARAMETER)
 			
 		elif ctx.array():
 			return self.visit(ctx.array())
@@ -558,6 +556,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		function = Function()
 		function.ctx = ctx
 		function.ID = ctx.IDENTIFIER().getText()
+		function.data = ctx.block().getText()
 		self.current_function = function
 
 		self.debug << NL() << f"Declaring Function [{function.ID}]"
@@ -633,6 +632,22 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.table_f.addSymbol(value)
 		elif isinstance(value, Variable):
 			self.table_v.addSymbol(value)
+
+	def removeSymbolFromTable(self, value: Class | Function | Variable):
+		if isinstance(value, Class):
+			self.table_c.removeSymbol(value)
+		elif isinstance(value, Function):
+			self.table_f.removeSymbol(value)
+		elif isinstance(value, Variable):
+			self.table_v.removeSymbol(value)
+
+	def updateSymbolFromTable(self, value: Class | Function | Variable):
+		if isinstance(value, Class):
+			self.table_c.updateSymbol(value)
+		elif isinstance(value, Function):
+			self.table_f.updateSymbol(value)
+		elif isinstance(value, Variable):
+			self.table_v.updateSymbol(value)
 
 	def enterFull(self, type: str):
 		if FULL_VIEW:

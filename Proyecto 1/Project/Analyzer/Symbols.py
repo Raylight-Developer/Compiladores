@@ -6,21 +6,21 @@ from Lace import *
 
 class Type(Enum):
 	INT = "int"
-	NONE = "nullptr"
+	NONE = "null"
 	BOOL = "bool"
 	VOID = "void"
 	ARRAY = "array"
 	FLOAT = "float"
-	STRING = "string"
+	STRING = "str"
 
-	CLASS = "class"
-	FUNCTION = "function"
-	VARIABLE = "variable"
+	CLASS = "cls"
+	FUNCTION = "fun"
+	VARIABLE = "var"
 
 	THIS = "this"
 	SUPER = "super"
 	INSTANCE = "instance"
-	PARAMETER = "parameter"
+	PARAMETER = "param"
 
 	UNKNOWN = "unknown"
 
@@ -91,6 +91,13 @@ class Container(Generic[T]):
 		self.data = data
 		self.type = type
 
+	def innermostCode(self):
+		if isinstance(self.data, Variable):
+			return self.data.innermostCode()
+		if isinstance(self.data, Container):
+			return self.data.innermostCode()
+		return self.data
+
 	def __str__(self):
 		return f"<{self.type}>({self.data})"
 
@@ -101,10 +108,17 @@ class Variable:
 		self.ID          : str  = None
 		self.type        : Type = Type.UNKNOWN
 		self.data        : str | Class  = None
-		self.scope_depth : int  = 0
 
-		self.member    : Class = None
-		self.inherited : bool  = False
+		self.scope_depth       : int = 0
+		self.scope_depth_count : int = 0
+
+		self.member : Class = None
+		self.origin : str   = "Declared"
+
+	def innermostCode(self):
+		if isinstance(self.data, Class):
+			return self.data
+		return self.data
 
 	def __str__(self):
 		return f"VARIABLE '{self.ID}'"
@@ -126,10 +140,12 @@ class Function:
 		self.ID          : str  = None
 		self.data        : str  = None
 		self.return_type : Type = Type.VOID
-		self.scope_depth : int  = 0
 
-		self.member    : Class  = None
-		self.inherited : bool   = False
+		self.scope_depth       : int = 0
+		self.scope_depth_count : int = 0
+
+		self.member : Class = None
+		self.origin : str   = "Declared"
 
 		self.recursive  : bool   = False
 		self.parameters : List[Function_Parameter] = []
@@ -153,9 +169,10 @@ class Class:
 		self.ctx         : CompiscriptParser.ClassDeclContext = None
 
 		self.ID          : str   = None
-		self.code        : str   = None
 		self.parent      : Class = None
-		self.scope_depth : int   = 0
+
+		self.scope_depth       : int = 0
+		self.scope_depth_count : int = 0
 
 		self.initializer      : Function       = None
 		self.member_functions : List[Function] = []

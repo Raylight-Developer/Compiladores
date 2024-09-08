@@ -29,10 +29,8 @@ var max = 10;
 var promedio = ( min + max ) / 2;
 var string = "Hola Mundo";
 for (var i = 0; i < 2; i = i + 1) {
-	//var i;
 	var j = 2;
 	if (j < 2) {
-		//var j;
 	}
 }
 
@@ -83,6 +81,31 @@ for (var i = 1; i <= 5; i = i + 1) {
 while (juan.edad < 25) {
 	juan.edad = juan.edad + 1;
 	print "Edad de Juan: " + juan.edad;
+}
+
+//Error
+
+for (var i = 0; i < 2; i = i + 1) {
+	var i;
+	var j = 2;
+	if (j < 2) {
+		var j;
+	}
+}
+
+juan.saludar("Hola");    // Error
+juan.estudiar(125);   // Error
+
+class Tester extends Persona {
+	init(nombre, edad, grado, penco) {
+		super.init(nombre, edad, grado);
+		this.grado = grado;
+		this.edad = 10;
+	}
+
+	estudiar(hola) {
+		print this.nombre + " esta estudiando en " + this.grado + " grado.";
+	}
 }
 
 """).strip())
