@@ -7,13 +7,9 @@ declaration     : classDecl
                 | varDecl
                 | statement ;
 
-classDecl       : 'class' IDENTIFIER ('extends' IDENTIFIER)? '{' classBody '}' ;
-
-classBody       : classMember* ;
-classMember     : function ;
-
+classDecl       : 'class' IDENTIFIER ('extends' IDENTIFIER)? '{' function* '}' ;
 funDecl         : 'fun' function ;
-varDecl         : 'var' variable ;
+varDecl         : 'var' IDENTIFIER ('=' expression)? ';' ;
 
 statement       : exprStmt
                 | forStmt
@@ -38,8 +34,8 @@ expression      : assignment
 assignment      : (call '.')? IDENTIFIER '=' assignment
                 | logic_or;
 
-logic_or        : logic_and (('or' | '||') logic_and)* ;
-logic_and       : equality (('and' | '&&') equality)* ;
+logic_or        : logic_and ('or' logic_and)* ;
+logic_and       : equality ('and' equality)* ;
 equality        : comparison (( '!=' | '==' ) comparison)* ;
 comparison      : term (( '>' | '>=' | '<' | '<=' ) term)* ;
 term            : factor (( '-' | '+' ) factor)* ;
@@ -53,15 +49,12 @@ unary           : ( '!' | '-' ) unary
 call            : primary ( '(' arguments? ')' | '.' IDENTIFIER | '[' expression ']')* 
                 | funAnon;
 
-superCall       :      'super' '.' IDENTIFIER;
-
 primary         : 'true' | 'false' | 'nil' | 'this'
                 | NUMBER | STRING | IDENTIFIER | '(' expression ')'
-                | superCall
-                | array | instantiation ;
+                | 'super' '.' IDENTIFIER 
+                | array | instantiation;
 
 function        : IDENTIFIER '(' parameters? ')' block ;
-variable        : IDENTIFIER ( '=' expression )? ';' ;
 parameters      : IDENTIFIER ( ',' IDENTIFIER )* ;
 arguments       : expression ( ',' expression )* ;
 
@@ -72,4 +65,3 @@ fragment ALPHA  : [a-zA-Z_] ;
 fragment DIGIT  : [0-9] ;
 WS              : [ \t\r\n]+ -> skip ;
 ONE_LINE_COMMENT: '//' (~ '\n')* '\n'? -> skip;
-MULTI_LINE_COMMENT: '/*' .*? '*/' -> skip;  // This is the new rule for multi-line comments
