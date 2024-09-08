@@ -28,9 +28,12 @@ var min = 0;
 var max = 10;
 var promedio = ( min + max ) / 2;
 var string = "Hola Mundo";
-for (var i = 0; i < 2; i = i + 1) {
-	var j = 2;
-	if (j < 2) {
+
+for (var i = 1; i <= 5; i = i + 1) {
+	if (i % 2 == 0) {
+		print i + " es par";
+	} else {
+		print i + " es impar";
 	}
 }
 
@@ -84,7 +87,7 @@ while (juan.edad < 25) {
 }
 
 //Error
-
+/*
 class Tester extends Persona {
 	init(nombre, edad, grado, penco) {
 		super.init(nombre, edad, grado);
@@ -97,14 +100,14 @@ class Tester extends Persona {
 	}
 }
 
-//for (var i = 0; i < 2; i = i + 1) {
-//	var i;
-//	var j = 2;
-//	if (j < 2) {
-//		var j;
-//	}
-//}
-
+for (var i = 0; i < 2; i = i + 1) {
+	var i;
+	var j = 2;
+	if (j < 2) {
+		var j;
+	}
+}
+*/
 """).strip())
 
 		self.code_output = Logger()
