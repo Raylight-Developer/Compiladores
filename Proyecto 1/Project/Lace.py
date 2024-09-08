@@ -3,6 +3,7 @@ from io import StringIO
 
 def error(debug: 'Lace', message: str):
 	debug << NL() << ERROR() << str(message).replace("<", "⟪").replace(">", "⟫") << END()
+	print("\n\n" + message)
 	raise Exception(str(message).replace("<", "⟪").replace(">", "⟫"))
 
 class Lace:

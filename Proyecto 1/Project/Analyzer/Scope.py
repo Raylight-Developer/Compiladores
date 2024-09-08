@@ -8,8 +8,8 @@ class Scope:
 	def __init__(self, parent: 'Scope' = None):
 		self.parent: Scope = parent
 		self.classes   : BiMap[str, Class]    = BiMap()
-		self.functions : BiMap[Union[None, str], BiMap[str, Function]] = BiMap()
-		self.variables : BiMap[Union[None, str], BiMap[str, Variable]] = BiMap()
+		self.functions : BiMap[None | str, BiMap[str, Function]] = BiMap()
+		self.variables : BiMap[None | str, BiMap[str, Variable]] = BiMap()
 		self.functions.add(None, BiMap()) # Non-Member
 		self.variables.add(None, BiMap()) # Non-Member
 
@@ -190,52 +190,150 @@ class Scope:
 
 		return current
 
+class Tag:
+	def __init__(self, ID: str = "", type: Type = Type.NONE):
+		self.ID = ID
+		self.type = type
+
+	def __eq__(self, other: 'Tag'):
+		if self.ID == other.ID and self.type == other.type:
+			return True
+		return False
+	
+	def __hash__(self):
+		return hash(f"{self.type}.{self.ID}")
+
+	def __str__(self):
+		return f"{self.ID} {self.type}"
+
 class Scope_Tracker:
 	def __init__(self, debug: Lace):
-		self.global_classes   : BiMap[str, Class]    = BiMap()
-		self.global_functions : BiMap[str, Function] = BiMap()
-		self.global_variables : BiMap[str, Variable] = BiMap()
-
 		self.debug = debug
-		self.global_scope = Scope()
-		self.current_scope = self.global_scope
+		
+		self.persistent_tree: List[str] = []
+		self.scope_stack: List[Dict[Tag, Any]] = []
+
+		self.current_depth = 0
+		self.current_scope: Dict[Tag, Any] = {}
+		self.scope_stack.append(self.current_scope)
+		self.persistent_tree.append("Global {")
 
 	def enterScope(self):
-		self.current_scope = Scope(self.current_scope)
+		new_scope = {}
+		self.current_depth += 1
+		self.persistent_tree.append('    ' * self.current_depth + f"{self.current_depth}" + " {")
+		self.scope_stack.append(new_scope)
+		self.current_scope = new_scope
 
 	def exitScope(self):
-		if self.current_scope.parent is not None:
-			self.current_scope = self.current_scope.parent
-		else:
-			error(self.debug, "Attempted to exit global scope")
+		self.scope_stack.pop()
+		self.persistent_tree.append('    ' * self.current_depth + "}")
+		self.current_depth -= 1
+		self.current_scope = self.scope_stack[-1]
 
-	def declareClass(self, struct: Class):
-		self.current_scope.declareClass(struct, self.debug)
-	def checkClass(self, ID: str):
-		return self.current_scope.checkClass(ID, self.debug)
-	def lookupClass(self, ID: str):
-		if self.checkClass(ID):
-			return self.current_scope.lookupClass(ID, self.debug)
+	def declareClass(self, value: Class):
+		computed = Tag(value.ID, Type.CLASS)
+		if computed not in self.current_scope:
+			self.current_scope[computed] = value
+			self.persistent_tree.append('    ' * (self.current_depth + 1) + f"cls<{value.ID}> : <{value.ID}>")
 		else:
-			error(self.debug, f"Class '{ID}' does Not Exist")
-	def declareFunction(self, function: Function, parent: Class | None, scope_offset: int = 0):
-		self.current_scope.declareFunction(function, parent, self.debug, scope_offset)
-	def checkFunction(self, ID: str, parent: Class | None):
-		return self.current_scope.checkFunction(ID, parent, self.debug)
-	def lookupFunction(self, ID: str, parent: Class | None):
-		if self.checkFunction(ID, parent):
-			return self.current_scope.lookupFunction(ID, parent, self.debug)
+			self.print()
+			error(self.debug, f"Class '{value.ID}' Redefinition not allowed")
+
+	def declareFunction(self, value: Function):
+		computed = Tag(value.ID, Type.FUNCTION)
+		if computed not in self.current_scope:
+			self.current_scope[computed] = value
+			self.persistent_tree.append('    ' * (self.current_depth + 1) + f"var<{value.ID}> : <{value.ID}>")
 		else:
-			print(f"Scope: {parent.ID}")
-			self.current_scope.dumpClasses()
-			self.current_scope.dumpFunctionScope()
-			error(self.debug, f"Function '{ID}' does Not Exist in scope {parent.ID if parent else 'Global'}")
-	def declareVariable(self, variable: Variable, parent: Class | None, scope_offset: int = 0):
-		self.current_scope.declareVariable(variable, parent, self.debug, scope_offset)
-	def checkVariable(self, ID: str, parent: Class | None):
-		return self.current_scope.checkVariable(ID, parent, self.debug)
-	def lookupVariable(self, ID: str, parent: Class | None):
-		if self.checkVariable(ID, parent):
-			return self.current_scope.lookupVariable(ID, parent, self.debug)
+			self.print()
+			error(self.debug, f"Function '{value.ID}' Redefinition not allowed")
+
+	def declareVariable(self, value: Variable):
+		computed = Tag(value.ID, Type.VARIABLE)
+		if computed not in self.current_scope:
+			self.current_scope[computed] = value
+			self.persistent_tree.append('    ' * (self.current_depth + 1) + f"fun<{value.ID}> : <{value.ID}>")
 		else:
-			error(self.debug, f"Variable '{ID}' does Not Exist in scope {parent.ID if parent else 'Global'}")
+			self.print()
+			error(self.debug, f"Variable '{value.ID}' Redefinition not allowed")
+
+	def lookupClass(self, ID: str) -> Class:
+		computed = Tag(ID, Type.CLASS)
+		for scope in reversed(self.scope_stack):
+			if computed in scope:
+				return scope[computed]
+		self.print()
+		error(self.debug, f"Class {type(ID)}b'{ID}' not in Scope  {self.current_depth}")
+
+	def lookupFunction(self, ID: str, cls: Class | None = None) -> Function:
+		computed = Tag(ID, Type.FUNCTION)
+		for scope in reversed(self.scope_stack):
+			if cls:
+				struct = self.lookupClass(cls.ID)
+				for member in struct.member_functions:
+					if ID == member.ID:
+						return member
+			if computed in scope:
+				return scope[computed]
+		self.print()
+		error(self.debug, f"Function '{ID}' not in Scope {cls if cls else 'Global'}")
+
+	def lookupVariable(self, ID: str, cls: Class | None = None) -> Variable:
+		computed = Tag(ID, Type.VARIABLE)
+		for scope in reversed(self.scope_stack):
+			if cls:
+				struct = self.lookupClass(cls.ID)
+				for member in struct.member_variables:
+					if ID == member.ID:
+						return member
+			if computed in scope:
+				return scope[computed]
+		self.print()
+		error(self.debug, f"Variable '{ID}' not in Scope {cls if cls else 'Global'}")
+
+	def checkClass(self, ID: str) -> bool:
+		computed = Tag(ID, Type.CLASS)
+		for scope in reversed(self.scope_stack):
+			if computed in scope:
+				return True
+		return False
+
+	def checkFunction(self, ID: str, cls: Class | None = None) -> bool:
+		computed = Tag(ID, Type.FUNCTION)
+		for scope in reversed(self.scope_stack):
+			if cls:
+				struct = self.lookupClass(cls.ID)
+				for member in struct.member_functions:
+					if ID == member.ID:
+						return True
+			for scope in reversed(self.scope_stack):
+				if computed in scope:
+					return True
+		return False
+
+	def checkVariable(self, ID: str, cls: Class | None = None) -> bool:
+		computed = Tag(ID, Type.VARIABLE)
+		for scope in reversed(self.scope_stack):
+			if cls:
+				struct = self.lookupClass(cls.ID)
+				for member in struct.member_variables:
+					if ID == member.ID:
+						return True
+			if computed in scope:
+				return True
+		self.print()
+		return False
+
+	def print(self):
+		print(f"Current Scope Level: {self.current_depth}")
+		print("Scope Stack:")
+		for i, scope in enumerate(self.scope_stack):
+			print(f"    {i}" + " {")
+			for key, val in scope.items():
+				print(f"        {key.type}<{key.ID}> : <{val}>")
+			print("    }")
+
+		print("\nPersistent Tree:")
+		print("    " + "\n    ".join(self.persistent_tree))
+		print("    }")

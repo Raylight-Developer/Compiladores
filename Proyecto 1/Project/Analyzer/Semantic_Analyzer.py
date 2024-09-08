@@ -57,13 +57,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				member.member = struct
 				member.inherited = True
 				struct.member_functions.append(member)
-				self.scope_tracker.declareFunction(member, struct, 1)
+				self.scope_tracker.declareFunction(member)
 				self.addSymbolToTable(member)
 
 			for member in struct.parent.member_variables:
 				member.member = struct
 				struct.member_variables.append(member)
-				self.scope_tracker.declareVariable(member, struct, 1)
+				self.scope_tracker.declareVariable(member)
 				self.addSymbolToTable(member)
 
 			struct.parent = self.scope_tracker.lookupClass(ctx.IDENTIFIER(1).getText())
@@ -251,7 +251,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 							if member.ID == variable.ID:
 								self.current_class.member_variables.remove(member)
 						self.current_class.member_variables.append(variable)
-						self.scope_tracker.declareVariable(variable, self.current_class)
+						self.scope_tracker.declareVariable(variable)
 						self.addSymbolToTable(variable)
 					else:
 						self.debug << NL() << f"Assigning to Member Variable  [{memeber_var_name}]"
@@ -522,17 +522,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.IDENTIFIER():
 			var_name = ctx.IDENTIFIER().getText()
 			if self.current_function:
-				if self.current_function.checkParameter(var_name):
-					return Container(self.current_function.lookupParameter(var_name), Type.PARAMETER)
-				error(self.debug, f"Error Primary. Parameter '{var_name}' not defined.")
+				return Container(self.current_function.lookupParameter(var_name), Type.PARAMETER)
 			else:
-				if self.scope_tracker.checkVariable(var_name, self.current_class):
-					variable = self.scope_tracker.lookupVariable(var_name, self.current_class)
-					type = Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE
-					return Container(variable, type)
-				else:
-					error(self.debug, f"Error Primary. Variable '{var_name}' out of scope.")
-
+				variable = self.scope_tracker.lookupVariable(var_name, self.current_class)
+				type = Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE
+				return Container(variable, type)
+			
 		elif ctx.array():
 			return self.visit(ctx.array())
 		elif ctx.instantiation():
@@ -585,7 +580,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.visitChildren(ctx)
 #
 		self.scope_tracker.exitScope()
-		self.scope_tracker.declareFunction(function, self.current_class)
+		self.scope_tracker.declareFunction(function)
 		self.addSymbolToTable(function)
 		self.current_function = None
 		self.initing_child = False
@@ -612,7 +607,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.debug << NL() << f"Declaring Variable [{variable.ID}]"
 #
-		self.scope_tracker.declareVariable(variable, None)
+		self.scope_tracker.declareVariable(variable)
 		self.addSymbolToTable(variable)
 #
 		self.exit("Variable")
@@ -631,7 +626,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			arguments.append(self.visit(expr))  # Visit and evaluate each expression
 		return arguments
 
-	def addSymbolToTable(self, value: Union[Class | Function | Variable]):
+	def addSymbolToTable(self, value: Class | Function | Variable):
 		if isinstance(value, Class):
 			self.table_c.addSymbol(value)
 		elif isinstance(value, Function):
@@ -657,7 +652,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.debug -= 1
 		self.debug << NL() << "EXIT  " + type
 
-	def nodeTree(self, ctx: Union[ParserRuleContext]):
+	def nodeTree(self, ctx: ParserRuleContext):
 		node_id = f"node{self.count}"
 		self.count += 1
 

@@ -20,7 +20,7 @@ class Symbol_Table(QTableWidget):
 		self.setColumnCount(len(self.columns))
 		self.setHorizontalHeaderLabels(self.columns)
 
-	def addSymbol(self, value: Union[Class | Function | Variable]):
+	def addSymbol(self, value: Class | Function | Variable):
 		row = self.rowCount()
 		self.setRowCount(row + 1)
 

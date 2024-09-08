@@ -7,7 +7,7 @@ import sys
 import os
 import re
 
-from typing import List, Dict, Tuple, Set, Union, Generic, TypeVar
+from typing import List, Dict, Tuple, Set, Union, Generic, TypeVar, Any
 from enum import Enum
 
 from PySide6.QtWidgets import QWidget
