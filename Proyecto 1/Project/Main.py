@@ -93,9 +93,6 @@ for (var i = 0; i < 2; i = i + 1) {
 	}
 }
 
-juan.saludar("Hola");    // Error
-juan.estudiar(125);   // Error
-
 class Tester extends Persona {
 	init(nombre, edad, grado, penco) {
 		super.init(nombre, edad, grado);

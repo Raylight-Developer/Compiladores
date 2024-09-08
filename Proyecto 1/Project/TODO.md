@@ -1,4 +1,4 @@
-calling function with more args than it accepts
+calling super.function with more args than it accepts
 
 for (var i = 0; i < 2; i = i + 1) {
 	var i;

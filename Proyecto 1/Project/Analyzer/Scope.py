@@ -51,36 +51,35 @@ class Scope_Tracker:
 
 	def declareClass(self, value: Class):
 		computed = Tag(value.ID, Type.CLASS)
-		if computed not in self.current_scope:
-			value.scope_depth = self.current_depth
-			value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-			self.current_scope[computed] = value
-			self.persistent_tree.append('    ' * (self.current_depth + 1) + f"cls<{value.ID}> : <{value.ID}>")
-		else:
+		if self.checkClass(value.ID):
 			self.print()
 			error(self.debug, f"Class '{value.ID}' Redefinition not allowed")
+		value.scope_depth = self.current_depth
+		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
+		self.current_scope[computed] = value
+		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"cls<{value.ID}> : <{value.ID}>")
 
 	def declareFunction(self, value: Function):
 		computed = Tag(value.ID, Type.FUNCTION)
-		if computed not in self.current_scope:
-			value.scope_depth = self.current_depth
-			value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-			self.current_scope[computed] = value
-			self.persistent_tree.append('    ' * (self.current_depth + 1) + f"fun<{value.ID}> : <{value.ID}>")
-		else:
+		if not value.member and self.checkFunction(value.ID):
 			self.print()
 			error(self.debug, f"Function '{value.ID}' Redefinition not allowed")
 
+		value.scope_depth = self.current_depth
+		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
+		self.current_scope[computed] = value
+		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"fun<{value.ID}> : <{value.ID}>")
+
 	def declareVariable(self, value: Variable):
 		computed = Tag(value.ID, Type.VARIABLE)
-		if computed not in self.current_scope:
-			value.scope_depth = self.current_depth
-			value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-			self.current_scope[computed] = value
-			self.persistent_tree.append('    ' * (self.current_depth + 1) + f"var<{value.ID}> : <{value.ID}>")
-		else:
+		if not value.member and self.checkVariable(value.ID):
 			self.print()
 			error(self.debug, f"Variable '{value.ID}' Redefinition not allowed")
+
+		value.scope_depth = self.current_depth
+		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
+		self.current_scope[computed] = value
+		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"var<{value.ID}> : <{value.ID}>")
 
 	def lookupClass(self, ID: str) -> Class:
 		computed = Tag(ID, Type.CLASS)

@@ -35,7 +35,7 @@ class Symbol_Table(QTableWidget):
 		elif isinstance(value, Function):
 			self.setItem(row, 0, QTableWidgetItem(str(value.ID)))
 			self.setItem(row, 1, QTableWidgetItem(value.member.ID if value.member else "Global"))
-			self.setItem(row, 2, QTableWidgetItem(str(value.scope_depth_count)))
+			self.setItem(row, 2, QTableWidgetItem(str(value.scope_depth_count if not value.member else "-")))
 			self.setItem(row, 3, QTableWidgetItem(str(value.scope_depth) if not value.member else "-"))
 			self.setItem(row, 4, QTableWidgetItem(value.return_type.value))
 			self.setItem(row, 5, QTableWidgetItem(value.origin))
@@ -44,7 +44,7 @@ class Symbol_Table(QTableWidget):
 		elif isinstance(value, Variable):
 			self.setItem(row, 0, QTableWidgetItem(str(value.ID)))
 			self.setItem(row, 1, QTableWidgetItem(value.member.ID if value.member else "Global"))
-			self.setItem(row, 2, QTableWidgetItem(str(value.scope_depth_count)))
+			self.setItem(row, 2, QTableWidgetItem(str(value.scope_depth_count) if not value.member else "-"))
 			self.setItem(row, 3, QTableWidgetItem(str(value.scope_depth) if not value.member else "-"))
 			self.setItem(row, 4, QTableWidgetItem(value.type.value))
 			self.setItem(row, 5, QTableWidgetItem(value.origin))
@@ -78,7 +78,7 @@ class Symbol_Table(QTableWidget):
 
 			elif isinstance(value, Function):
 				if (self.item(row, 0).text() == value.ID and self.item(row, 1).text() == (value.member.ID if value.member else "Global")):
-					self.setItem(row, 2, QTableWidgetItem(str(value.scope_depth_count)))
+					self.setItem(row, 2, QTableWidgetItem(str(value.scope_depth_count) if not value.member else "-"))
 					self.setItem(row, 3, QTableWidgetItem(str(value.scope_depth) if not value.member else "-"))
 					self.setItem(row, 4, QTableWidgetItem(value.return_type.value))
 					self.setItem(row, 5, QTableWidgetItem(value.origin))
@@ -89,7 +89,7 @@ class Symbol_Table(QTableWidget):
 			elif isinstance(value, Variable):
 				# Check for matching ID and member
 				if (self.item(row, 0).text() == value.ID and self.item(row, 1).text() == (value.member.ID if value.member else "Global")):
-					self.setItem(row, 2, QTableWidgetItem(str(value.scope_depth_count)))
+					self.setItem(row, 2, QTableWidgetItem(str(value.scope_depth_count) if not value.member else "-"))
 					self.setItem(row, 3, QTableWidgetItem(str(value.scope_depth) if not value.member else "-"))
 					self.setItem(row, 4, QTableWidgetItem(value.type.value))
 					self.setItem(row, 5, QTableWidgetItem(value.origin))
