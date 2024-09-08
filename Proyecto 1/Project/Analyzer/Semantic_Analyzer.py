@@ -484,7 +484,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 					if function.parameters:
 						self.current_call = None
 				else: # is calling a variable of an instance
-					return self.scope_tracker.lookupVariable(ctx.IDENTIFIER(0).getText(), primary.data.data)
+					return Container(self.scope_tracker.lookupVariable(ctx.IDENTIFIER(0).getText(), primary.data.data), Type.VARIABLE)
 
 		self.exitFull("Call")
 		return self.visitChildren(ctx)

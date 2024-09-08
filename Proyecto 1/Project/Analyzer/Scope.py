@@ -93,6 +93,12 @@ class Scope_Tracker:
 			if computed in scope:
 				return scope[computed]
 		self.print()
+		for scope in reversed(self.scope_stack):
+			if cls:
+				for member in cls.member_variables:
+					print(f"if {type(ID)}{ID} == {type(member.ID)}{member.ID}")
+			if computed in scope:
+				print(f"{computed}")
 		error(self.debug, f"Function '{ID}' not in Scope {cls.ID if cls else 'Global'}")
 
 	def lookupVariable(self, ID: str, cls: Class | None = None) -> Variable:
@@ -104,7 +110,14 @@ class Scope_Tracker:
 						return member
 			if computed in scope:
 				return scope[computed]
+			
 		self.print()
+		for scope in reversed(self.scope_stack):
+			if cls:
+				for member in cls.member_variables:
+					print(f"if {type(ID)}{ID} == {type(member.ID)}{member.ID}")
+			if computed in scope:
+				print(f"{computed}")
 		error(self.debug, f"Variable '{ID}' not in Scope {cls.ID if cls else 'Global'}")
 
 	def checkClass(self, ID: str) -> bool:
