@@ -343,6 +343,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			right: Container = self.visit(ctx.comparison(i))
 			if not isinstance(left, Container) or not isinstance(right, Container):
 				error(self.debug, f"Error Equality. {type(left)}({left}) {operator} {type(right)}({right})")
+			comparisonCheck(self.debug, left, operator, right)
 			self.exitFull("Equality")
 			return Container(f"({left.data} {operator} {right.data})", Type.BOOL)
 
@@ -360,6 +361,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			right: Container = self.visit(ctx.term(i))
 			if not isinstance(left, Container) or not isinstance(right, Container):
 				error(self.debug, f"Error Comparison. {type(left)}({left}) {operator.replace('<', 'less').replace('>', 'greater')} {type(right)}({right})")
+			comparisonCheck(self.debug, left, operator, right)
 			self.exitFull("Comparison")
 			return Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", Type.BOOL)
 
@@ -494,19 +496,53 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						return Container(self.current_class.lookupVariable(var_name), Type.VARIABLE)
 					error(self.debug, f"Error Call. Trying to acces undefined variable {self.current_class.ID}.{var_name}")
 			elif primary.type == Type.INSTANCE:
-				if ctx.getChildCount() > 3: # is calling a function of an instance
-					function : Function = self.scope_tracker.lookupFunction(ctx.IDENTIFIER(0).getText(), primary.data.data)
-					call_params = []
-					if ctx.arguments() and len(ctx.arguments()) > 0:
-						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
-						for i in range(0, arguments.getChildCount(), 2):
-							call_params.append(self.visit(arguments.getChild(i)))
-					if len(function.parameters) != len(call_params):
-						error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(function.parameters )}")
-					if function.parameters:
+				child_count = ctx.getChildCount()
+				# Verify if there is a nested call or variable
+				if child_count > 3:  # Checks if there are more elements indicating a chain
+					current_instance: Class | Variable | Function = primary.data.data  # Start with the first instance
+					for i in range(2, child_count, 2):  # Iterate over each chained element (assuming format: instance '.' member)
+						member_name = ctx.getChild(i).getText()  # Extract member name
+						if isinstance(current_instance, Variable):
+							return Container(current_instance, Type.VARIABLE)
+						
+						if i + 1 < child_count and ctx.getChild(i + 1).getText() == '(':  # It's a function call
+							function = self.scope_tracker.lookupFunction(member_name, current_instance)
+							call_params = []
+							if ctx.arguments() and len(ctx.arguments()) > 0:
+								arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
+								for j in range(0, arguments.getChildCount(), 2):
+									call_params.append(self.visit(arguments.getChild(j)))
+							
+							# Check if the parameters match the function definition
+							if len(function.parameters) != len(call_params):
+								error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(function.parameters)}")
+							
+							# Move to the next instance for further chained calls, if any
+							if function.return_type == Type.VOID:
+								break
+							current_instance = function.return_type  # Update the current instance to function's return type
+						else:  # It's a variable access
+							variable = self.scope_tracker.lookupVariable(member_name, current_instance)
+							current_instance = variable  # Update current instance to variable's type
+
+					return Container(current_instance, Type.INSTANCE)
+				
+				else:  # Single function call or variable access
+					member_name = ctx.IDENTIFIER(0).getText()
+					if ctx.getChild(2).getText() == '(':  # Function call
+						function = self.scope_tracker.lookupFunction(member_name, primary.data.data)
+						call_params = []
+						if ctx.arguments() and len(ctx.arguments()) > 0:
+							arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
+							for i in range(0, arguments.getChildCount(), 2):
+								call_params.append(self.visit(arguments.getChild(i)))
+						if len(function.parameters) != len(call_params):
+							error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(function.parameters)}")
 						self.current_call = None
-				else: # is calling a variable of an instance
-					return Container(self.scope_tracker.lookupVariable(ctx.IDENTIFIER(0).getText(), primary.data.data), Type.VARIABLE)
+						return function  # Return the called function
+					else:  # Variable access
+						return Container(self.scope_tracker.lookupVariable(member_name, primary.data.data), Type.VARIABLE)
+			
 			elif primary.type == Type.SUPER:
 				if not self.current_class:
 					error(self.debug, "Calling super outside of Class")

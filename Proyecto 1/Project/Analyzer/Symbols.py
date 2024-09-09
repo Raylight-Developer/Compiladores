@@ -86,6 +86,54 @@ def operationType(debug: Lace, left: 'Container', operator: str, right: 'Contain
 			error(debug, f"Cannot operate Unkown Types {type(left)}({left}) {operator} {type(right)}({right})")
 	error(debug, f"Cannot operate Unkown Types {type(left)}({left}) {operator} {type(right)}({right})")
 
+def comparisonCheck(debug: Lace, left: 'Container', operator: str, right: 'Container'):
+	if isinstance(left, Container) and isinstance(right, Container):
+		if operator not in ['<=', '<', '>=', '>', '==', '!=']:
+			error(debug, f"Invalid comparison operator: {operator}")
+		if operator in ['<=', '<', '>=', '>']:
+			if left.type == Type.INT and right.type == Type.INT:
+				return True
+			if left.type == Type.FLOAT and right.type == Type.INT:
+				return True
+			if left.type == Type.INT and right.type == Type.FLOAT:
+				return True
+			if left.type == Type.FLOAT and right.type == Type.FLOAT:
+				return True
+			
+			if left.type == Type.VARIABLE and right.type == Type.VARIABLE:
+				return comparisonCheck(debug, Container(left.data.data, left.data.type), operator, Container(right.data.data, right.data.type))
+			if left.type == Type.VARIABLE and right.type != Type.VARIABLE:
+				return comparisonCheck(debug, Container(left.data.data, left.data.type), operator, right)
+			if left.type != Type.VARIABLE and right.type == Type.VARIABLE:
+				return comparisonCheck(debug, left, operator, Container(right.data.data, right.data.type))
+		
+			if left.type == Type.INSTANCE and right.type == Type.INSTANCE:
+				return comparisonCheck(debug, Container(left.data.data, left.data.type), operator, Container(right.data.data, right.data.type))
+			if left.type == Type.INSTANCE and right.type != Type.INSTANCE:
+				return comparisonCheck(debug, Container(left.data.data, left.data.type), operator, right)
+			if left.type != Type.INSTANCE and right.type == Type.INSTANCE:
+				return comparisonCheck(debug, left, operator, Container(right.data.data, right.data.type))
+			error(debug, f"Cannot operate Types <{left.type}>({left.data}) {operator} <{right.type}>({right.data})")
+		else:
+			if left.type == Type.VARIABLE and right.type == Type.VARIABLE:
+				return comparisonCheck(debug, Container(left.data.data, left.data.type), operator, Container(right.data.data, right.data.type))
+			if left.type == Type.VARIABLE and right.type != Type.VARIABLE:
+				return comparisonCheck(debug, Container(left.data.data, left.data.type), operator, right)
+			if left.type != Type.VARIABLE and right.type == Type.VARIABLE:
+				return comparisonCheck(debug, left, operator, Container(right.data.data, right.data.type))
+		
+			if left.type == Type.INSTANCE and right.type == Type.INSTANCE:
+				return comparisonCheck(debug, Container(left.data.data, left.data.type), operator, Container(right.data.data, right.data.type))
+			if left.type == Type.INSTANCE and right.type != Type.INSTANCE:
+				return comparisonCheck(debug, Container(left.data.data, left.data.type), operator, right)
+			if left.type != Type.INSTANCE and right.type == Type.INSTANCE:
+				return comparisonCheck(debug, left, operator, Container(right.data.data, right.data.type))
+
+			if left.type != right.type:
+				error(debug, f"Cannot compare different Types <{left.type}>({left.data}) {operator} <{right.type}>({right.data})")
+			return True
+	error(debug, f"Cannot compare Unkown Types {type(left)}({left}) {operator} {type(right)}({right})")
+
 T = TypeVar('T')
 class Container(Generic[T]):
 	def __init__(self, data: Union[str, int, float, bool, 'Class', 'Function', 'Variable', None], type: Type):

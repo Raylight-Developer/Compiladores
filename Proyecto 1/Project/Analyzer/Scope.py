@@ -111,7 +111,7 @@ class Scope_Tracker:
 		self.print()
 		for scope in reversed(self.scope_stack):
 			if cls:
-				for member in cls.member_variables:
+				for member in cls.member_functions:
 					print(f"if {type(ID)}{ID} == {type(member.ID)}{member.ID}")
 			if computed in scope:
 				print(f"{computed}")

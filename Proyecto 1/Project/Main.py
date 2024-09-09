@@ -61,6 +61,12 @@ class Estudiante extends Persona {
 	}
 }
 
+class Test {
+	init() {
+		this.nested_class = new Estudiante("Peko", 10, 20);
+	}
+}
+
 fun estudiar() {
 	print " esta estudiando en grado.";
 }
