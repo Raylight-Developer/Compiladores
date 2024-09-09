@@ -11,16 +11,17 @@ class Type(Enum):
 	VOID = "void"
 	ARRAY = "array"
 	FLOAT = "float"
-	STRING = "str"
+	STRING = "string"
 
-	CLASS = "cls"
-	FUNCTION = "fun"
-	VARIABLE = "var"
+	CLASS = "class"
+	FUNCTION = "function"
+	VARIABLE = "variable"
 
 	THIS = "this"
 	SUPER = "super"
+	FUN_ANON = "anon_function"
 	INSTANCE = "instance"
-	PARAMETER = "param"
+	PARAMETER = "parameter"
 
 	UNKNOWN = "unknown"
 

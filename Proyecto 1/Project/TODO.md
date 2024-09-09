@@ -1,11 +1,3 @@
-calling super.function with more args than it accepts
+RETURN Type
 
-for (var i = 0; i < 2; i = i + 1) {
-	var i;
-	var j = 2;
-	if (j < 2) {
-		//var j;
-	}
-}
-
-var i; is multiply defined
+Fun Anon

@@ -81,6 +81,16 @@ class Scope_Tracker:
 		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"var<{value.ID}> : <{value.ID}>")
 
+	def declareAnonFunction(self, value: Function):
+		computed = Tag(value.ID, Type.FUN_ANON)
+		while self.checkFunction(computed.ID):
+			computed.ID = computed.ID + "1"
+
+		value.scope_depth = self.current_depth
+		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
+		self.current_scope[computed] = value
+		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"anon_fun<{value.ID}> : <{value.ID}>")
+
 	def lookupClass(self, ID: str) -> Class:
 		computed = Tag(ID, Type.CLASS)
 		for scope in reversed(self.scope_stack):

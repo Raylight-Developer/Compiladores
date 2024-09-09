@@ -23,7 +23,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.graph = Digraph()
 		self.scope_tracker = Scope_Tracker(debug)
 
-		self.anonymous_counter : int = 0
 		self.current_call      : str = None
 
 		self.current_class    : Class    = None
@@ -40,6 +39,51 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitDeclaration(self, ctx:CompiscriptParser.DeclarationContext):
 		return self.visitChildren(ctx)
+
+	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext):
+		return self.visitChildren(ctx)
+
+	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
+		return self.visitChildren(ctx)
+
+	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
+		return self.visitChildren(ctx)
+
+	def visitExprStmt(self, ctx:CompiscriptParser.ExprStmtContext):
+		return self.visitChildren(ctx)
+
+	def visitPrintStmt(self, ctx:CompiscriptParser.PrintStmtContext):
+		return self.visitChildren(ctx)
+
+	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
+		"""Create Scoped Lambda-ish Function"""
+		self.enter("Anon Function")
+		self.scope_tracker.enterScope()
+
+		function = Function()
+		function.ctx = ctx
+		function.ID = "ANON"
+		function.data = ctx.block().getText()
+		self.current_function = function
+
+		self.debug << NL() << f"Declaring Anon Function [{function.ID}]"
+
+		if ctx.parameters():
+			for param in ctx.parameters().IDENTIFIER():
+				parameter = Function_Parameter()
+				parameter.ID = param.getText()
+				parameter.function = function
+				function.parameters.append(parameter)
+
+		self.visitChildren(ctx)
+#
+		self.scope_tracker.exitScope()
+		self.scope_tracker.declareAnonFunction(function)
+		self.addSymbolToTable(function)
+		self.current_function = None
+#
+		self.exit("Anon Function")
+		return Container(function, Type.FUN_ANON)
 
 	def visitClassDecl(self, ctx:CompiscriptParser.ClassDeclContext):
 		self.enter("Class Declaration")
@@ -108,18 +152,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.scope_tracker.exitScope()
 			return function
 
-	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext):
-		return self.visitChildren(ctx)
-
-	def visitVarDecl(self, ctx:CompiscriptParser.VarDeclContext):
-		return self.visitChildren(ctx)
-
-	def visitStatement(self, ctx:CompiscriptParser.StatementContext):
-		return self.visitChildren(ctx)
-
-	def visitExprStmt(self, ctx:CompiscriptParser.ExprStmtContext):
-		return self.visitChildren(ctx)
-
 	def visitForStmt(self, ctx:CompiscriptParser.ForStmtContext):
 		self.enter("For Statement")
 		self.scope_tracker.enterScope()
@@ -159,9 +191,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.exit("If Statement")
 		return None
 
-	def visitPrintStmt(self, ctx:CompiscriptParser.PrintStmtContext):
-		return self.visitChildren(ctx)
-
 	def visitReturnStmt(self, ctx:CompiscriptParser.ReturnStmtContext):
 		if ctx.expression():
 			return self.visit(ctx.expression())
@@ -189,9 +218,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.exit("Block")
 		return children
-
-	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
-		return self.visitChildren(ctx)
 
 	def visitExpression(self, ctx: CompiscriptParser.ExpressionContext):
 		self.enterFull("Expression")
@@ -287,7 +313,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		left: Container = self.visit(ctx.logic_and(0))
 		for i in range(1, len(ctx.logic_and())):
 			right: Container = self.visit(ctx.logic_and(i))
-			return Container(f"{left.data} or {right.data}", Type.BOOL)
+			return Container(f"({left.data} or {right.data})", Type.BOOL)
 
 		self.exitFull("Or")
 		return self.visitChildren(ctx)
@@ -298,7 +324,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		left: Container = self.visit(ctx.equality(0))
 		for i in range(1, len(ctx.equality())):
 			right: Container = self.visit(ctx.equality(i))
-			return Container(f"{left.data} and {right.data}", Type.BOOL)
+			return Container(f"({left.data} and {right.data})", Type.BOOL)
 
 		self.exitFull("And")
 		return self.visitChildren(ctx)
@@ -318,7 +344,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			if not isinstance(left, Container) or not isinstance(right, Container):
 				error(self.debug, f"Error Equality. {type(left)}({left}) {operator} {type(right)}({right})")
 			self.exitFull("Equality")
-			return Container(f"{left.data} {operator} {right.data}", Type.BOOL)
+			return Container(f"({left.data} {operator} {right.data})", Type.BOOL)
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		self.enterFull("Comparison")
@@ -335,7 +361,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			if not isinstance(left, Container) or not isinstance(right, Container):
 				error(self.debug, f"Error Comparison. {type(left)}({left}) {operator.replace('<', 'less').replace('>', 'greater')} {type(right)}({right})")
 			self.exitFull("Comparison")
-			return Container(f"{left.innermostCode()} {operator} {right.innermostCode()}", Type.BOOL)
+			return Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", Type.BOOL)
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
 		self.enterFull("Term")
@@ -435,7 +461,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.primary():
 			primary: Container = self.visit(ctx.primary())
 			if primary.type == Type.FUNCTION:
-				if self.current_function.ID != primary.data.ID or self.current_call != primary.data.ID:
+				if (self.current_function and self.current_function.ID != primary.data.ID )or (self.current_call and self.current_call != primary.data.ID):
 					self.current_call = primary.data.ID
 					call_params = []
 					if ctx.arguments() and len(ctx.arguments()) > 0:
@@ -446,11 +472,18 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						error(self.debug, f"Error Call. Tried to call Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
 					if self.current_function.parameters:
 						self.current_call = None
-
-				elif self.current_function.ID == primary.data.ID or self.current_call == primary.data.ID:
+				elif (self.current_function and self.current_function.ID == primary.data.ID) or (self.current_call and self.current_call == primary.data.ID):
 					if self.current_function:
 						self.current_function.recursive = True
 						self.updateSymbolFromTable(self.current_function)
+				else:
+					call_params = []
+					if ctx.arguments() and len(ctx.arguments()) > 0:
+						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
+						for i in range(0, arguments.getChildCount(), 2):
+							call_params.append(self.visit(arguments.getChild(i)))
+					elif len(primary.data.parameters) != len(call_params):
+						error(self.debug, f"Error Call. Tried to call Function '{primary.data.ID}' with {len(call_params)} parameters. Expected {len(primary.data.parameters)}")
 
 			elif primary.type == Type.THIS: # Accesing a variable from self
 				if self.current_class is None:
