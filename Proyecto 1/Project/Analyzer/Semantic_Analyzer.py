@@ -470,10 +470,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
 						for i in range(0, arguments.getChildCount(), 2):
 							call_params.append(self.visit(arguments.getChild(i)))
-					elif len(self.current_function.parameters) != len(call_params):
-						error(self.debug, f"Error Call. Tried to call Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
-					if self.current_function.parameters:
+					elif self.current_function.parameters:
 						self.current_call = None
+					if len(self.current_function.parameters) != len(call_params):
+						error(self.debug, f"Error Call. Tried to call Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
 				elif (self.current_function and self.current_function.ID == primary.data.ID) or (self.current_call and self.current_call == primary.data.ID):
 					if self.current_function:
 						self.current_function.recursive = True
@@ -484,7 +484,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
 						for i in range(0, arguments.getChildCount(), 2):
 							call_params.append(self.visit(arguments.getChild(i)))
-					elif len(primary.data.parameters) != len(call_params):
+					if len(primary.data.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{primary.data.ID}' with {len(call_params)} parameters. Expected {len(primary.data.parameters)}")
 
 			elif primary.type == Type.THIS: # Accesing a variable from self
