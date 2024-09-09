@@ -1,5 +1,5 @@
-RETURN Type
+RETURN Type inference, parameter inference
 
-Fun Anon
+Fun Anon tests
 
-Nested Instances
+Nested Instances function / variable calling checks
