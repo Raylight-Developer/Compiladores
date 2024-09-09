@@ -65,6 +65,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				self.scope_tracker.declareVariable(member)
 				self.addSymbolToTable(member)
 
+			struct.initialzer = struct.parent.initializer
+
 			struct.parent = self.scope_tracker.lookupClass(ctx.IDENTIFIER(1).getText())
 
 		self.debug << NL() << f"Declaring Class [{struct.ID}]"
@@ -386,10 +388,17 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.enterFull("Instantiation")
 
 		class_name = ctx.IDENTIFIER().getText()
+		struct = self.scope_tracker.lookupClass(class_name)
 
 		args = []
 		if ctx.arguments():
 			args = self.visit(ctx.arguments())
+
+		if struct.initializer:
+			if len(args) != len(struct.initializer.parameters):
+				error(self.debug, f"Error Intantiation. Tried to Instantiate '{class_name}' with {len(args)} parameters. Expected {len(struct.initializer.parameters)}")
+		elif len(args) != 0:
+			error(self.debug, f"Error Intantiation. Tried to Instantiate '{class_name}' with {len(args)} parameters. Expected NONE")
 
 		self.exitFull("Instantiation")
 		return Container(self.scope_tracker.lookupClass(class_name), Type.CLASS)

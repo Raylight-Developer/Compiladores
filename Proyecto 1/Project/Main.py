@@ -65,6 +65,7 @@ var nombre = "Erick";
 
 var ropero = new Persona(nombre, 20);
 var juan = new Estudiante(nombre, 20, 3);
+var testfail = new Estudiante(nombre, 20);
 juan.saludar();    // Salida: Hola, mi nombre es Juan
 juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
 
