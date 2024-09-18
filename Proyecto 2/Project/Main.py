@@ -1,6 +1,8 @@
 from GUI.Logger import*
 from GUI.Syntax_Highlighting import *
+
 from Analyzer.Semantic_Analyzer import *
+from Intermediate_Code.TAC import *
 
 class Display(QMainWindow):
 	def __init__(self):
@@ -124,9 +126,9 @@ for (var i = 0; i < 2; i = i + 1) {
 }
 */
 """).strip())
-
-		self.code_output = Logger()
-		self.code_output.setPlaceholderText("Compiled code")
+		self.tac_highlighter = None
+		self.tac_output = Logger()
+		self.tac_output.setPlaceholderText("TAC code")
 
 		self.log = Logger()
 		self.log.setPlaceholderText("Log")
@@ -157,8 +159,8 @@ for (var i = 0; i < 2; i = i + 1) {
 		main_splitter = QSplitter(Qt.Orientation.Horizontal)
 		main_splitter.addWidget(self.code_input)
 		main_splitter.addWidget(sub)
-		main_splitter.addWidget(self.code_output)
-		main_splitter.setSizes([500,500,200])
+		main_splitter.addWidget(self.tac_output)
+		main_splitter.setSizes([500,500,500])
 
 		button_compile = QPushButton("Compile")
 		button_compile.clicked.connect(self.compile)
@@ -182,7 +184,8 @@ for (var i = 0; i < 2; i = i + 1) {
 
 	def compile(self):
 		code = self.code_input.toPlainText()
-		self.code_output.clear()
+		self.tac_output.clear()
+		self.tac_highlighter = None
 		self.debug.clear()
 		self.debug.current_tab = 1
 		self.log.clear()
@@ -216,17 +219,24 @@ for (var i = 0; i < 2; i = i + 1) {
 
 			self.log.log("\t" + str(self.debug).strip())
 			self.log.insertHtml("<br>}" + f"<br>{G}Comiplation Succesful{RESET}<br>")
-			self.code_output.insertPlainText(tree.toStringTree(recog=parser))
+			#self.log.insertPlainText(tree.toStringTree(recog=parser))
+
+			self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
+			tac = TAC_Generator()
+			tac.generate_for(["EXPR"], "x < y", "x++", ["EXPR"])
+
+			self.tac_output.append(str(tac.code))
 
 		except Exception as e:
 			self.log.log("\t" + str(self.debug).strip())
 			self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>")
 			self.log.append(str(e))
-			Python_Syntax_Highlighter(self.code_output.document())
-			self.code_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
+
+			self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
+			self.tac_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
 
 		self.log.verticalScrollBar().setValue(self.log.verticalScrollBar().maximum())
-		self.code_output.verticalScrollBar().setValue(self.code_output.verticalScrollBar().maximum())
+		self.tac_output.verticalScrollBar().setValue(self.tac_output.verticalScrollBar().maximum())
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")
