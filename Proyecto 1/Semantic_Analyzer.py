@@ -24,6 +24,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.variables_scope = {"global_0": {}}
 
 		self.declared_functions: Set[str] = set()
+		self.local_variables: Dict[str, ParserRuleContext] = {}
 		# self.functions_parameters = Set[str] = set()
 
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
@@ -44,36 +45,62 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.local_variables[name] = ctx
 
 
-	def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
-		fun_name = ctx.function().IDENTIFIER().getText()
-		#self.log.debug(f"TEXTO: {ctx.getText()} -- {fun_name}")
-		# fun_declard = ctx.function().call()
-		# Verifica si la función ya está declarada
-		if fun_name in self.declared_functions:
-			raise Exception(f"Error: Función '{fun_name}' ya declarada.")
-		# Obtencion de los parametros
-		parametros = [param.getText() for param in ctx.function().parameters().IDENTIFIER()] 
-		# print(f"PARAMETAIOSJDF {parametros}")
+	# def visitFunDecl(self, ctx: CompiscriptParser.FunDeclContext):
+	# 	fun_name = ctx.function().getText()
+	# 	print(f"TEXTO: {ctx.getText()} -- {fun_name}")
+	# 	# fun_declard = ctx.function().call()
+	# 	# Verifica si la función ya está declarada
+	# 	if fun_name in self.declared_functions:
+	# 		raise Exception(f"Error: Función '{fun_name}' ya declarada.")
+	# 	# Obtencion de los parametros
+	# 	parametros = [param.getText() for param in ctx.function().parameters()] 
+	# 	print(f"PARAMETAIOSJDF {parametros}")
 
-		params = ctx.function().parameters()
-		if params:
-			for param in params.IDENTIFIER():
-				self.declare_variable(param.getText(), param)
-		# Registrar la función
-		self.declared_functions.add(fun_name)
+	# 	# Registrar la función
+	# 	self.declared_functions.add(fun_name)
 
-		# Crear los datos del símbolo de la función
+	# 	# Crear los datos del símbolo de la función
+	# 	symbol_data = Symbol_Property()
+	# 	symbol_data.id = fun_name                      # ID
+	# 	symbol_data.type = "function"                  # Tipo
+	# 	symbol_data.parameters = ", ".join(parametros)
+	# 	symbol_data.return_type = "void"
+	# 	# Agregar a la tabla de funciones
+	# 	self.table_functions.add(symbol_data)
+
+
+	# 	# Delegar al siguiente método (por si hay más cosas que procesar dentro de la función)
+	# 	return self.visitChildren(ctx)
+	def visitFunDecl(self, ctx:CompiscriptParser.FunDeclContext):
+		# Obtener el nombre de la función
+		fun_name = ctx.function().getText()
+
+		# Verificar si la función ya ha sido declarada
+		if fun_name in self.table_functions:
+			self.raise_semantic_error(f"Error: La función '{fun_name}' ya está declarada.")
+			return None
+
+		# Obtener los parámetros de la función
+		parameters = []
+		if ctx.parameters():
+			for param in ctx.parameters().IDENTIFIER():
+				parameters.append(param.getText())
+
+		# Crear una nueva entrada en la tabla de funciones
 		symbol_data = Symbol_Property()
 		symbol_data.id = fun_name                      # ID
 		symbol_data.type = "function"                  # Tipo
-		symbol_data.parameters = ", ".join(parametros)
+		symbol_data.parameters = ", ".join(parameters)
 		symbol_data.return_type = "void"
 		# Agregar a la tabla de funciones
 		self.table_functions.add(symbol_data)
 
 
-		# Delegar al siguiente método (por si hay más cosas que procesar dentro de la función)
-		return self.visitChildren(ctx)
+		# Opcional: Loguear que la función ha sido registrada correctamente
+		self.log(f"Función '{fun_name}' declarada con parámetros: {parameters}")
+		
+		return None
+
 
 		
 	def visitVarDecl(self, ctx: CompiscriptParser.VarDeclContext):
@@ -447,7 +474,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		""" Este método maneja la asignación de valores a las variables """
 		
 		# Depuración para inspeccionar el contexto completo
-		print(f"Contexto completo: {ctx.getText()}")  # Esto imprime el texto completo de la asignación
+		print(f"CONTEXTO COMPLETO FROM VISIT ASSIGMENT: {ctx.getText()}")  # Esto imprime el texto completo de la asignación
 		
 		# Obtener el nombre de la variable
 		# var_name = ctx.IDENTIFIER()
