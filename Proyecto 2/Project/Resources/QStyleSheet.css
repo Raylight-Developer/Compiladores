@@ -231,17 +231,6 @@ QToolTip {
 	border-color: rgb(250,255,255);
 }
 
-QHeaderView::section {
-	background:rgb(25,25,25);
-	border-color: rgb(175,175,175);
-	padding: 0 5px 0 5px;
-}
-
-QTableCornerButton:section {
-	background: transparent;
-	border-width: 0px;
-}
-
 QTabBar:tab:top {
 	height: 24px;
 	border-width: 2px;
@@ -275,6 +264,22 @@ QTabWidget:pane {
 	border-radius: 5px;
 }
 
+QHeaderView::section {
+	background:rgb(25,25,25);
+	border-width: 1px;
+	border-style: solid;
+	border-color: rgb(175,175,175);
+	padding: 0 5px 0 5px;
+	margin: 0;
+}
+
+QTableCornerButton:section {
+	background: transparent;
+	border-width: 1px;
+	border-style: inset;
+	border-color: rgb(175,175,175);
+}
+
 QTableWidget {
 	background: rgb(30,30,30);
 	color: rgb(250,250,250);
@@ -282,19 +287,14 @@ QTableWidget {
 	border-radius: 0px;
 	border-color: transparent;
 	font-size: 16px;
+	margin-left: 2px;
+	margin-right: 2px;
 }
 QTableWidget:item {
 	background:rgb(70,70,70);
-}
-QTableWidget:item:selected {
-	background:rgb(100,100,100);
-}
-QTableWidget:section {
-	background:rgb(25,25,25);
-	border-color: rgb(175,175,175);
-	padding: 0 5px 0 5px;
-	border-radius: 0px;
 	border-width: 1px;
+	border-style: solid;
+	border-color: rgb(150,150,150);
 }
 QWidget#Table {
 	margin: 10px;
