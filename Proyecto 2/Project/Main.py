@@ -222,10 +222,9 @@ for (var i = 0; i < 2; i = i + 1) {
 			#self.log.insertPlainText(tree.toStringTree(recog=parser))
 
 			self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
-			tac = TAC_Generator()
-			tac.generate_for(["EXPR"], "x < y", "x++", ["EXPR"])
+			analyzer.tac.generate_for(["EXPR"], "COMPARE", "UPDATE", ["EXPR"])
 
-			self.tac_output.append(str(tac.code))
+			self.tac_output.append(str(analyzer.tac.code))
 
 		except Exception as e:
 			self.log.log("\t" + str(self.debug).strip())

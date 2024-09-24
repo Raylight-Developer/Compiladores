@@ -94,7 +94,7 @@ class Syntax_Highlighter(QSyntaxHighlighter) :
 			self.highlightingRules.append(rule)
 
 		self.comments = QTextCharFormat()
-		self.comments.setForeground(QColor(75, 120, 60))
+		self.comments.setForeground(QColor(85, 140, 70))
 		for pattern in [
 			r"//[^\n]*",
 			r"/\*.*?\*/"
@@ -225,7 +225,7 @@ class Python_Syntax_Highlighter(QSyntaxHighlighter) :
 			self.highlightingRules.append(rule)
 
 		self.comments = QTextCharFormat()
-		self.comments.setForeground(QColor(75, 120, 60))
+		self.comments.setForeground(QColor(85, 140, 70))
 		for pattern in [
 			r"//[^\n]*",
 			r"/\*.*?\*/"
@@ -316,7 +316,7 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 			self.highlightingRules.append(rule)
 
 		self.comments = QTextCharFormat()
-		self.comments.setForeground(QColor(75, 120, 60))
+		self.comments.setForeground(QColor(85, 140, 70))
 		for pattern in [
 			r"//[^\n]*",
 			r"/\*.*?\*/"

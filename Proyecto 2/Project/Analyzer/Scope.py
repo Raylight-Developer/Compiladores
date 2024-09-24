@@ -1,13 +1,16 @@
 from Include import *
+from Lace import *
+
+from Intermediate_Code.TAC import *
 
 from .Utils import *
 from .Symbols import *
-from Lace import *
 
 class Tag:
-	def __init__(self, ID: str = "", type: Type = Type.NONE):
+	def __init__(self, ID: str = "", type: Type = Type.NONE, temp: str = ""):
 		self.ID = ID
 		self.type = type
+		self.temp = temp
 
 	def __eq__(self, other: 'Tag'):
 		if self.ID == other.ID and self.type == other.type:
@@ -21,8 +24,9 @@ class Tag:
 		return f"{self.ID} {self.type}"
 
 class Scope_Tracker:
-	def __init__(self, debug: Lace):
+	def __init__(self, debug: Lace, tac: 'TAC_Generator'):
 		self.debug = debug
+		self.tac = tac
 		
 		self.persistent_tree: List[str] = []
 		self.scope_stack: List[Dict[Tag, Any]] = []
@@ -50,7 +54,8 @@ class Scope_Tracker:
 		self.current_scope = self.scope_stack[-1]
 
 	def declareClass(self, value: Class):
-		computed = Tag(value.ID, Type.CLASS)
+		Tac_ID = self.tac.declareClass(value)
+		computed = Tag(value.ID, Type.CLASS, Tac_ID)
 		if self.checkClass(value.ID):
 			self.print()
 			error(self.debug, f"Class '{value.ID}' Redefinition not allowed")
@@ -60,7 +65,8 @@ class Scope_Tracker:
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"cls<{value.ID}> : <{value.ID}>")
 
 	def declareFunction(self, value: Function):
-		computed = Tag(value.ID, Type.FUNCTION)
+		Tac_ID = self.tac.declareFunction(value)
+		computed = Tag(value.ID, Type.FUNCTION, Tac_ID)
 		if not value.member and self.checkFunction(value.ID):
 			self.print()
 			error(self.debug, f"Function '{value.ID}' Redefinition not allowed")
@@ -71,7 +77,8 @@ class Scope_Tracker:
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"fun<{value.ID}> : <{value.ID}>")
 
 	def declareVariable(self, value: Variable):
-		computed = Tag(value.ID, Type.VARIABLE)
+		Tac_ID = self.tac.declareVariable(value)
+		computed = Tag(value.ID, Type.VARIABLE, Tac_ID)
 		if not value.member and self.checkVariable(value.ID):
 			self.print()
 			error(self.debug, f"Variable '{value.ID}' Redefinition not allowed")

@@ -25,6 +25,24 @@ class TAC_Generator: #(CompiscriptVisitor):
 		self.label_count += 1
 		return f"L_{self.label_count}"
 
+	def declareClass(self, value: Class):
+		temp_id = self.new_temp()
+		self.code << NL()
+		self.code << temp_id << "; // Class: " + value.ID
+		return temp_id
+
+	def declareFunction(self, value: Function):
+		temp_id = self.new_temp()
+		self.code << NL()
+		self.code << temp_id << "; // Function: " + value.ID
+		return temp_id
+
+	def declareVariable(self, value: Variable):
+		temp_id = self.new_temp()
+		self.code << NL()
+		self.code << temp_id << "; // Variable: " + value.ID
+		return temp_id
+
 	def generate_if(self, if_expr: List[str] = [], if_condition: str = "", if_body: List[str] = [], else_body: List[str] = []):
 		if_label = self.new_label()
 		end_label = self.new_label()
@@ -73,10 +91,10 @@ class TAC_Generator: #(CompiscriptVisitor):
 		self.code << NL() << f"{loop_start_label}:"
 		self.code += 1
 		self.code << NL() << f"IF ({for_condition}) GOTO {end_label}"
-		self.code << NL() << for_update << " // Update For Condition"
-		self.code += 1
+		self.code << NL()
 		self.code << NL() << "\n".join(for_body)
-		self.code -= 1
+		self.code << NL() << for_update << " // Update For Condition"
+		self.code << NL()
 		self.code << NL() << f"GOTO {loop_start_label}"
 		self.code -= 1
 		self.code << NL()

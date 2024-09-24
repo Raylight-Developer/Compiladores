@@ -11,6 +11,8 @@ from GUI.Logger import *
 from .Symbols import *
 from .Scope import *
 
+from Intermediate_Code.TAC import *
+
 FULL_VIEW = False
 
 class Semantic_Analyzer(CompiscriptVisitor):
@@ -19,10 +21,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.parser = parser
 		self.compiled = True
 
+		self.tac = TAC_Generator()
+
 		self.debug = debug
 		self.count = 0
 		self.graph = Digraph()
-		self.scope_tracker = Scope_Tracker(debug)
+		self.scope_tracker = Scope_Tracker(debug, self.tac)
 
 		self.current_call      : str = None
 
@@ -34,6 +38,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.table_c = table_c
 		self.table_f = table_f
 		self.table_v = table_v
+
 
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
