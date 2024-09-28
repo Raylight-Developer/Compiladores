@@ -27,6 +27,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.count = 0
 		self.graph = Digraph()
 		self.scope_tracker = Scope_Tracker(debug, self.tac)
+		self.tac.scope_tracker = self.scope_tracker
 
 		self.current_call      : str = None
 
@@ -38,7 +39,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.table_c = table_c
 		self.table_f = table_f
 		self.table_v = table_v
-
 
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)

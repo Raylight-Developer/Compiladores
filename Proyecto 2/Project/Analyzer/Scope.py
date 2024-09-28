@@ -7,10 +7,9 @@ from .Utils import *
 from .Symbols import *
 
 class Tag:
-	def __init__(self, ID: str = "", type: Type = Type.NONE, temp: str = ""):
+	def __init__(self, ID: str = "", type: Type = Type.NONE):
 		self.ID = ID
 		self.type = type
-		self.temp = temp
 
 	def __eq__(self, other: 'Tag'):
 		if self.ID == other.ID and self.type == other.type:
@@ -23,18 +22,24 @@ class Tag:
 	def __str__(self):
 		return f"{self.ID} {self.type}"
 
+class Scope_Data:
+	def __init__(self, data: Class | Function | Variable = "", type: Type = Type.NONE, tac_data: Tac_Info = None):
+		self.data = data
+		self.type = type
+		self.tac_data = tac_data
+
 class Scope_Tracker:
 	def __init__(self, debug: Lace, tac: 'TAC_Generator'):
 		self.debug = debug
 		self.tac = tac
 		
 		self.persistent_tree: List[str] = []
-		self.scope_stack: List[Dict[Tag, Any]] = []
+		self.scope_stack: List[Dict[Tag, Scope_Data]] = []
 
 		self.current_depth = 0
 		self.depth_count: Dict[int, int] = {}
 	
-		self.current_scope: Dict[Tag, Any] = {}
+		self.current_scope: Dict[Tag, Scope_Data] = {}
 		self.scope_stack.append(self.current_scope)
 		self.persistent_tree.append("Global {")
 
@@ -54,38 +59,39 @@ class Scope_Tracker:
 		self.current_scope = self.scope_stack[-1]
 
 	def declareClass(self, value: Class):
-		Tac_ID = self.tac.declareClass(value)
-		computed = Tag(value.ID, Type.CLASS, Tac_ID)
+		computed = Tag(value.ID, Type.CLASS)
 		if self.checkClass(value.ID):
 			self.print()
 			error(self.debug, f"Class '{value.ID}' Redefinition not allowed")
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		self.current_scope[computed] = value
+		Tac_Data = self.tac.declareClass(value)
+		self.current_scope[computed] = Scope_Data(value, Type.CLASS, Tac_Data)
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"cls<{value.ID}> : <{value.ID}>")
 
 	def declareFunction(self, value: Function):
-		Tac_ID = self.tac.declareFunction(value)
-		computed = Tag(value.ID, Type.FUNCTION, Tac_ID)
+		Tac_Data = self.tac.declareFunction(value)
+		computed = Tag(value.ID, Type.FUNCTION)
 		if not value.member and self.checkFunction(value.ID):
 			self.print()
 			error(self.debug, f"Function '{value.ID}' Redefinition not allowed")
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		self.current_scope[computed] = value
+		Tac_Data = self.tac.declareFunction(value)
+		self.current_scope[computed] = Scope_Data(value, Type.FUNCTION, Tac_Data)
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"fun<{value.ID}> : <{value.ID}>")
 
 	def declareVariable(self, value: Variable):
-		Tac_ID = self.tac.declareVariable(value)
-		computed = Tag(value.ID, Type.VARIABLE, Tac_ID)
+		computed = Tag(value.ID, Type.VARIABLE)
 		if not value.member and self.checkVariable(value.ID):
 			self.print()
 			error(self.debug, f"Variable '{value.ID}' Redefinition not allowed")
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		self.current_scope[computed] = value
+		Tac_Data = self.tac.declareVariable(value)
+		self.current_scope[computed] = Scope_Data(value, Type.VARIABLE, Tac_Data)
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"var<{value.ID}> : <{value.ID}>")
 
 	def declareAnonFunction(self, value: Function):
@@ -95,18 +101,18 @@ class Scope_Tracker:
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		self.current_scope[computed] = value
+		self.current_scope[computed] = Scope_Data(value, Type.FUN_ANON)
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"anon_fun<{value.ID}> : <{value.ID}>")
 
-	def lookupClass(self, ID: str) -> Class:
+	def lookupClass(self, ID: str) -> Scope_Data:
 		computed = Tag(ID, Type.CLASS)
 		for scope in reversed(self.scope_stack):
 			if computed in scope:
-				return scope[computed]
+				return scope[computed].data
 		self.print()
 		error(self.debug, f"Class {type(ID)}b'{ID}' not in Scope  {self.current_depth}")
 
-	def lookupFunction(self, ID: str, cls: Class | None = None) -> Function:
+	def lookupFunction(self, ID: str, cls: Class | None = None) -> Scope_Data:
 		computed = Tag(ID, Type.FUNCTION)
 		for scope in reversed(self.scope_stack):
 			if cls:
@@ -114,7 +120,7 @@ class Scope_Tracker:
 					if ID == member.ID:
 						return member
 			if computed in scope:
-				return scope[computed]
+				return scope[computed].data
 		self.print()
 		for scope in reversed(self.scope_stack):
 			if cls:
@@ -124,7 +130,7 @@ class Scope_Tracker:
 				print(f"{computed}")
 		error(self.debug, f"Function '{ID}' not in Scope {cls.ID if cls else 'Global'}")
 
-	def lookupVariable(self, ID: str, cls: Class | None = None) -> Variable:
+	def lookupVariable(self, ID: str, cls: Class | None = None) -> Scope_Data:
 		computed = Tag(ID, Type.VARIABLE)
 		for scope in reversed(self.scope_stack):
 			if cls:
@@ -132,7 +138,7 @@ class Scope_Tracker:
 					if ID == member.ID:
 						return member
 			if computed in scope:
-				return scope[computed]
+				return scope[computed].data
 		self.print()
 		for scope in reversed(self.scope_stack):
 			if cls:

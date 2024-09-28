@@ -11,8 +11,14 @@ from GUI.Logger import *
 from Analyzer.Symbols import *
 from Analyzer.Scope import *
 
+class Tac_Info:
+	def __init__(self, ID: str = "", data: Dict[str, Any] = {}):
+		self.ID = ID
+		self.data = data
+
 class TAC_Generator: #(CompiscriptVisitor):
 	def __init__(self):
+		self.scope_tracker: Scope_Tracker = None
 		self.label_count = -1
 		self.temp_count = -1
 		self.code = Lace()
@@ -28,20 +34,25 @@ class TAC_Generator: #(CompiscriptVisitor):
 	def declareClass(self, value: Class):
 		temp_id = self.new_temp()
 		self.code << NL()
-		self.code << temp_id << "; // Class: " + value.ID
+		self.code << f"// Class:     [{temp_id}] {value.ID}"
 		return temp_id
 
 	def declareFunction(self, value: Function):
 		temp_id = self.new_temp()
+		block_id = self.new_label()
 		self.code << NL()
-		self.code << temp_id << "; // Function: " + value.ID
-		return temp_id
+		self.code << f"// Function:  [{temp_id}] {value.ID}"
+		return temp_id, block_id
 
 	def declareVariable(self, value: Variable):
 		temp_id = self.new_temp()
 		self.code << NL()
-		self.code << temp_id << "; // Variable: " + value.ID
+		self.code << f"// Variable:  [{temp_id}] {value.ID}"
 		return temp_id
+
+	def callFunction(self, value: Function):
+		self.code << NL()
+		self.code << "GOTO " + self.scope_tracker.lookupFunction(value.ID, value.member)
 
 	def generate_if(self, if_expr: List[str] = [], if_condition: str = "", if_body: List[str] = [], else_body: List[str] = []):
 		if_label = self.new_label()
