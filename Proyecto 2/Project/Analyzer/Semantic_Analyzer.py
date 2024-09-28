@@ -294,7 +294,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 					else:
 						error(self.debug, f"Error Assignment. {instance.data.data.ID}.{ctx.IDENTIFIER().getText()} is not defined")
 
-		if ctx.IDENTIFIER():
+		elif ctx.IDENTIFIER():
 			var_name = str(ctx.IDENTIFIER())
 			self.debug << NL() << "Assigning Value to [" << var_name << "]"
 
@@ -495,7 +495,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 					if len(primary.data.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{primary.data.ID}' with {len(call_params)} parameters. Expected {len(primary.data.parameters)}")
 					self.tac.callFunction(primary.data)
-					print("call " + primary.data.ID)
 			elif primary.type == Type.THIS: # Accesing a variable from self
 				if self.current_class is None:
 					error(self.debug, "Error Call. Calling this outside of class")

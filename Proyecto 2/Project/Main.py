@@ -207,6 +207,7 @@ for (var i = 0; i < 2; i = i + 1) {
 			analyzer = Semantic_Analyzer(self.debug, self.table_classes, self.table_functions, self.table_variables, parser)
 			analyzer.visit(tree)
 
+
 			if self.options["render"]:
 				if not os.path.exists("./Output"):
 					os.makedirs("Output")
@@ -217,16 +218,24 @@ for (var i = 0; i < 2; i = i + 1) {
 			self.table_functions.resizeColumnsToContents()
 			self.table_variables.resizeColumnsToContents()
 
-			self.log.log("\t" + str(self.debug).strip())
-			self.log.insertHtml("<br>}" + f"<br>{G}Comiplation Succesful{RESET}<br>")
-			#self.log.insertPlainText(tree.toStringTree(recog=parser))
+			if not self.debug.error:
+				self.log.log("\t" + str(self.debug).strip())
+				self.log.insertHtml("<br>}" + f"<br>{G}Comiplation Succesful{RESET}<br>")
+				#self.log.insertPlainText(tree.toStringTree(recog=parser))
 
-			self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
-			analyzer.tac.generate_for(["EXPR"], "COMPARE", "UPDATE", ["EXPR"])
+				self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
+				analyzer.tac.generate_for(["EXPR"], "COMPARE", "UPDATE", ["EXPR"])
 
-			self.tac_output.append(str(analyzer.tac.code))
+				self.tac_output.append(str(analyzer.tac.code))
 
-		except Exception as e:
+			else:
+				self.log.log("\t" + str(self.debug).strip())
+				self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>")
+				self.log.append(str(e))
+
+				self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
+				self.tac_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
+		except:
 			self.log.log("\t" + str(self.debug).strip())
 			self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>")
 			self.log.append(str(e))
