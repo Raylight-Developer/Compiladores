@@ -294,7 +294,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 					else:
 						error(self.debug, f"Error Assignment. {instance.data.data.ID}.{ctx.IDENTIFIER().getText()} is not defined")
 
-		if ctx.call() is None and ctx.IDENTIFIER():
+		if ctx.IDENTIFIER():
 			var_name = str(ctx.IDENTIFIER())
 			self.debug << NL() << "Assigning Value to [" << var_name << "]"
 
@@ -319,10 +319,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		left: Container = self.visit(ctx.logic_and(0))
 		for i in range(1, len(ctx.logic_and())):
 			right: Container = self.visit(ctx.logic_and(i))
+			self.exitFull("Or")
 			return Container(f"({left.data} or {right.data})", Type.BOOL)
 
 		self.exitFull("Or")
-		return self.visitChildren(ctx)
+		return left
 
 	def visitLogic_and(self, ctx:CompiscriptParser.Logic_andContext):
 		self.enterFull("And")
@@ -330,10 +331,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		left: Container = self.visit(ctx.equality(0))
 		for i in range(1, len(ctx.equality())):
 			right: Container = self.visit(ctx.equality(i))
+			self.exitFull("And")
 			return Container(f"({left.data} and {right.data})", Type.BOOL)
 
 		self.exitFull("And")
-		return self.visitChildren(ctx)
+		return left
 
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
 		self.enterFull("Equality")
@@ -465,7 +467,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			if ctx.primary():
 				visited = self.visit(ctx.primary())
 				return visited
-
 		elif ctx.primary():
 			primary: Container = self.visit(ctx.primary())
 			if primary.type == Type.FUNCTION:
@@ -480,6 +481,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						self.current_call = None
 					if len(self.current_function.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
+					self.tac.callFunction(self.current_function)
 				elif (self.current_function and self.current_function.ID == primary.data.ID) or (self.current_call and self.current_call == primary.data.ID):
 					if self.current_function:
 						self.current_function.recursive = True
@@ -492,7 +494,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 							call_params.append(self.visit(arguments.getChild(i)))
 					if len(primary.data.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{primary.data.ID}' with {len(call_params)} parameters. Expected {len(primary.data.parameters)}")
-
+					self.tac.callFunction(primary.data)
+					print("call " + primary.data.ID)
 			elif primary.type == Type.THIS: # Accesing a variable from self
 				if self.current_class is None:
 					error(self.debug, "Error Call. Calling this outside of class")
@@ -630,9 +633,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			return Container("this", Type.THIS)
 		elif ctx.superCall():
 			return Container(ctx.superCall().getChild(2).getText(), Type.SUPER)
-		
-		visited = self.visitChildren(ctx)
-		return visited
 
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
 		"""Assign Function Member to Class or create Function"""

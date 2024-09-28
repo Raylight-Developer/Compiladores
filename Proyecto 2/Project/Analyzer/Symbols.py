@@ -153,6 +153,7 @@ class Container(Generic[T]):
 class Variable:
 	def __init__(self):
 		self.ctx         : CompiscriptParser.VariableContext = None
+		self.tac_data    : 'Tac_Data' = None
 
 		self.ID          : str  = None
 		self.type        : Type = Type.UNKNOWN
@@ -185,6 +186,7 @@ class Function_Parameter:
 class Function:
 	def __init__(self):
 		self.ctx         : CompiscriptParser.FunctionContext = None
+		self.tac_data    : 'Tac_Data' = None
 
 		self.ID          : str  = None
 		self.data        : str  = None
@@ -216,6 +218,7 @@ class Function:
 class Class:
 	def __init__(self):
 		self.ctx         : CompiscriptParser.ClassDeclContext = None
+		self.tac_data    : 'Tac_Data' = None
 
 		self.ID          : str   = None
 		self.parent      : Class = None

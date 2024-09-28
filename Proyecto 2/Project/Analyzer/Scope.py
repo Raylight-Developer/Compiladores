@@ -22,24 +22,18 @@ class Tag:
 	def __str__(self):
 		return f"{self.ID} {self.type}"
 
-class Scope_Data:
-	def __init__(self, data: Class | Function | Variable = "", type: Type = Type.NONE, tac_data: Tac_Info = None):
-		self.data = data
-		self.type = type
-		self.tac_data = tac_data
-
 class Scope_Tracker:
 	def __init__(self, debug: Lace, tac: 'TAC_Generator'):
 		self.debug = debug
 		self.tac = tac
 		
 		self.persistent_tree: List[str] = []
-		self.scope_stack: List[Dict[Tag, Scope_Data]] = []
+		self.scope_stack: List[Dict[Tag, Class | Function | Variable]] = []
 
 		self.current_depth = 0
 		self.depth_count: Dict[int, int] = {}
 	
-		self.current_scope: Dict[Tag, Scope_Data] = {}
+		self.current_scope: Dict[Tag, Class | Function | Variable] = {}
 		self.scope_stack.append(self.current_scope)
 		self.persistent_tree.append("Global {")
 
@@ -65,8 +59,8 @@ class Scope_Tracker:
 			error(self.debug, f"Class '{value.ID}' Redefinition not allowed")
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		Tac_Data = self.tac.declareClass(value)
-		self.current_scope[computed] = Scope_Data(value, Type.CLASS, Tac_Data)
+		value.tac_data = self.tac.declareClass(value)
+		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"cls<{value.ID}> : <{value.ID}>")
 
 	def declareFunction(self, value: Function):
@@ -78,8 +72,8 @@ class Scope_Tracker:
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		Tac_Data = self.tac.declareFunction(value)
-		self.current_scope[computed] = Scope_Data(value, Type.FUNCTION, Tac_Data)
+		value.tac_data  = self.tac.declareFunction(value)
+		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"fun<{value.ID}> : <{value.ID}>")
 
 	def declareVariable(self, value: Variable):
@@ -90,8 +84,8 @@ class Scope_Tracker:
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		Tac_Data = self.tac.declareVariable(value)
-		self.current_scope[computed] = Scope_Data(value, Type.VARIABLE, Tac_Data)
+		value.tac_data  = self.tac.declareVariable(value)
+		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"var<{value.ID}> : <{value.ID}>")
 
 	def declareAnonFunction(self, value: Function):
@@ -101,18 +95,19 @@ class Scope_Tracker:
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		self.current_scope[computed] = Scope_Data(value, Type.FUN_ANON)
+		value.tac_data  = self.tac.declareAnonFunction(value)
+		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"anon_fun<{value.ID}> : <{value.ID}>")
 
-	def lookupClass(self, ID: str) -> Scope_Data:
+	def lookupClass(self, ID: str) -> Class:
 		computed = Tag(ID, Type.CLASS)
 		for scope in reversed(self.scope_stack):
 			if computed in scope:
-				return scope[computed].data
+				return scope[computed]
 		self.print()
-		error(self.debug, f"Class {type(ID)}b'{ID}' not in Scope  {self.current_depth}")
+		error(self.debug, f"Class {type(ID)} '{ID}' not in Scope  {self.current_depth}")
 
-	def lookupFunction(self, ID: str, cls: Class | None = None) -> Scope_Data:
+	def lookupFunction(self, ID: str, cls: Class | None = None) -> Function:
 		computed = Tag(ID, Type.FUNCTION)
 		for scope in reversed(self.scope_stack):
 			if cls:
@@ -120,7 +115,7 @@ class Scope_Tracker:
 					if ID == member.ID:
 						return member
 			if computed in scope:
-				return scope[computed].data
+				return scope[computed]
 		self.print()
 		for scope in reversed(self.scope_stack):
 			if cls:
@@ -130,7 +125,7 @@ class Scope_Tracker:
 				print(f"{computed}")
 		error(self.debug, f"Function '{ID}' not in Scope {cls.ID if cls else 'Global'}")
 
-	def lookupVariable(self, ID: str, cls: Class | None = None) -> Scope_Data:
+	def lookupVariable(self, ID: str, cls: Class | None = None) -> Variable:
 		computed = Tag(ID, Type.VARIABLE)
 		for scope in reversed(self.scope_stack):
 			if cls:
@@ -138,7 +133,7 @@ class Scope_Tracker:
 					if ID == member.ID:
 						return member
 			if computed in scope:
-				return scope[computed].data
+				return scope[computed]
 		self.print()
 		for scope in reversed(self.scope_stack):
 			if cls:
