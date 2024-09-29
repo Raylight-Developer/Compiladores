@@ -61,6 +61,26 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitPrintStmt(self, ctx:CompiscriptParser.PrintStmtContext):
 		return self.visitChildren(ctx)
 
+	def visitExpression(self, ctx: CompiscriptParser.ExpressionContext):
+		self.enterFull("Expression")
+
+		if ctx.assignment():
+			self.exitFull("Expression")
+			return self.visit(ctx.assignment())
+		
+		elif ctx.funAnon():
+			self.exitFull("Expression")
+			return self.visit(ctx.funAnon())
+
+	def visitBlock(self, ctx:CompiscriptParser.BlockContext):
+		self.enter("Block")
+
+		self.scope_tracker.enterScope()
+		self.visitChildren(ctx)
+		self.scope_tracker.exitScope()
+
+		self.exit("Block")
+
 	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
 		"""Create Scoped Lambda-ish Function"""
 		self.enter("Anon Function")
@@ -81,7 +101,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				parameter.function = function
 				function.parameters.append(parameter)
 
-		self.visitChildren(ctx)
+		#self.visitChildren(ctx)
 #
 		self.scope_tracker.exitScope()
 		self.scope_tracker.declareAnonFunction(function)
@@ -167,35 +187,38 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.exprStmt():
 			self.visit(ctx.exprStmt())
 
-		expression = ctx.expression(0)
-		if expression:
-			expression: Container = self.visit(expression)
+		if ctx.expression(0):
+			expression: Container = self.visit(ctx.expression(0))
 			if not isinstance(expression, Container) or not expression.type == Type.BOOL:
 				error(self.debug, f"Error For. Condition is not boolean. {expression.data}")
 
 		if ctx.expression(1):
 			self.visit(ctx.expression(1))
 
-		children: Container = self.visit(ctx.statement())
+		#children: Container = self.visit(ctx.statement())
 
 		self.scope_tracker.exitScope()
 		self.exit("For Statement")
-		return children
+		#return children
 
 	def visitIfStmt(self, ctx:CompiscriptParser.IfStmtContext):
 		self.enter("If Statement")
 
-		expression: Container = self.visit(ctx.expression())
-		
-		if not isinstance(expression, Container) or not expression.type == Type.BOOL:
-			error(self.debug, f"Error If. IF Condition is not boolean. {expression.data}")
-		self.visit(ctx.statement(0))
+		if ctx.expression():
+			expression: Container = self.visit(ctx.expression())
+			
+			if not isinstance(expression, Container) or not expression.type == Type.BOOL:
+				error(self.debug, f"Error If. IF Condition is not boolean. {expression.data}")
+			#self.visit(ctx.statement(0))
+
+		if ctx.statement(0):
+			return self.visit(ctx.statement(0))
 
 		if ctx.statement(1):
 			return self.visit(ctx.statement(1))
 
 		self.exit("If Statement")
-		return None
+		#return None
 
 	def visitReturnStmt(self, ctx:CompiscriptParser.ReturnStmtContext):
 		if ctx.expression():
@@ -209,47 +232,18 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		expression = self.visit(ctx.expression())
 		if not isinstance(expression, Container) or not expression.type == Type.BOOL:
 			error(self.debug, f"Error While. Condition is not boolean. {expression.data}")
-		children = self.visit(ctx.statement())
+		#children = self.visit(ctx.statement())
 
 		self.scope_tracker.exitScope()
 		self.exit("While Statement")
-		return children
-
-	def visitBlock(self, ctx:CompiscriptParser.BlockContext):
-		self.enter("Block")
-
-		self.scope_tracker.enterScope()
-		children = self.visitChildren(ctx)
-		self.scope_tracker.exitScope()
-
-		self.exit("Block")
-		return children
-
-	def visitExpression(self, ctx: CompiscriptParser.ExpressionContext):
-		self.enterFull("Expression")
-
-		if ctx.getChildCount() == 1:
-			return self.visit(ctx.getChild(0))
-
-		left: Container = self.visit(ctx.getChild(0))
-		operator = ctx.getChild(1).getText()
-		right: Container = self.visit(ctx.getChild(2))
-
-		if left is None or right is None:
-			error(self.debug, f"Error Expression. Evaluating Expression: None Arguments. [{left}] {operator} [{right}]")
-
-		operation_type = operationType(self.debug, left, operator, right)
-
-		self.exitFull("Expression")
-
-		return Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
+		#return children
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
 		"""Assign Code to a Variable"""
 		self.enterFull("Assignment")
 
 		if ctx.logic_or():
-			self.visit(ctx.logic_or())
+			return self.visit(ctx.logic_or())
 
 		if ctx.call():
 			if ctx.call().getText() == "this":
@@ -279,6 +273,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						self.current_class.member_variables.append(variable)
 						self.scope_tracker.declareVariable(variable)
 						self.addSymbolToTable(variable)
+
+						self.exitFull("Assignment")
+						return Container(variable, Type.VARIABLE)
 					else:
 						error(self.debug, "NOT IMPLEMENTED")
 				else:
@@ -291,6 +288,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						var = instance.data.data.lookupVariable(ctx.IDENTIFIER().getText())
 						var.data = code
 						self.updateSymbolFromTable(var)
+
+						self.exitFull("Assignment")
+						return Container(var, Type.INSTANCE)
 					else:
 						error(self.debug, f"Error Assignment. {instance.data.data.ID}.{ctx.IDENTIFIER().getText()} is not defined")
 
@@ -300,18 +300,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 			if ctx.assignment():
 				code = self.visit(ctx.assignment())
-			elif ctx.logic_or():
-				code = self.visit(ctx.logic_or())
 
 			if self.scope_tracker.checkVariable(var_name, None):
 				var = self.scope_tracker.lookupVariable(var_name, None)
 				var.data = code
 				self.updateSymbolFromTable(var)
+
+				self.exitFull("Assignment")
+				return Container(var, Type.VARIABLE)
 			else:
 				error(self.debug, f"Error Assignment. Cannot assign value to an undeclared variable {var_name}")
- 
-		self.exitFull("Assignment")
-		return self.visitChildren(ctx)
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext):
 		self.enterFull("Or")
@@ -340,11 +338,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
 		self.enterFull("Equality")
 
-		if ctx.getChildCount() == 1:
-			value: Container = self.visit(ctx.comparison(0))
-			self.exitFull("Equality")
-			return value
-
 		left: Container = self.visit(ctx.comparison(0))
 		for i in range(1, len(ctx.comparison())):
 			operator = ctx.getChild(2 * i - 1).getText()
@@ -355,13 +348,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.exitFull("Equality")
 			return Container(f"({left.data} {operator} {right.data})", Type.BOOL)
 
+		self.exitFull("Equality")
+		return left
+
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		self.enterFull("Comparison")
-
-		if ctx.getChildCount() == 1:
-			value: Container = self.visit(ctx.term(0))
-			self.exitFull("Comparison")
-			return value
 
 		left: Container = self.visit(ctx.term(0))
 		for i in range(1, len(ctx.term())):
@@ -372,6 +363,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			comparisonCheck(self.debug, left, operator, right)
 			self.exitFull("Comparison")
 			return Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", Type.BOOL)
+
+		self.exitFull("Comparison")
+		return left
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
 		self.enterFull("Term")
@@ -387,9 +381,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			operation_type = operationType(self.debug, left, operator, right)
 
 			self.exitFull("Term")
-
 			return Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
 
+		self.exitFull("Term")
 		return left
 
 	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
@@ -406,9 +400,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			operation_type = operationType(self.debug, left, operator, right)
 
 			self.exitFull("Factor")
-
 			return Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
 
+		self.exitFull("Factor")
 		return left
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext):

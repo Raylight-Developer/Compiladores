@@ -231,11 +231,10 @@ for (var i = 0; i < 2; i = i + 1) {
 			else:
 				self.log.log("\t" + str(self.debug).strip())
 				self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>")
-				self.log.append(str(e))
 
 				self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
 				self.tac_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
-		except:
+		except Exception as e:
 			self.log.log("\t" + str(self.debug).strip())
 			self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>")
 			self.log.append(str(e))
