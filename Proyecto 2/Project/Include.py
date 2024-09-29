@@ -10,10 +10,8 @@ import re
 from typing import List, Dict, Tuple, Set, Union, Generic, TypeVar, Any
 from enum import Enum
 
-from PySide6.QtWidgets import QWidget
-from graphviz import Digraph
-from antlr4 import *
 from antlr4.tree.Tree import *
+from antlr4 import *
 
 RESET  = "</span>"
 R      = "<span style = 'color:rgb(250,50,50);'   >"

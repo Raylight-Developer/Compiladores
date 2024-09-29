@@ -41,25 +41,34 @@ class TAC_Generator: #(CompiscriptVisitor):
 		temp_id = self.new_temp()
 		block_id = self.new_label()
 		self.code << NL()
-		self.code << f"// Function:  [{temp_id}] {value.ID}"
+		self.code << f"// Function:  [{temp_id}] [{block_id}] "
+		if value.member:
+			self.code << value.member.ID << "."
+		self.code << value.ID
 		return Tac_Info(temp_id, { "Block ID" : block_id })
 
 	def declareVariable(self, value: Variable):
 		temp_id = self.new_temp()
 		self.code << NL()
-		self.code << f"// Variable:  [{temp_id}] {value.ID}"
+		self.code << f"// Variable:  [{temp_id}] "
+		if value.member:
+			self.code << value.member.ID << "."
+		self.code << value.ID
 		return Tac_Info(temp_id)
 
 	def declareAnonFunction(self, value: Function):
 		temp_id = self.new_temp()
 		block_id = self.new_label()
 		self.code << NL()
-		self.code << f"// Anon Function:  [{temp_id}] {value.ID}"
+		self.code << f"// Anon Function:  [{temp_id}] [{block_id}] {value.ID}"
 		return Tac_Info(temp_id, { "Block ID" : block_id })
 
 	def callFunction(self, value: Function):
 		self.code << NL()
-		self.code << "GOTO " + self.scope_tracker.lookupFunction(value.ID, value.member).tac_data.ID
+		self.code << "GOTO " << self.scope_tracker.lookupFunction(value.ID, value.member).tac_data.data["Block ID"] << " // "
+		if value.member:
+			self.code << value.member.ID << "."
+		self.code << value.ID
 
 	def generate_if(self, if_expr: List[str] = [], if_condition: str = "", if_body: List[str] = [], else_body: List[str] = []):
 		if_label = self.new_label()

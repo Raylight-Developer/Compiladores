@@ -202,17 +202,9 @@ for (var i = 0; i < 2; i = i + 1) {
 			lexer = CompiscriptLexer(InputStream(code))
 			token_stream = CommonTokenStream(lexer)
 			parser = CompiscriptParser(token_stream)
-
-			tree = parser.program()
 			analyzer = Semantic_Analyzer(self.debug, self.table_classes, self.table_functions, self.table_variables, parser)
-			analyzer.visit(tree)
 
-
-			if self.options["render"]:
-				if not os.path.exists("./Output"):
-					os.makedirs("Output")
-				analyzer.nodeTree(tree)
-				analyzer.graph.render("Syntax-Graph","./Output", False, True, "png")
+			analyzer.visit(parser.program())
 
 			self.table_classes.resizeColumnsToContents()
 			self.table_functions.resizeColumnsToContents()
@@ -221,24 +213,19 @@ for (var i = 0; i < 2; i = i + 1) {
 			if not self.debug.error:
 				self.log.log("\t" + str(self.debug).strip())
 				self.log.insertHtml("<br>}" + f"<br>{G}Comiplation Succesful{RESET}<br>")
-				#self.log.insertPlainText(tree.toStringTree(recog=parser))
-
 				self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
-				#analyzer.tac.generate_for(["EXPR"], "COMPARE", "UPDATE", ["EXPR"])
-
 				self.tac_output.append(str(analyzer.tac.code))
 
 			else:
 				self.log.log("\t" + str(self.debug).strip())
 				self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>")
-
 				self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
 				self.tac_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
+
 		except Exception as e:
 			self.log.log("\t" + str(self.debug).strip())
 			self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>")
 			self.log.append(str(e))
-
 			self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
 			self.tac_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
 

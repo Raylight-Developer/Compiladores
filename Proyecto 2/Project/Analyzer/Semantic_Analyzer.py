@@ -21,16 +21,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.parser = parser
 		self.compiled = True
 
-		self.tac = TAC_Generator()
-
 		self.debug = debug
-		self.count = 0
-		self.graph = Digraph()
+		self.tac = TAC_Generator()
 		self.scope_tracker = Scope_Tracker(debug, self.tac)
 		self.tac.scope_tracker = self.scope_tracker
 
-		self.current_call      : str = None
-
+		self.current_call     : str = None
 		self.current_class    : Class    = None
 		self.current_instance : Variable = None
 		self.current_function : Function = None
@@ -137,14 +133,16 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		struct.ID = ctx.IDENTIFIER(0).getText()
 		self.current_class = struct
 
+		self.debug << NL() << f"Declaring Class [{struct.ID}]"
+
 		if ctx.IDENTIFIER(1):
 			struct.parent = self.scope_tracker.lookupClass(ctx.IDENTIFIER(1).getText())
 			for member in struct.parent.member_functions:
 				member.member = struct
 				member.origin = "Inherited"
 				struct.member_functions.append(member)
-				self.scope_tracker.declareFunction(member)
-				self.addSymbolToTable(member)
+				#self.scope_tracker.declareFunction(member)
+				#self.addSymbolToTable(member)
 
 			for member in struct.parent.member_variables:
 				member.member = struct
@@ -154,20 +152,19 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 			struct.initialzer = struct.parent.initializer
 
-			struct.parent = self.scope_tracker.lookupClass(ctx.IDENTIFIER(1).getText())
-
-		self.debug << NL() << f"Declaring Class [{struct.ID}]"
-
 		members: List[Container[Function]] = self.visit(ctx.classBody())
-		for member in members:
-			for function in struct.member_functions:
-				if member.data.ID == function.ID:
-					struct.member_functions.remove(function)
-					self.removeSymbolFromTable(function)
-					member.data.origin = "Override"
-					self.updateSymbolFromTable(member.data)
-			struct.member_functions.append(member.data)
 #
+		for member in members:
+			if member.data.ID in [function.ID for function in struct.member_functions]:
+				inherited = next((inherited for inherited in struct.member_functions if inherited.ID == member.data.ID), None)
+				struct.member_functions.remove(inherited)
+				self.removeSymbolFromTable(inherited)
+				member.data.origin = "Override"
+				member.data.tac_data
+			self.scope_tracker.declareFunction(member.data)
+			self.addSymbolToTable(member.data)
+			struct.member_functions.append(member.data)
+
 		self.scope_tracker.exitScope()
 		self.scope_tracker.declareClass(struct)
 		self.addSymbolToTable(struct)
@@ -279,7 +276,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						for member in self.current_class.member_variables:
 							if member.ID == variable.ID:
 								self.current_class.member_variables.remove(member)
-								self.removeSymbolFromTable(member)
+								#self.removeSymbolFromTable(member)
 								variable.origin = "Override"
 
 						self.current_class.member_variables.append(variable)
@@ -615,8 +612,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				type = Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE
 				val = Container(variable, type)
 			elif self.scope_tracker.checkFunction(ID, self.current_class):
-				function = self.scope_tracker.lookupFunction(ID, self.current_class)
-				val = Container(function, Type.FUNCTION)
+				val = Container(self.scope_tracker.lookupFunction(ID, self.current_class), Type.FUNCTION)
 			elif self.current_function:
 				val = Container(self.current_function.lookupParameter(ID), Type.PARAMETER)
 			else:
@@ -673,8 +669,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.visitChildren(ctx)
 #
 		self.scope_tracker.exitScope()
-		self.scope_tracker.declareFunction(function)
-		self.addSymbolToTable(function)
+		if not self.current_class:
+			self.scope_tracker.declareFunction(function)
+			self.addSymbolToTable(function)
 		self.current_function = None
 #
 		self.exitFull("Function")
@@ -746,22 +743,3 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def exit(self, type: str):
 		self.debug -= 1
 		self.debug << NL() << "EXIT  " + type
-
-	def nodeTree(self, ctx: ParserRuleContext):
-		node_id = f"node{self.count}"
-		self.count += 1
-
-		if isinstance(ctx, ParserRuleContext):
-			rule_name = self.parser.ruleNames[ctx.getRuleIndex()]
-			label = f"{rule_name}: {ctx.getText()}"
-		else:
-			label = f"Terminal: {ctx.getText()}"
-
-		self.graph.node(node_id, label)
-
-		for i in range(ctx.getChildCount()):
-			child = ctx.getChild(i)
-			child_id = self.nodeTree(child)
-			self.graph.edge(node_id, child_id)
-
-		return node_id
