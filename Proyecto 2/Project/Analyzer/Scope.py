@@ -64,7 +64,6 @@ class Scope_Tracker:
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"cls<{value.ID}> : <{value.ID}>")
 
 	def declareFunction(self, value: Function):
-		Tac_Data = self.tac.declareFunction(value)
 		computed = Tag(value.ID, Type.FUNCTION)
 		if not value.member and self.checkFunction(value.ID):
 			self.print()
@@ -72,7 +71,7 @@ class Scope_Tracker:
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		value.tac_data  = self.tac.declareFunction(value)
+		value.tac_data = self.tac.declareFunction(value)
 		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"fun<{value.ID}> : <{value.ID}>")
 

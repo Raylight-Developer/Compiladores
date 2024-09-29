@@ -61,6 +61,32 @@ class Semantic_Analyzer(CompiscriptVisitor):
 	def visitPrintStmt(self, ctx:CompiscriptParser.PrintStmtContext):
 		return self.visitChildren(ctx)
 
+	def visitReturnStmt(self, ctx:CompiscriptParser.ReturnStmtContext):
+		if ctx.expression():
+			return self.visit(ctx.expression())
+		return Container(None, Type.VOID)
+
+	def visitParameters(self, ctx:CompiscriptParser.ParametersContext):
+		parameters: List[str] = []
+		for identifier in ctx.IDENTIFIER():
+			parameters.append(identifier.getText())
+		return parameters
+
+	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
+		arguments = []
+		for expr in ctx.expression():
+			arguments.append(self.visit(expr))  # Visit and evaluate each expression
+		return arguments
+
+	def visitBlock(self, ctx:CompiscriptParser.BlockContext):
+		self.enterFull("Block")
+
+		self.scope_tracker.enterScope()
+		self.visitChildren(ctx)
+		self.scope_tracker.exitScope()
+
+		self.exitFull("Block")
+
 	def visitExpression(self, ctx: CompiscriptParser.ExpressionContext):
 		self.enterFull("Expression")
 
@@ -72,18 +98,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.exitFull("Expression")
 			return self.visit(ctx.funAnon())
 
-	def visitBlock(self, ctx:CompiscriptParser.BlockContext):
-		self.enter("Block")
-
-		self.scope_tracker.enterScope()
-		self.visitChildren(ctx)
-		self.scope_tracker.exitScope()
-
-		self.exit("Block")
-
 	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
 		"""Create Scoped Lambda-ish Function"""
-		self.enter("Anon Function")
+		self.enterFull("Anon Function")
 		self.scope_tracker.enterScope()
 
 		function = Function()
@@ -108,11 +125,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.addSymbolToTable(function)
 		self.current_function = None
 #
-		self.exit("Anon Function")
+		self.exitFull("Anon Function")
 		return Container(function, Type.FUN_ANON)
 
 	def visitClassDecl(self, ctx:CompiscriptParser.ClassDeclContext):
-		self.enter("Class Declaration")
+		self.enterFull("Class Declaration")
 		self.scope_tracker.enterScope()
 
 		struct = Class()
@@ -156,30 +173,30 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.addSymbolToTable(struct)
 #
 		self.current_class = None
-		self.exit("Class Declaration")
+		self.exitFull("Class Declaration")
 		return Container(struct, Type.CLASS)
 
 	def visitClassBody(self, ctx:CompiscriptParser.ClassBodyContext):
-		self.enter("Class Body")
+		self.enterFull("Class Body")
 		members: List[Container] = []
 		for i in range(len(ctx.classMember())):
 			member = self.visit(ctx.classMember(i))
 			members.append(member)
-		self.exit("Class Body")
+		self.exitFull("Class Body")
 		return members
 
 	def visitClassMember(self, ctx:CompiscriptParser.ClassMemberContext):
-		self.enter("Member Declaration")
+		self.enterFull("Member Declaration")
 		self.scope_tracker.enterScope()
 
 		if ctx.function():
 			function: Container = self.visit(ctx.function())
-			self.exit("Member Declaration")
+			self.exitFull("Member Declaration")
 			self.scope_tracker.exitScope()
 			return function
 
 	def visitForStmt(self, ctx:CompiscriptParser.ForStmtContext):
-		self.enter("For Statement")
+		self.enterFull("For Statement")
 		self.scope_tracker.enterScope()
 
 		if ctx.varDecl():
@@ -198,11 +215,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		#children: Container = self.visit(ctx.statement())
 
 		self.scope_tracker.exitScope()
-		self.exit("For Statement")
+		self.exitFull("For Statement")
 		#return children
 
 	def visitIfStmt(self, ctx:CompiscriptParser.IfStmtContext):
-		self.enter("If Statement")
+		self.enterFull("If Statement")
 
 		if ctx.expression():
 			expression: Container = self.visit(ctx.expression())
@@ -217,16 +234,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if ctx.statement(1):
 			return self.visit(ctx.statement(1))
 
-		self.exit("If Statement")
+		self.exitFull("If Statement")
 		#return None
 
-	def visitReturnStmt(self, ctx:CompiscriptParser.ReturnStmtContext):
-		if ctx.expression():
-			return self.visit(ctx.expression())
-		return Container(None, Type.VOID)
-
 	def visitWhileStmt(self, ctx:CompiscriptParser.WhileStmtContext):
-		self.enter("While Statement")
+		self.enterFull("While Statement")
 		self.scope_tracker.enterScope()
 
 		expression = self.visit(ctx.expression())
@@ -235,7 +247,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		#children = self.visit(ctx.statement())
 
 		self.scope_tracker.exitScope()
-		self.exit("While Statement")
+		self.exitFull("While Statement")
 		#return children
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
@@ -503,35 +515,34 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				if child_count > 3:  # Checks if there are more elements indicating a chain
 					current_instance: Class | Variable | Function = primary.data.data  # Start with the first instance
 					for i in range(2, child_count, 2):  # Iterate over each chained element (assuming format: instance '.' member)
-						member_name = ctx.getChild(i).getText()  # Extract member name
+						member_name = ctx.getChild(i).getText()
 						if isinstance(current_instance, Variable):
 							return Container(current_instance, Type.VARIABLE)
-						
-						if i + 1 < child_count and ctx.getChild(i + 1).getText() == '(':  # It's a function call
+						# It's a function call
+						if i + 1 < child_count and ctx.getChild(i + 1).getText() == '(':
 							function = self.scope_tracker.lookupFunction(member_name, current_instance)
 							call_params = []
 							if ctx.arguments() and len(ctx.arguments()) > 0:
 								arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
 								for j in range(0, arguments.getChildCount(), 2):
 									call_params.append(self.visit(arguments.getChild(j)))
-							
 							# Check if the parameters match the function definition
 							if len(function.parameters) != len(call_params):
 								error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(function.parameters)}")
-							
 							# Move to the next instance for further chained calls, if any
 							if function.return_type == Type.VOID:
 								break
 							current_instance = function.return_type  # Update the current instance to function's return type
-						else:  # It's a variable access
+						# It's a variable access
+						else:
 							variable = self.scope_tracker.lookupVariable(member_name, current_instance)
 							current_instance = variable  # Update current instance to variable's type
-
 					return Container(current_instance, Type.INSTANCE)
-				
-				else:  # Single function call or variable access
+				# Single function call or variable access
+				else:
 					member_name = ctx.IDENTIFIER(0).getText()
-					if ctx.getChild(2).getText() == '(':  # Function call
+					# Function call
+					if ctx.getChild(2).getText() == '(':
 						function = self.scope_tracker.lookupFunction(member_name, primary.data.data)
 						call_params = []
 						if ctx.arguments() and len(ctx.arguments()) > 0:
@@ -541,8 +552,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						if len(function.parameters) != len(call_params):
 							error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(function.parameters)}")
 						self.current_call = None
-						return function  # Return the called function
-					else:  # Variable access
+						# Return the called function
+						self.tac.callFunction(function)
+						return function
+					# Variable access
+					else:
 						return Container(self.scope_tracker.lookupVariable(member_name, primary.data.data), Type.VARIABLE)
 			
 			elif primary.type == Type.SUPER:
@@ -558,10 +572,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				if len(self.current_class.parent.initializer.parameters) != len(call_params):
 					error(self.debug, f"Error Call. Tried to call Super Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_class.parent.initializer.parameters)}")
 
-		self.exitFull("Call")
-
-		visited: Container = self.visitChildren(ctx)
-		return visited
+		#self.exitFull("Call")
+		#return self.visitChildren(ctx)
 
 	def visitSuperCall(self, ctx: CompiscriptParser.SuperCallContext):
 		self.enterFull("Super")
@@ -576,60 +588,66 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		member_name: str = ctx.IDENTIFIER().getText()
 		if self.current_class.parent.checkFunction(member_name):
 			self.exitFull("Super")
-			return Container(self.current_class.lookupFunction(member_name), Type.SUPER)
+			function = self.current_class.lookupFunction(member_name)
+			self.tac.callFunction(function)
+			return Container(function, Type.SUPER)
 		else:
 			error(self.debug, f"Error Super. No function in hierarchy named '{member_name}'")
 
-
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
-		#self.enterFull("Primary")
+		self.enterFull("Primary")
+
+		val = None
 
 		if ctx.NUMBER():
 			text = str(ctx.NUMBER())
 			if '.' in text:
-				return Container(text, Type.FLOAT)
+				val = Container(text, Type.FLOAT)
 			else:
-				return Container(text, Type.INT)
+				val = Container(text, Type.INT)
 		elif ctx.STRING():
 			text = str(ctx.STRING()).strip('"')
-			return Container(text, Type.STRING)
+			val = Container(text, Type.STRING)
 		elif ctx.IDENTIFIER():
 			ID = ctx.IDENTIFIER().getText()
 			if self.scope_tracker.checkVariable(ID, self.current_class):
 				variable = self.scope_tracker.lookupVariable(ID, self.current_class)
 				type = Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE
-				return Container(variable, type)
-			if self.scope_tracker.checkFunction(ID, self.current_class):
+				val = Container(variable, type)
+			elif self.scope_tracker.checkFunction(ID, self.current_class):
 				function = self.scope_tracker.lookupFunction(ID, self.current_class)
-				return Container(function, Type.FUNCTION)
-			if self.current_function:
-				return Container(self.current_function.lookupParameter(ID), Type.PARAMETER)
-
-			error(self.debug, f"Error Primary. Variable '{ID}' not defined")
+				val = Container(function, Type.FUNCTION)
+			elif self.current_function:
+				val = Container(self.current_function.lookupParameter(ID), Type.PARAMETER)
+			else:
+				error(self.debug, f"Error Primary. Variable '{ID}' not defined")
 
 		elif ctx.array():
-			return self.visit(ctx.array())
+			val = self.visit(ctx.array())
 		elif ctx.instantiation():
-			return self.visit(ctx.instantiation())
+			val = self.visit(ctx.instantiation())
 		elif ctx.expression():
-			return self.visit(ctx.expression())
+			val = self.visit(ctx.expression())
 		elif ctx.superCall():
-			return self.visit(ctx.superCall())
+			val = self.visit(ctx.superCall())
 
 		elif ctx.getText() == "true":
-			return Container("true", Type.BOOL)
+			val = Container("true", Type.BOOL)
 		elif ctx.getText() == "false":
-			return Container("false", Type.BOOL)
+			val = Container("false", Type.BOOL)
 		elif ctx.getText() == "nil":
-			return Container("nil", Type.NONE)
+			val = Container("nil", Type.NONE)
 		elif ctx.getText() == "this":
-			return Container("this", Type.THIS)
+			val = Container("this", Type.THIS)
 		elif ctx.superCall():
-			return Container(ctx.superCall().getChild(2).getText(), Type.SUPER)
+			val = Container(ctx.superCall().getChild(2).getText(), Type.SUPER)
+
+		self.exitFull("Primary")
+		return val
 
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
 		"""Assign Function Member to Class or create Function"""
-		self.enter("Function")
+		self.enterFull("Function")
 		self.scope_tracker.enterScope()
 
 		function = Function()
@@ -649,8 +667,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		if self.current_class:
 			function.member = self.current_class
-			#TODO if function.ID == "init"
-			#TODO this. variables
 			if function.ID == "init":
 				self.current_class.initializer = function
 
@@ -661,12 +677,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.addSymbolToTable(function)
 		self.current_function = None
 #
-		self.exit("Function")
+		self.exitFull("Function")
 		return Container(function, Type.FUNCTION)
 
 	def visitVariable(self, ctx:CompiscriptParser.VariableContext):
 		"""Assign Variable Member to Class or create Variable"""
-		self.enter("Variable")
+		self.enterFull("Variable")
 #
 		variable = Variable()
 		variable.ctx = ctx
@@ -686,21 +702,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.declareVariable(variable)
 		self.addSymbolToTable(variable)
 #
-		self.exit("Variable")
-
+		self.exitFull("Variable")
 		return Container(variable, Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE)
-
-	def visitParameters(self, ctx:CompiscriptParser.ParametersContext):
-		parameters: List[str] = []
-		for identifier in ctx.IDENTIFIER():
-			parameters.append(identifier.getText())
-		return parameters
-
-	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
-		arguments = []
-		for expr in ctx.expression():
-			arguments.append(self.visit(expr))  # Visit and evaluate each expression
-		return arguments
 
 	def addSymbolToTable(self, value: Class | Function | Variable):
 		if isinstance(value, Class):

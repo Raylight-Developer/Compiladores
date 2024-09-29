@@ -224,7 +224,7 @@ for (var i = 0; i < 2; i = i + 1) {
 				#self.log.insertPlainText(tree.toStringTree(recog=parser))
 
 				self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
-				analyzer.tac.generate_for(["EXPR"], "COMPARE", "UPDATE", ["EXPR"])
+				#analyzer.tac.generate_for(["EXPR"], "COMPARE", "UPDATE", ["EXPR"])
 
 				self.tac_output.append(str(analyzer.tac.code))
 
