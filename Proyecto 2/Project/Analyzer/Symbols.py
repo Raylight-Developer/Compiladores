@@ -136,9 +136,10 @@ def comparisonCheck(debug: Lace, left: 'Container', operator: str, right: 'Conta
 
 T = TypeVar('T')
 class Container(Generic[T]):
-	def __init__(self, data: Union[str, int, float, bool, 'Class', 'Function', 'Variable', None], type: Type):
+	def __init__(self, data: Union[str, int, float, bool, 'Class', 'Function', 'Variable', None] = None, type: Type = Type.NONE):
 		self.data = data
 		self.type = type
+		self.tac_data = {}
 
 	def innermostCode(self):
 		if isinstance(self.data, Variable):

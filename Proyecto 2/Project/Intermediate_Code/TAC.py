@@ -31,44 +31,51 @@ class TAC_Generator: #(CompiscriptVisitor):
 		self.label_count += 1
 		return f"L_{self.label_count}"
 
-	def declareClass(self, value: Class):
+	def declareClass(self, struct: Class):
 		temp_id = self.new_temp()
 		self.code << NL()
-		self.code << f"// Class:     [{temp_id}] {value.ID}"
+		self.code << f"// Class:     [{temp_id}] {struct.ID}"
 		return Tac_Info(temp_id, {})
 
-	def declareFunction(self, value: Function):
+	def declareFunction(self, function: Function):
 		temp_id = self.new_temp()
 		block_id = self.new_label()
 		self.code << NL()
 		self.code << f"// Function:  [{temp_id}] [{block_id}] "
-		if value.member:
-			self.code << value.member.ID << "."
-		self.code << value.ID
+		if function.member:
+			self.code << function.member.ID << "."
+		self.code << function.ID
 		return Tac_Info(temp_id, { "Block ID" : block_id })
 
-	def declareVariable(self, value: Variable):
+	def declareVariable(self, variable: Variable):
 		temp_id = self.new_temp()
 		self.code << NL()
 		self.code << f"// Variable:  [{temp_id}] "
-		if value.member:
-			self.code << value.member.ID << "."
-		self.code << value.ID
+		if variable.member:
+			self.code << variable.member.ID << "."
+		self.code << variable.ID
 		return Tac_Info(temp_id)
 
-	def declareAnonFunction(self, value: Function):
+	def declareAnonFunction(self, function: Function):
 		temp_id = self.new_temp()
 		block_id = self.new_label()
 		self.code << NL()
-		self.code << f"// Anon Function:  [{temp_id}] [{block_id}] {value.ID}"
+		self.code << f"// Anon Function:  [{temp_id}] [{block_id}] {function.ID}"
 		return Tac_Info(temp_id, { "Block ID" : block_id })
 
-	def callFunction(self, value: Function):
+	def assignVariable(self, variable: Variable, tac_data : Dict[str, Any]):
 		self.code << NL()
-		self.code << "GOTO " << self.scope_tracker.lookupFunction(value.ID, value.member).tac_data.data["Block ID"] << " // "
-		if value.member:
-			self.code << value.member.ID << "."
-		self.code << value.ID
+		expression = tac_data["expression"]
+		if isinstance(tac_data["expression"], list):
+			expression = ' '.join(tac_data["expression"])
+		self.code << variable.tac_data.ID << ": " << expression
+
+	def callFunction(self, function: Function):
+		self.code << NL()
+		self.code << "GOTO " << self.scope_tracker.lookupFunction(function.ID, function.member).tac_data.data["Block ID"] << " // "
+		if function.member:
+			self.code << function.member.ID << "."
+		self.code << function.ID
 
 	def generate_if(self, if_expr: List[str] = [], if_condition: str = "", if_body: List[str] = [], else_body: List[str] = []):
 		if_label = self.new_label()
