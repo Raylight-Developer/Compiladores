@@ -137,7 +137,7 @@ def comparisonCheck(debug: Lace, left: 'Container', operator: str, right: 'Conta
 T = TypeVar('T')
 class Container(Generic[T]):
 	def __init__(self, data: Union[str, int, float, bool, 'Class', 'Function', 'Variable', None] = None, type: Type = Type.NONE):
-		self.data = data
+		self.data: T = data
 		self.type = type
 		self.tac_data = {}
 
@@ -154,7 +154,7 @@ class Container(Generic[T]):
 class Variable:
 	def __init__(self):
 		self.ctx         : CompiscriptParser.VariableContext = None
-		self.tac_data    : 'Tac_Data' = None
+		self.tac_data    : 'Tac_Info' = None
 
 		self.ID          : str  = None
 		self.type        : Type = Type.UNKNOWN
@@ -176,6 +176,9 @@ class Variable:
 
 class Function_Parameter:
 	def __init__(self):
+		self.ctx         : CompiscriptParser.VariableContext = None
+		self.tac_data    : 'Tac_Info' = None
+
 		self.ID   : str  = None
 		self.type : Type = Type.UNKNOWN
 
@@ -187,7 +190,7 @@ class Function_Parameter:
 class Function:
 	def __init__(self):
 		self.ctx         : CompiscriptParser.FunctionContext = None
-		self.tac_data    : 'Tac_Data' = None
+		self.tac_data    : 'Tac_Info' = None
 
 		self.ID          : str  = None
 		self.data        : str  = None
@@ -219,7 +222,7 @@ class Function:
 class Class:
 	def __init__(self):
 		self.ctx         : CompiscriptParser.ClassDeclContext = None
-		self.tac_data    : 'Tac_Data' = None
+		self.tac_data    : 'Tac_Info' = None
 
 		self.ID          : str   = None
 		self.parent      : Class = None

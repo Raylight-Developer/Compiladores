@@ -83,7 +83,7 @@ class Scope_Tracker:
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		value.tac_data  = self.tac.declareVariable(value)
+		value.tac_data = self.tac.declareVariable(value)
 		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"var<{value.ID}> : <{value.ID}>")
 
@@ -94,7 +94,7 @@ class Scope_Tracker:
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		value.tac_data  = self.tac.declareAnonFunction(value)
+		value.tac_data = self.tac.declareAnonFunction(value)
 		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"anon_fun<{value.ID}> : <{value.ID}>")
 

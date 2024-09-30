@@ -290,7 +290,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						variable.ID = memeber_var_name
 						variable.member = self.flags["current_class"]
 
-						assignment: Container = self.visit(ctx.assignment())
+						assignment: Container[Function_Parameter] = self.visit(ctx.assignment())
 						if assignment.type == Type.PARAMETER:
 							variable.data = assignment.data.ID
 							variable.type = assignment.type
@@ -307,6 +307,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						self.flags["current_class"].member_variables.append(variable)
 						self.scope_tracker.declareVariable(variable)
 						self.addSymbolToTable(variable)
+
+						if assignment.type == Type.PARAMETER:
+							variable.tac_data.data["expression"] = assignment.data.tac_data.ID
+							self.tac.assignVariable(variable, variable.tac_data.data)
 
 						res = Container(variable, Type.VARIABLE)
 					else:
@@ -330,14 +334,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			var_name = str(ctx.IDENTIFIER())
 			self.debug << NL() << "Assigning Value to [" << var_name << "]"
 
-			if ctx.assignment():
-				code = self.visit(ctx.assignment())
-
 			if self.scope_tracker.checkVariable(var_name, None):
 				var = self.scope_tracker.lookupVariable(var_name, None)
-				var.data = code
+				var.data = self.visit(ctx.assignment())
 				self.updateSymbolFromTable(var)
-				#self.tac.assignVariable(var, )
+				self.tac.assignVariable(var, {"expression": "FOR LOOP"})
 
 				res = Container(var, Type.VARIABLE)
 			else:
@@ -736,6 +737,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				parameter = Function_Parameter()
 				parameter.ID = param.getText()
 				parameter.function = function
+				self.tac.declareParameter(parameter)
 				function.parameters.append(parameter)
 
 		if self.flags["current_class"]:

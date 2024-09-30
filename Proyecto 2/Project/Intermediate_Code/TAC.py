@@ -56,6 +56,13 @@ class TAC_Generator: #(CompiscriptVisitor):
 		self.code << variable.ID
 		return Tac_Info(temp_id)
 
+	def declareParameter(self, parameter: Function_Parameter):
+		temp_id = self.new_temp()
+		self.code << NL()
+		self.code << f"// Parameter:  [{temp_id}] "
+		self.code << parameter.function.ID << "." << parameter.ID
+		parameter.tac_data = Tac_Info(temp_id)
+
 	def declareAnonFunction(self, function: Function):
 		temp_id = self.new_temp()
 		block_id = self.new_label()
