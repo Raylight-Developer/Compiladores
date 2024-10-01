@@ -66,6 +66,7 @@ class TAC_Generator():
 			"Arguments": 0,
 		}
 
+		self.tac_map: Dict[str,str] = {}
 		self.tac_code = Lace()
 		self.traverseProgram(self.program)
 
@@ -291,79 +292,106 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Expression):
 			self.depth["Expression"] += 1
 			if node.assignment:
-				return self.traverseProgram(node.assignment)
+				res = self.traverseProgram(node.assignment)
 			elif node.funAnon:
-				self.traverseProgram(node.funAnon)
+				res = self.traverseProgram(node.funAnon)
 			self.depth["Expression"] -= 1
+			return res
 
 		elif isinstance(node, ANT_Assignment):
 			self.depth["Assignment"] += 1
-			if node.logic_or:
-				result = self.traverseProgram(node.logic_or)
-				if node.IDENTIFIER:
-					self.tac_code << f"{node.IDENTIFIER} = {result}"
-				return result
+			if node.IDENTIFIER:
+				self.tac_code << NL() << self.tac_map["var;"+node.IDENTIFIER] << " = "
+				if node.assignment:
+					self.traverseProgram(node.assignment)
+			elif node.logic_or:
+				res = self.traverseProgram(node.logic_or)
 			self.depth["Assignment"] -= 1
+			return res
 
 		elif isinstance(node, ANT_LogicOr):
 			self.depth["LogicOr"] += 1
-			left = self.traverseProgram(node.left)
-			for op, right in node.array:
-				right_result = self.traverseProgram(right)
-				temp = self.new_temp()
-				self.tac_code << NL()  << f"{temp} = {left} || {right_result}"
-				left = temp
+			if len(node.array) == 0:
+				res = self.traverseProgram(node.left)
+			else:
+				left = self.traverseProgram(node.left)
+				for op, right in node.array:
+					right_result = self.traverseProgram(right)
+					res = self.new_temp()
+					self.tac_code << NL() << f"{res} = {left} || {right_result}"
+					left = res
 			self.depth["LogicOr"] -= 1
+			return res
 
-		elif  isinstance(node, ANT_LogicAnd):
+		elif isinstance(node, ANT_LogicAnd):
 			self.depth["LogicAnd"] += 1
-			left = self.traverseProgram(node.left)
-			for op, right in node.array:
-				right_result = self.traverseProgram(right)
-				temp = self.new_temp()
-				self.tac_code << NL() << f"{temp} = {left} && {right_result}"
-				left = temp
+			if len(node.array) == 0:
+				res = self.traverseProgram(node.left)
+			else:
+				left = self.traverseProgram(node.left)
+				for op, right in node.array:
+					right_result = self.traverseProgram(right)
+					res = self.new_temp()
+					self.tac_code << NL() << f"{res} = {left} && {right_result}"
+					left = res
 			self.depth["LogicAnd"] -= 1
+			return res
 
 		elif isinstance(node, ANT_Equality):
 			self.depth["Equality"] += 1
-			left = self.traverseProgram(node.left)
-			for op, right in node.array:
-				right_result = self.traverseProgram(right)
-				temp = self.new_temp()
-				self.tac_code << f"{temp} = {left} {op} {right_result}"
-				left = temp
+			if len(node.array) == 0:
+				res = self.traverseProgram(node.left)
+			else:
+				left = self.traverseProgram(node.left)
+				for op, right in node.array:
+					right_result = self.traverseProgram(right)
+					res = self.new_temp()
+					self.tac_code << NL() << f"{res} = {left} {op} {right_result}"
+					left = res
 			self.depth["Equality"] -= 1
+			return res
 
 		elif isinstance(node, ANT_Comparison):
 			self.depth["Comparison"] += 1
-			left = self.traverseProgram(node.left)
-			for op, right in node.array:
-				right_result = self.traverseProgram(right)
-				temp = self.new_temp()
-				self.tac_code << f"{temp} = {left} {op} {right_result}"
-				left = temp
+			if len(node.array) == 0:
+				res = self.traverseProgram(node.left)
+			else:
+				left = self.traverseProgram(node.left)
+				for op, right in node.array:
+					right_result = self.traverseProgram(right)
+					res = self.new_temp()
+					self.tac_code << NL() << f"{res} = {left} {op} {right_result}"
+					left = res
 			self.depth["Comparison"] -= 1
+			return res
 
 		elif isinstance(node, ANT_Term):
 			self.depth["Term"] += 1
-			left = self.traverseProgram(node.left)
-			for op, right in node.array:
-				right_result = self.traverseProgram(right)
-				temp = self.new_temp()
-				self.tac_code <<f"{temp} = {left} {op} {right_result}"
-				left = temp
+			if len(node.array) == 0:
+				res = self.traverseProgram(node.left)
+			else:
+				left = self.traverseProgram(node.left)
+				for op, right in node.array:
+					right_result = self.traverseProgram(right)
+					res = self.new_temp()
+					self.tac_code << NL() << f"{res} = {left} {op} {right_result}"
+					left = res
 			self.depth["Term"] -= 1
+			return res
 
 		elif isinstance(node, ANT_Factor):
 			self.depth["Factor"] += 1
-			left = self.traverseProgram(node.left)
-			for op, right in node.array:
-				right_result = self.traverseProgram(right)
-				temp = self.new_temp()
-				self.tac_code <<f"{temp} = {left} {op} {right_result}"
-				left = temp
-			self.depth["Factor"] -= 1
+			if len(node.array) == 0:
+				res = self.traverseProgram(node.left)
+			else:
+				left = self.traverseProgram(node.left)
+				for op, right in node.array:
+					right_result = self.traverseProgram(right)
+					res = self.new_temp()
+					self.tac_code << NL() << f"{res} = {left} {op} {right_result}"
+					left = res
+				self.depth["Factor"] -= 1
+			return res
 
 		elif isinstance(node, ANT_Array):
 			self.depth["Array"] += 1
@@ -379,40 +407,51 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Unary):
 			self.depth["Unary"] += 1
 			if node.call:
-				self.traverseProgram(node.call)
+				res = self.traverseProgram(node.call)
 			elif node.unary:
 				right_result = self.traverseProgram(node.unary)
-				temp = self.new_temp()
-				self.tac_code <<f"{temp} = {node.operator}{right_result}"
+				res = self.new_temp()
+				self.tac_code << NL() << f"{res} = {node.operator}{right_result}"
 			self.depth["Unary"] -= 1
+			return res
 
 		elif isinstance(node, ANT_Call):
 			self.depth["Call"] += 1
+			if node.funAnon:
+				res = self.traverseProgram(node.funAnon)
+			elif node.primary:
+				if len(node.calls) == 0:
+					res = self.traverseProgram(node.primary)
+				else:
+					pass
+
 			self.depth["Call"] -= 1
+			return res
 
 		elif isinstance(node, ANT_SuperCall):
 			self.depth["SuperCall"] += 1
 			self.depth["SuperCall"] -= 1
 
-		elif isinstance(node, ANT_Primary):
+		elif isinstance(node, ANT_Primary): # Can only be called from within a call
 			self.depth["Primary"] += 1
 			if node.NUMBER:
-				return str(node.NUMBER)
+				res = node.NUMBER
 			elif node.STRING :
-				return f'"{node.STRING}"'
+				res =  node.STRING
 			elif node.IDENTIFIER:
-				return node.IDENTIFIER
-			elif node.expression:
-				return self.traverseProgram(node.expression)
-			elif node.superCall:
-				return self.traverseProgram(node.superCall)
-			elif node.array:
-				return self.traverseProgram(node.array)
-			elif node.instantiation:
-				return self.traverseProgram(node.instantiation)
+				res =  self.tac_map["var;"+node.IDENTIFIER]
 			elif node.operator:
-				return node.operator
+				res =  node.operator
+			elif node.expression:
+				res =  self.traverseProgram(node.expression)
+			elif node.superCall:
+				res =  self.traverseProgram(node.superCall)
+			elif node.array:
+				res =  self.traverseProgram(node.array)
+			elif node.instantiation:
+				res =  self.traverseProgram(node.instantiation)
 			self.depth["Primary"] -= 1
+			return res
 
 		elif isinstance(node, ANT_Function):
 			self.depth["Function"] += 1
@@ -421,10 +460,13 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Variable):
 			self.depth["Variable"] += 1
 			if node.expression:
-				self.tac_code << f"{node.IDENTIFIER} = "
-				self.traverseProgram(node.expression)
+				ID = self.new_temp()
+				self.tac_map["var;"+node.IDENTIFIER] = ID
+				expression = self.traverseProgram(node.expression)
+				self.tac_code << NL() << ID << ": " << expression
 			self.depth["Variable"] -= 1
-			
+			return ID
+
 		elif isinstance(node, ANT_Parameters):
 			self.depth["Parameters"] += 1
 			self.depth["Parameters"] -= 1

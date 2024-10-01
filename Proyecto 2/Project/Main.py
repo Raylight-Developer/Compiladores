@@ -27,6 +27,8 @@ saludar("Alejandro");
 saludar(nombre);
 */
 
+var testa = 3;
+var testb = "3";
 var menor = 3 < 5; // true
 var mayorIgual = 10 >= 10; // true
 var igual = 1 == 1; // true
@@ -37,6 +39,7 @@ var no = ! true ; // false
 var min = 0;
 var max = 10;
 var promedio = ( min + max ) / 2;
+/*
 var string = "Hola Mundo";
 
 for (var i = 1; i <= 5; i = i + 1) {
@@ -86,7 +89,7 @@ var ropero = new Persona(nombre, 20);
 var juan = new Estudiante(nombre, 20, 3);
 juan.saludar();    // Salida: Hola, mi nombre es Alejandro
 juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
-
+*/
 """).strip())
 		self.tac_highlighter = None
 		self.tac_output = Logger()
