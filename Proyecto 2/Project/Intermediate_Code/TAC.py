@@ -84,7 +84,11 @@ class TAC_Generator: #(CompiscriptVisitor):
 		self.code << NL() << "// }" << NL()
 
 	def callFunction(self, function: Function, call_params: List[Container]):
-		self.code << NL() << "// Call Function [" << function.ID << "] {"
+		return_back_id = self.new_label()
+		self.code << NL() << "// Call Function ["
+		if function.member:
+			self.code << function.member.ID << "."
+		self.code << function.ID << "] {"
 		self.code += 1
 		self.code << NL()
 		for i, param in enumerate(call_params):
@@ -95,10 +99,8 @@ class TAC_Generator: #(CompiscriptVisitor):
 				self.code << param.data << NL()
 			else:
 				self.code << param.data << NL()
-		self.code << "GOTO " << self.scope_tracker.lookupFunction(function.ID, function.member).tac_data.data["Block ID"] << " // "
-		if function.member:
-			self.code << function.member.ID << "."
-		self.code << function.ID
+		self.code << "GO_TO LINK_BACK " << self.scope_tracker.lookupFunction(function.ID, function.member).tac_data.data["Block ID"]
+		self.code << NL() << return_back_id << ":"
 		self.code -= 1
 		self.code << NL() << "// }" << NL()
 
@@ -108,11 +110,11 @@ class TAC_Generator: #(CompiscriptVisitor):
 
 		self.code << NL() << "\n".join(if_expr)
 		self.code << NL()
-		self.code << NL() << f"IF ({if_condition}) GOTO {if_label}"
+		self.code << NL() << f"IF ({if_condition}) GO_TO {if_label}"
 		self.code += 1
 		self.code << NL() << "\n".join(else_body)
 		self.code -= 1
-		self.code << NL() << f"GOTO {end_label}"
+		self.code << NL() << f"GO_TO {end_label}"
 		self.code << NL()
 		self.code << NL() << f"{if_label}:"
 		self.code += 1
@@ -131,12 +133,12 @@ class TAC_Generator: #(CompiscriptVisitor):
 		self.code << NL()
 		self.code << NL() << f"{loop_start_label}:"
 		self.code += 1
-		self.code << NL() << f"IF ({while_condition}) GOTO {end_label}"
+		self.code << NL() << f"IF ({while_condition}) GO_TO {end_label}"
 		self.code += 1
 		self.code << NL() << "\n".join(while_body)
 		self.code << NL() << while_update << " // Update While Condition"
 		self.code -= 1
-		self.code << NL() << f"GOTO {loop_start_label}"
+		self.code << NL() << f"GO_TO {loop_start_label}"
 		self.code -= 1
 		self.code << NL()
 		self.code << NL() << f"{end_label}:"
@@ -149,12 +151,12 @@ class TAC_Generator: #(CompiscriptVisitor):
 		self.code << NL()
 		self.code << NL() << f"{loop_start_label}:"
 		self.code += 1
-		self.code << NL() << f"IF ({for_condition}) GOTO {end_label}"
+		self.code << NL() << f"IF ({for_condition}) GO_TO {end_label}"
 		self.code << NL()
 		self.code << NL() << "\n".join(for_body)
 		self.code << NL() << for_update << " // Update For Condition"
 		self.code << NL()
-		self.code << NL() << f"GOTO {loop_start_label}"
+		self.code << NL() << f"GO_TO {loop_start_label}"
 		self.code -= 1
 		self.code << NL()
 		self.code << NL() << f"{end_label}:"
