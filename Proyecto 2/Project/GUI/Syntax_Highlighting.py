@@ -243,7 +243,6 @@ class Python_Syntax_Highlighter(QSyntaxHighlighter) :
 				match: QRegularExpressionMatch = matchIterator.next()
 				self.setFormat(match.capturedStart(), match.capturedLength(), rule.format)
 
-				
 class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 	def __init__(self, parent: QTextDocument = None):
 		super().__init__(parent)
@@ -253,7 +252,7 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 		self.control = QTextCharFormat()
 		self.control.setForeground(QColor(216, 160, 223))
 		for pattern in [
-			"IF", "GOTO"
+			"IF", "GO_TO", "LINK_BACK"
 		]:
 			rule = HighlightingRule(
 				QRegularExpression(r"\b" + pattern + r"\b"),
@@ -264,7 +263,7 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 		self.label = QTextCharFormat()
 		self.label.setForeground(QColor(255, 120, 100))
 		rule = HighlightingRule(
-			QRegularExpression(r"\bL_.*\b"),
+			QRegularExpression(r"\bL_[0-9]*\b"),
 			self.label
 		)
 		self.highlightingRules.append(rule)
@@ -272,7 +271,7 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 		self.temporal = QTextCharFormat()
 		self.temporal.setForeground(QColor(100, 120, 255))
 		rule = HighlightingRule(
-			QRegularExpression(r"\bT_.*\b"),
+			QRegularExpression(r"\bT_[0-9]*\b"),
 			self.temporal
 		)
 		self.highlightingRules.append(rule)
@@ -326,6 +325,35 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 				self.comments
 			)
 			self.highlightingRules.append(rule)
+
+	def highlightBlock(self, text: str):
+		for rule in self.highlightingRules:
+			matchIterator: QRegularExpressionMatchIterator = rule.pattern.globalMatch(text)
+			while matchIterator.hasNext():
+				match: QRegularExpressionMatch = matchIterator.next()
+				self.setFormat(match.capturedStart(), match.capturedLength(), rule.format)
+
+class LOG_Syntax_Highlighter(QSyntaxHighlighter) :
+	def __init__(self, parent: QTextDocument = None):
+		super().__init__(parent)
+
+		self.highlightingRules: List[HighlightingRule] = []
+
+		self.success = QTextCharFormat()
+		self.success.setForeground(QColor(100, 255, 100))
+		rule = HighlightingRule(
+			QRegularExpression(r"\bSUCCESS\s*(.*)\b"),
+			self.success
+		)
+		self.highlightingRules.append(rule)
+
+		self.fail = QTextCharFormat()
+		self.fail.setForeground(QColor(255, 100, 100))
+		rule = HighlightingRule(
+			QRegularExpression(r"\bFAILURE\s*(.*)\b"),
+			self.fail
+		)
+		self.highlightingRules.append(rule)
 
 	def highlightBlock(self, text: str):
 		for rule in self.highlightingRules:

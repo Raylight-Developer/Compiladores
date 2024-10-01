@@ -33,24 +33,24 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			"current_class" : None,
 			"current_call" : None,
 
-			"visit_instantiation": False,
-			"visit_assignment": False,
-			"visit_comparison": False,
-			"visit_expression": False,
-			"visit_parameters": False,
-			"visit_arguments": False,
-			"visit_equality" : False,
-			"visit_function": False,
-			"visit_variable": False,
-			"visit_primary": False,
-			"visit_factor": False,
-			"visit_array": False,
-			"visit_super": False,
-			"visit_unary": False,
-			"visit_call": False,
-			"visit_term": False,
-			"visit_and": False,
-			"visit_or": False,
+			"visit_instantiation": 0,
+			"visit_assignment": 0,
+			"visit_comparison": 0,
+			"visit_expression": 0,
+			"visit_parameters": 0,
+			"visit_arguments": 0,
+			"visit_equality" : 0,
+			"visit_function": 0,
+			"visit_variable": 0,
+			"visit_primary": 0,
+			"visit_factor": 0,
+			"visit_array": 0,
+			"visit_super": 0,
+			"visit_unary": 0,
+			"visit_call": 0,
+			"visit_term": 0,
+			"visit_and": 0,
+			"visit_or": 0,
 		}
 
 		self.table_c = table_c
@@ -106,7 +106,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitExpression(self, ctx: CompiscriptParser.ExpressionContext):
 		self.enterFull("Expression")
-		self.flags["visit_expression"] = True
+		self.flags["visit_expression"] += 1
 		res: Container = Container()
 
 		if ctx.assignment():
@@ -114,12 +114,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.funAnon():
 			res = self.visit(ctx.funAnon())
 
-		self.flags["visit_expression"] = False
+		self.flags["visit_expression"] -= 1
 		self.exitFull("Expression")
 		return res
 
 	def visitFunAnon(self, ctx:CompiscriptParser.FunAnonContext):
-		"""Create Scoped Lambda-ish Function"""
 		self.enterFull("Anon Function")
 		self.scope_tracker.enterScope()
 
@@ -165,8 +164,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				member.member = struct
 				member.origin = "Inherited"
 				struct.member_functions.append(member)
-				#self.scope_tracker.declareFunction(member)
-				#self.addSymbolToTable(member)
 
 			for member in struct.parent.member_variables:
 				member.member = struct
@@ -186,8 +183,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				member.data.origin = "Override"
 				member.data.tac_data
 			self.scope_tracker.declareFunction(member.data)
-			self.addSymbolToTable(member.data)
 			struct.member_functions.append(member.data)
+			self.addSymbolToTable(member.data)
 
 		self.scope_tracker.exitScope()
 		self.scope_tracker.declareClass(struct)
@@ -273,7 +270,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
 		self.enterFull("Assignment")
-		self.flags["visit_assignment"] = True
+		self.flags["visit_assignment"] += 1
 		res: Container = Container()
 
 		if ctx.logic_or():
@@ -344,13 +341,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			else:
 				error(self.debug, f"Error Assignment. Cannot assign value to an undeclared variable {var_name}")
 
-		self.flags["visit_assignment"] = False
+		self.flags["visit_assignment"] -= 1
 		self.exitFull("Assignment")
 		return res
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext):
 		self.enterFull("Or")
-		self.flags["visit_or"] = True
+		self.flags["visit_or"] += 1
 		res: Container = Container()
 
 		left: Container = self.visit(ctx.logic_and(0))
@@ -361,13 +358,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			res = Container(f"({left.data} or {right.data})", Type.BOOL)
 			res.tac_data["expression"] = [left.data, "or", right.data]
 
-		self.flags["visit_or"] = False
+		self.flags["visit_or"] -= 1
 		self.exitFull("Or")
 		return res
 
 	def visitLogic_and(self, ctx:CompiscriptParser.Logic_andContext):
 		self.enterFull("And")
-		self.flags["visit_and"] = True
+		self.flags["visit_and"] += 1
 		res: Container = Container()
 
 		left: Container = self.visit(ctx.equality(0))
@@ -378,13 +375,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			res = Container(f"({left.data} and {right.data})", Type.BOOL)
 			res.tac_data["expression"] = [left.data, "and", right.data]
 
-		self.flags["visit_ans"] = False
+		self.flags["visit_and"] -= 1
 		self.exitFull("And")
 		return res
 
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
 		self.enterFull("Equality")
-		self.flags["visit_equality"] = True
+		self.flags["visit_equality"] += 1
 		res: Container = Container()
 
 		left: Container = self.visit(ctx.comparison(0))
@@ -398,13 +395,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			res = Container(f"({left.data} {operator} {right.data})", Type.BOOL)
 			res.tac_data["expression"] = [left.data, operator, right.data]
 
-		self.flags["visit_equality"] = False
+		self.flags["visit_equality"] -= 1
 		self.exitFull("Equality")
 		return res
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		self.enterFull("Comparison")
-		self.flags["visit_comparison"] = True
+		self.flags["visit_comparison"] += 1
 		res: Container = Container()
 
 		left: Container = self.visit(ctx.term(0))
@@ -418,13 +415,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			res = Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", Type.BOOL)
 			res.tac_data["expression"] = [left.data, operator, right.data]
 
-		self.flags["visit_comparison"] = False
+		self.flags["visit_comparison"] -= 1
 		self.exitFull("Comparison")
 		return res
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
 		self.enterFull("Term")
-		self.flags["visit_term"] = True
+		self.flags["visit_term"] += 1
 		res: Container = Container()
 
 		left : Container = self.visit(ctx.factor(0))
@@ -441,13 +438,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			res = Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
 			res.tac_data["expression"] = [left.data, operator, right.data]
 
-		self.flags["visit_term"] = False
+		self.flags["visit_term"] -= 1
 		self.exitFull("Term")
 		return res
 
 	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
 		self.enterFull("Factor")
-		self.flags["visit_factor"] = True
+		self.flags["visit_factor"] += 1
 		res: Container = Container()
 
 		left : Container = self.visit(ctx.unary(0))
@@ -465,13 +462,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			res = Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
 			res.tac_data["expression"] = [left.data, operator, right.data]
 
-		self.flags["visit_factor"] = False
+		self.flags["visit_factor"] -= 1
 		self.exitFull("Factor")
 		return res
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext):
 		self.enterFull("Array")
-		self.flags["visit_array"] = True
+		self.flags["visit_array"] += 1
 		res: Container = Container()
 
 		elements: List[Container] = []
@@ -479,7 +476,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			for expr in ctx.expression():
 				elements.append(self.visit(expr))
 
-		self.flags["visit_array"] = False
+		self.flags["visit_array"] -= 1
 		self.exitFull("Array")
 		return Container(elements, Type.ARRAY)
 
@@ -504,7 +501,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitUnary(self, ctx:CompiscriptParser.UnaryContext):
 		self.enterFull("Unary")
-		self.flags["visit_unary"] = True
+		self.flags["visit_unary"] += 1
 		res: Container = Container()
 
 		if ctx.getChildCount() == 2:
@@ -527,13 +524,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		else:
 			res = self.visit(ctx.call())
 
-		self.flags["visit_unary"] = False
+		self.flags["visit_unary"] -= 1
 		self.exitFull("Unary")
 		return res
 
 	def visitCall(self, ctx:CompiscriptParser.CallContext):
 		self.enterFull("Call")
-		self.flags["visit_call"] = True
+		self.flags["visit_call"] += 1
 		res: Container = Container()
 
 		if ctx.getChildCount() == 1:
@@ -640,13 +637,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				if len(self.flags["current_class"].parent.initializer.parameters) != len(call_params):
 					error(self.debug, f"Error Call. Tried to call Super Function '{self.flags['current_function'].ID}' with {len(call_params)} parameters. Expected {len(self.flags['current_class'].parent.initializer.parameters)}")
 
-		self.flags["visit_call"] = False
+		self.flags["visit_call"] -= 1
 		self.exitFull("Call")
 		return res
 
 	def visitSuperCall(self, ctx: CompiscriptParser.SuperCallContext):
 		self.enterFull("Super")
-		self.flags["visit_super"] = True
+		self.flags["visit_super"] += 1
 		res = None
 
 		if not ctx.IDENTIFIER():
@@ -664,13 +661,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		else:
 			error(self.debug, f"Error Super. No function in hierarchy named '{member_name}'")
 
-		self.flags["visit_super"] = False
+		self.flags["visit_super"] -= 1
 		self.exitFull("Super")
 		return res
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
 		self.enterFull("Primary")
-		self.flags["visit_primary"] = True
+		self.flags["visit_primary"] += 1
 		res: Container = Container()
 
 		if ctx.NUMBER():
@@ -720,13 +717,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		if "expression" not in res.tac_data:
 			res.tac_data["expression"] = "None"
 
-		self.flags["visit_primary"] = False
+		self.flags["visit_primary"] -= 1
 		self.exitFull("Primary")
 		return res
 
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
-		"""Assign Function Member to Class or create Function"""
 		self.enterFull("Function")
+		self.flags["visit_function"] += 1
 		self.scope_tracker.enterScope()
 
 		function = Function()
@@ -758,13 +755,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.addSymbolToTable(function)
 		self.flags["current_function"] = None
 #
+		self.flags["visit_function"] -= 1
 		self.exitFull("Function")
 		return Container(function, Type.FUNCTION)
 
 	def visitVariable(self, ctx:CompiscriptParser.VariableContext):
-		"""Assign Variable Member to Class or create Variable"""
 		self.enterFull("Variable")
-		self.flags["visit_variable"] = True
+		self.flags["visit_variable"] += 1
 #
 		variable = Variable()
 		variable.ctx = ctx
@@ -786,7 +783,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.addSymbolToTable(variable)
 #
-		self.flags["visit_variable"] = False
+		self.flags["visit_variable"] -= 1
 		self.exitFull("Variable")
 		return Container(variable, Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE)
 

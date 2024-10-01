@@ -19,6 +19,13 @@ class Display(QMainWindow):
 		self.code_input.setText((
 """
 
+fun saludar(val) {
+	print "Hola, mi nombre es " + val;
+}
+var nombre = "Alejandro";
+saludar("Alejandro");
+saludar(nombre);
+/*
 var menor = 3 < 5; // true
 var mayorIgual = 10 >= 10; // true
 var igual = 1 == 1; // true
@@ -63,12 +70,6 @@ class Estudiante extends Persona {
 	}
 }
 
-class Test {
-	init() {
-		this.nested_class = new Estudiante("Peko", 10, 20);
-	}
-}
-
 fun estudiar() {
 	print " esta estudiando en grado.";
 }
@@ -78,52 +79,12 @@ fun saludar(val) {
 }
 saludar("Alejandro");
 
-var nombre = "Erick";
+var nombre = "Alejandro";
 
 var ropero = new Persona(nombre, 20);
 var juan = new Estudiante(nombre, 20, 3);
-juan.saludar();    // Salida: Hola, mi nombre es Juan
+juan.saludar();    // Salida: Hola, mi nombre es Alejandro
 juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
-
-for (var i = 1; i <= 5; i = i + 1) {
-	if (i % 2 == 0) {
-		print i + " es par";
-	} else {
-		print i + " es impar";
-	}
-}
-
-/*
-	deberia ignorar
-	var hola = "hola";
-*/
-
-while (juan.edad < 25) {
-	juan.edad = juan.edad + 1;
-	print "Edad de Juan: " + juan.edad;
-}
-
-//Error
-/*
-class Tester extends Persona {
-	init(nombre, edad, grado, penco) {
-		super.init(nombre, edad, grado);
-		this.grado = grado;
-		this.edad = 10;
-	}
-
-	estudiar(hola) {
-		print this.nombre + " esta estudiando en " + this.grado + " grado.";
-	}
-}
-
-for (var i = 0; i < 2; i = i + 1) {
-	var i;
-	var j = 2;
-	if (j < 2) {
-		var j;
-	}
-}
 */
 """).strip())
 		self.tac_highlighter = None
@@ -134,6 +95,7 @@ for (var i = 0; i < 2; i = i + 1) {
 		self.log.setPlaceholderText("Log")
 		self.log.setTabStopDistance(10)
 		self.debug = Lace()
+		LOG_Syntax_Highlighter(self.log.document())
 
 		self.tables = QTabWidget()
 
@@ -211,20 +173,20 @@ for (var i = 0; i < 2; i = i + 1) {
 			self.table_variables.resizeColumnsToContents()
 
 			if not self.debug.error:
-				self.log.log("\t" + str(self.debug).strip())
-				self.log.insertHtml("<br>}" + f"<br>{G}Comiplation Succesful{RESET}<br>")
+				self.log.append("\t" + str(self.debug).strip())
+				self.log.append("}" + f"\n{G} Comiplation Succesful")
 				self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
-				self.tac_output.append(str(analyzer.tac.code))
+				self.tac_output.append(str(analyzer.tac.code).strip())
 
 			else:
-				self.log.log("\t" + str(self.debug).strip())
-				self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>")
+				self.log.append("\t" + str(self.debug).strip())
+				self.log.append("}" + f"\n{R} Compilation Failed")
 				self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
-				self.tac_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
+				self.tac_output.clear()
 
 		except Exception as e:
-			self.log.log("\t" + str(self.debug).strip())
-			self.log.insertHtml(f"<br><br>{R}Compilation Failed{RESET}<br>")
+			self.log.append("\t" + str(self.debug).strip())
+			self.log.append("}" + f"\n{R} Compilation Failed")
 			self.log.append(str(e))
 			self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
 			self.tac_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))

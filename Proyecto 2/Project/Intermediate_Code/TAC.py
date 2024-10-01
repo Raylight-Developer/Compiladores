@@ -47,7 +47,7 @@ class TAC_Generator: #(CompiscriptVisitor):
 		self.code << NL() << block_id << ":"
 		self.code -= 1
 		self.code << NL() << "// }" << NL()
-		return Tac_Info(block_id, { "Block ID" : block_id })
+		return Tac_Info(block_id, { "Block ID" : block_id, "Block" : f"{function.data} // FUNCTION CODE" })
 
 	def declareVariable(self, variable: Variable):
 		temp_id = self.new_temp()
@@ -70,7 +70,7 @@ class TAC_Generator: #(CompiscriptVisitor):
 		block_id = self.new_label()
 		#self.code << NL()
 		#self.code << f"// Anon Function:  [{block_id}] [{block_id}] {function.ID}"
-		return Tac_Info(block_id, { "Block ID" : block_id })
+		return Tac_Info(block_id, { "Block" : block_id })
 
 	def assignVariable(self, variable: Variable, tac_data : Dict[str, Any]):
 		self.code << NL() << "// Assign Variable [" << variable.ID << "] {"
@@ -84,10 +84,12 @@ class TAC_Generator: #(CompiscriptVisitor):
 		self.code << NL() << "// }" << NL()
 
 	def callFunction(self, function: Function, call_params: List[Container]):
-		return_back_id = self.new_label()
 		self.code << NL() << "// Call Function ["
 		if function.member:
-			self.code << function.member.ID << "."
+			if function.member.parent:
+				self.code << "Super<" << function.member.parent.ID << ">."
+			else:
+				self.code << function.member.ID << "."
 		self.code << function.ID << "] {"
 		self.code += 1
 		self.code << NL()
@@ -99,8 +101,7 @@ class TAC_Generator: #(CompiscriptVisitor):
 				self.code << param.data << NL()
 			else:
 				self.code << param.data << NL()
-		self.code << "GO_TO LINK_BACK " << self.scope_tracker.lookupFunction(function.ID, function.member).tac_data.data["Block ID"]
-		self.code << NL() << return_back_id << ":"
+		self.code << self.scope_tracker.lookupFunction(function.ID, function.member).tac_data.data["Block"]
 		self.code -= 1
 		self.code << NL() << "// }" << NL()
 

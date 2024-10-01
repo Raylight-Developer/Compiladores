@@ -2,7 +2,7 @@ from Include import *
 from io import StringIO
 
 def error(debug: 'Lace', message: str):
-	debug << NL() << ERROR() << str(message).replace("<", "⟪").replace(">", "⟫") << END()
+	debug << NL() << R + " " + str(message)
 	debug.error = True
 	print("\n\n" + message)
 	#raise Exception(str(message).replace("<", "⟪").replace(">", "⟫"))
@@ -44,10 +44,6 @@ class Lace:
 			self.data = StringIO()
 			if val.count < len(temp_data):
 				self.data.write(temp_data[:len(temp_data) - 1 - val.count])
-		elif isinstance(val, ERROR):
-			self.data.write("<COLOR>" + R)
-		elif isinstance(val, END):
-			self.data.write(RESET + "</COLOR>")
 		elif isinstance(val, Lace):
 			self.data.write(val.data.getvalue())
 		elif isinstance(val, str):
@@ -77,6 +73,7 @@ class Lace:
 	def clear(self):
 		self.data = StringIO()
 		self.current_tab = 0
+		self.error = False
 		return self
 
 	def __str__(self):
@@ -101,11 +98,3 @@ class DEL:
 class POP:
 	def __init__(self, count = 1):
 		self.count = count
-
-class ERROR:
-	def __init__(self):
-		pass
-
-class END:
-	def __init__(self):
-		pass
