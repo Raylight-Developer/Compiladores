@@ -165,9 +165,7 @@ juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
 			lexer = CompiscriptLexer(InputStream(code))
 			token_stream = CommonTokenStream(lexer)
 			parser = CompiscriptParser(token_stream)
-			analyzer = Semantic_Analyzer(self.debug, self.table_classes, self.table_functions, self.table_variables, parser)
-
-			analyzer.visit(parser.program())
+			analyzer = Semantic_Analyzer(self.debug, self.table_classes, self.table_functions, self.table_variables, parser.program())
 
 			self.table_classes.resizeColumnsToContents()
 			self.table_functions.resizeColumnsToContents()

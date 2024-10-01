@@ -183,6 +183,6 @@ class ANT_Parameters:
 	def __init__(self):
 		self.identifiers: List[str] = []
 
-class ANT_Arguments :
+class ANT_Arguments:
 	def __init__(self):
 		self.expressions: List[ANT_Expression] = []

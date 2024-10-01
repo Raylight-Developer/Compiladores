@@ -16,14 +16,13 @@ from Intermediate_Code.TAC import *
 FULL_VIEW = False
 
 class Semantic_Analyzer(CompiscriptVisitor):
-	def __init__(self, debug: Lace, table_c: Symbol_Table, table_f: Symbol_Table, table_v: Symbol_Table, parser: CompiscriptParser):
+	def __init__(self, debug: Lace, table_c: Symbol_Table, table_f: Symbol_Table, table_v: Symbol_Table, program: CompiscriptParser.ProgramContext):
 		super().__init__()
-		self.parser = parser
 		self.compiled = True
 
 		self.debug = debug
 		self.scope_tracker = Scope_Tracker(debug)
-		self.tac = TAC_Generator(self.scope_tracker)
+		self.tac = TAC_Generator(self.scope_tracker, program)
 
 		self.flags = {
 			"current_instance" : None,
@@ -31,30 +30,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			"current_variable" : None,
 			"current_class" : None,
 			"current_call" : None,
-
-			"visit_instantiation": 0,
-			"visit_assignment": 0,
-			"visit_comparison": 0,
-			"visit_expression": 0,
-			"visit_parameters": 0,
-			"visit_arguments": 0,
-			"visit_equality" : 0,
-			"visit_function": 0,
-			"visit_variable": 0,
-			"visit_primary": 0,
-			"visit_factor": 0,
-			"visit_array": 0,
-			"visit_super": 0,
-			"visit_unary": 0,
-			"visit_call": 0,
-			"visit_term": 0,
-			"visit_and": 0,
-			"visit_or": 0,
 		}
 
 		self.table_c = table_c
 		self.table_f = table_f
 		self.table_v = table_v
+
+		self.visit(program)
 
 	def visitProgram(self, ctx:CompiscriptParser.ProgramContext):
 		return self.visitChildren(ctx)
@@ -105,7 +87,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitExpression(self, ctx: CompiscriptParser.ExpressionContext):
 		self.enterFull("Expression")
-		self.flags["visit_expression"] += 1
 		res: Container = Container()
 
 		if ctx.assignment():
@@ -113,7 +94,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.funAnon():
 			res = self.visit(ctx.funAnon())
 
-		self.flags["visit_expression"] -= 1
 		self.exitFull("Expression")
 		return res
 
@@ -270,7 +250,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitAssignment(self, ctx:CompiscriptParser.AssignmentContext):
 		self.enterFull("Assignment")
-		self.flags["visit_assignment"] += 1
 		res: Container = Container()
 
 		if ctx.logic_or():
@@ -338,13 +317,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			else:
 				error(self.debug, f"Error Assignment. Cannot assign value to an undeclared variable {var_name}")
 
-		self.flags["visit_assignment"] -= 1
 		self.exitFull("Assignment")
 		return res
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext):
 		self.enterFull("Or")
-		self.flags["visit_or"] += 1
 		res: Container = Container()
 
 		left: Container = self.visit(ctx.logic_and(0))
@@ -354,13 +331,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.exitFull("Or")
 			res = Container(f"({left.data} or {right.data})", Type.BOOL)
 
-		self.flags["visit_or"] -= 1
 		self.exitFull("Or")
 		return res
 
 	def visitLogic_and(self, ctx:CompiscriptParser.Logic_andContext):
 		self.enterFull("And")
-		self.flags["visit_and"] += 1
 		res: Container = Container()
 
 		left: Container = self.visit(ctx.equality(0))
@@ -370,13 +345,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.exitFull("And")
 			res = Container(f"({left.data} and {right.data})", Type.BOOL)
 
-		self.flags["visit_and"] -= 1
 		self.exitFull("And")
 		return res
 
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
 		self.enterFull("Equality")
-		self.flags["visit_equality"] += 1
 		res: Container = Container()
 
 		left: Container = self.visit(ctx.comparison(0))
@@ -389,13 +362,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			comparisonCheck(self.debug, left, operator, right)
 			res = Container(f"({left.data} {operator} {right.data})", Type.BOOL)
 
-		self.flags["visit_equality"] -= 1
 		self.exitFull("Equality")
 		return res
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		self.enterFull("Comparison")
-		self.flags["visit_comparison"] += 1
 		res: Container = Container()
 
 		left: Container = self.visit(ctx.term(0))
@@ -408,13 +379,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			comparisonCheck(self.debug, left, operator, right)
 			res = Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", Type.BOOL)
 
-		self.flags["visit_comparison"] -= 1
 		self.exitFull("Comparison")
 		return res
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
 		self.enterFull("Term")
-		self.flags["visit_term"] += 1
 		res: Container = Container()
 
 		left : Container = self.visit(ctx.factor(0))
@@ -430,13 +399,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 			res = Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
 
-		self.flags["visit_term"] -= 1
 		self.exitFull("Term")
 		return res
 
 	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
 		self.enterFull("Factor")
-		self.flags["visit_factor"] += 1
 		res: Container = Container()
 
 		left : Container = self.visit(ctx.unary(0))
@@ -453,13 +420,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 			res = Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
 
-		self.flags["visit_factor"] -= 1
 		self.exitFull("Factor")
 		return res
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext):
 		self.enterFull("Array")
-		self.flags["visit_array"] += 1
 		res: Container = Container()
 
 		elements: List[Container] = []
@@ -467,7 +432,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			for expr in ctx.expression():
 				elements.append(self.visit(expr))
 
-		self.flags["visit_array"] -= 1
 		self.exitFull("Array")
 		return Container(elements, Type.ARRAY)
 
@@ -492,7 +456,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitUnary(self, ctx:CompiscriptParser.UnaryContext):
 		self.enterFull("Unary")
-		self.flags["visit_unary"] += 1
 		res: Container = Container()
 
 		if ctx.getChildCount() == 2:
@@ -513,13 +476,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		else:
 			res = self.visit(ctx.call())
 
-		self.flags["visit_unary"] -= 1
 		self.exitFull("Unary")
 		return res
 
 	def visitCall(self, ctx:CompiscriptParser.CallContext):
 		self.enterFull("Call")
-		self.flags["visit_call"] += 1
 		res: Container = Container()
 
 		if ctx.getChildCount() == 1:
@@ -626,13 +587,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				if len(self.flags["current_class"].parent.initializer.parameters) != len(call_params):
 					error(self.debug, f"Error Call. Tried to call Super Function '{self.flags['current_function'].ID}' with {len(call_params)} parameters. Expected {len(self.flags['current_class'].parent.initializer.parameters)}")
 
-		self.flags["visit_call"] -= 1
 		self.exitFull("Call")
 		return res
 
 	def visitSuperCall(self, ctx: CompiscriptParser.SuperCallContext):
 		self.enterFull("Super")
-		self.flags["visit_super"] += 1
 		res = None
 
 		if not ctx.IDENTIFIER():
@@ -650,13 +609,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		else:
 			error(self.debug, f"Error Super. No function in hierarchy named '{member_name}'")
 
-		self.flags["visit_super"] -= 1
 		self.exitFull("Super")
 		return res
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
 		self.enterFull("Primary")
-		self.flags["visit_primary"] += 1
 		res: Container = Container()
 
 		if ctx.NUMBER():
@@ -701,13 +658,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.superCall():
 			res = Container(ctx.superCall().getChild(2).getText(), Type.SUPER)
 
-		self.flags["visit_primary"] -= 1
 		self.exitFull("Primary")
 		return res
 
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
 		self.enterFull("Function")
-		self.flags["visit_function"] += 1
 		self.scope_tracker.enterScope()
 
 		function = Function()
@@ -740,13 +695,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			self.addSymbolToTable(function)
 		self.flags["current_function"] = None
 #
-		self.flags["visit_function"] -= 1
 		self.exitFull("Function")
 		return Container(function, Type.FUNCTION)
 
 	def visitVariable(self, ctx:CompiscriptParser.VariableContext):
 		self.enterFull("Variable")
-		self.flags["visit_variable"] += 1
 #
 		variable = Variable()
 		variable.ctx = ctx
@@ -769,7 +722,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.addSymbolToTable(variable)
 #
-		self.flags["visit_variable"] -= 1
 		self.exitFull("Variable")
 		return Container(variable, Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE)
 
