@@ -184,85 +184,190 @@ class Tree_Generator(CompiscriptVisitor):
 		else:
 			if ctx.call():
 				val.call = self.visit(ctx.call())
+			val.IDENTIFIER = str(ctx.IDENTIFIER())
+			val.assignment = self.visit(ctx.assignment())
 
 		return val
 
 	def visitLogic_or(self, ctx:CompiscriptParser.Logic_orContext):
 		val = ANT_LogicOr()
 
+		val.left = self.visit(ctx.logic_and(0))
+		for i in range(1, len(ctx.logic_and())):
+			val.array.append((
+				str(ctx.getChild(2 * i - 1)),
+				self.visit(ctx.logic_and(i))
+			))
+
 		return val
 
 	def visitLogic_and(self, ctx:CompiscriptParser.Logic_andContext):
 		val = ANT_LogicAnd()
+
+		val.left = self.visit(ctx.equality(0))
+		for i in range(1, len(ctx.equality())):
+			val.array.append((
+				str(ctx.getChild(2 * i - 1)),
+				self.visit(ctx.equality(i))
+			))
 
 		return val
 
 	def visitEquality(self, ctx:CompiscriptParser.EqualityContext):
 		val = ANT_Equality()
 
+		val.left = self.visit(ctx.comparison(0))
+		for i in range(1, len(ctx.comparison())):
+			val.array.append((
+				str(ctx.getChild(2 * i - 1)),
+				self.visit(ctx.comparison(i))
+			))
+
 		return val
 
 	def visitComparison(self, ctx:CompiscriptParser.ComparisonContext):
 		val = ANT_Comparison()
+
+		val.left = self.visit(ctx.term(0))
+		for i in range(1, len(ctx.term())):
+			val.array.append((
+				str(ctx.getChild(2 * i - 1)),
+				self.visit(ctx.term(i))
+			))
 
 		return val
 
 	def visitTerm(self, ctx:CompiscriptParser.TermContext):
 		val = ANT_Term()
 
+		val.left = self.visit(ctx.factor(0))
+		for i in range(1, len(ctx.factor())):
+			val.array.append((
+				str(ctx.getChild(2 * i - 1)),
+				self.visit(ctx.factor(i))
+			))
+
 		return val
 
 	def visitFactor(self, ctx:CompiscriptParser.FactorContext):
 		val = ANT_Factor()
+
+		val.left = self.visit(ctx.unary(0))
+		for i in range(1, len(ctx.unary())):
+			val.array.append((
+				str(ctx.getChild(2 * i - 1)),
+				self.visit(ctx.unary(i))
+			))
 
 		return val
 
 	def visitArray(self, ctx:CompiscriptParser.ArrayContext):
 		val = ANT_Array()
 
+		for i in range(len(ctx.expression())):
+			val.expressions.append(self.visit(ctx.expression(i)))
+
 		return val
 
 	def visitInstantiation(self, ctx:CompiscriptParser.InstantiationContext):
 		val = ANT_Instantiation()
+
+		val.IDENTIFIER = str(ctx.IDENTIFIER())
+		if ctx.arguments():
+			val.arguments = self.visit(ctx.arguments())
 
 		return val
 
 	def visitUnary(self, ctx:CompiscriptParser.UnaryContext):
 		val = ANT_Unary()
 
+		if ctx.unary():
+			val.operator = str(ctx.getChild(0))
+			val.unary = self.visit(ctx.unary())
+		else:
+			val.call = self.visit(ctx.call())
+
 		return val
 
 	def visitCall(self, ctx:CompiscriptParser.CallContext):
 		val = ANT_Call()
+
+		if ctx.funAnon():
+			val.funAnon = self.visit(ctx.funAnon())
+		else:
+			val.primary = self.visit(ctx.primary())
+			for i in range(1, ctx.getChildCount() - 1):
+				if ctx.arguments(i):
+					val.calls.append(self.visit(ctx.arguments()))
+				elif ctx.IDENTIFIER(i):
+					val.calls.append(str(ctx.IDENTIFIER(i)))
+				elif ctx.expression(i):
+					val.calls.append(self.visit(ctx.expression(i)))
 
 		return val
 
 	def visitSuperCall(self, ctx:CompiscriptParser.SuperCallContext):
 		val = ANT_SuperCall()
 
+		val.IDENTIFIER = str(ctx.IDENTIFIER())
+
 		return val
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
 		val = ANT_Primary()
+
+		if ctx.array() or ctx.instantiation():
+			if ctx.array():
+				val.array = self.visit(ctx.array())
+			else:
+				val.instantiation = self.visit(ctx.instantiation())
+		elif ctx.superCall():
+			val.superCall = self.visit(ctx.superCall())
+		elif ctx.NUMBER() or ctx.STRING() or ctx.IDENTIFIER() or ctx.expression():
+			if ctx.NUMBER():
+				val.NUMBER = str(ctx.NUMBER())
+			elif ctx.STRING():
+				val.STRING = str(ctx.STRING())
+			elif ctx.IDENTIFIER():
+				val.IDENTIFIER = str(ctx.IDENTIFIER())
+			else:
+				val.expression = self.visit(ctx.expression())
+		else:
+			val.operator = ctx.getText()
 
 		return val
 
 	def visitFunction(self, ctx:CompiscriptParser.FunctionContext):
 		val = ANT_Function()
 
+		val.IDENTIFIER = str(ctx.IDENTIFIER())
+		if ctx.parameters():
+			val.parameters = self.visit(ctx.parameters())
+			val.block = self.visit(ctx.block())
+
 		return val
 
 	def visitVariable(self, ctx:CompiscriptParser.VariableContext):
 		val = ANT_Variable()
+
+		val.IDENTIFIER = str(ctx.IDENTIFIER())
+		if ctx.expression():
+			val.expression = self.visit(ctx.expression())
 
 		return val
 
 	def visitParameters(self, ctx:CompiscriptParser.ParametersContext):
 		val = ANT_Parameters()
 
+		for i in range(1, len(ctx.IDENTIFIER())):
+			val.identifiers.append(str(ctx.IDENTIFIER(i)))
+
 		return val
 
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		val = ANT_Arguments()
+
+		for i in range(1, len(ctx.expression())):
+			val.expressions.append(str(ctx.expression(i)))
 
 		return val

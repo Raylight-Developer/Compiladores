@@ -100,38 +100,32 @@ class ANT_Assignment:
 class ANT_LogicOr:
 	def __init__(self):
 		self.left:  ANT_LogicAnd = None
-		self.right: ANT_LogicAnd = None
-		self.operator: str = None
+		self.array: List[Tuple[str, ANT_LogicAnd]] = []
 
 class ANT_LogicAnd:
 	def __init__(self):
 		self.left:  ANT_Equality = None
-		self.right: ANT_Equality = None
-		self.operator: str = None
+		self.array: List[Tuple[str, ANT_Equality]] = []
 
 class ANT_Equality:
 	def __init__(self):
 		self.left:  ANT_Comparison = None
-		self.right: ANT_Comparison = None
-		self.operator: str = None
+		self.array: List[Tuple[str, ANT_Comparison]] = []
 
 class ANT_Comparison:
 	def __init__(self):
 		self.left:  ANT_Term = None
-		self.right: ANT_Term = None
-		self.operator: str = None
+		self.array: List[Tuple[str, ANT_Term]] = []
 
 class ANT_Term:
 	def __init__(self):
 		self.left:  ANT_Factor = None
-		self.right: ANT_Factor = None
-		self.operator: str = None
+		self.array: List[Tuple[str, ANT_Factor]] = []
 
 class ANT_Factor:
 	def __init__(self):
 		self.left:  ANT_Unary = None
-		self.right: ANT_Unary = None
-		self.operator: str = None
+		self.array: List[Tuple[str, ANT_Unary]] = []
 
 class ANT_Array:
 	def __init__(self):
@@ -152,9 +146,7 @@ class ANT_Unary:
 class ANT_Call:
 	def __init__(self):
 		self.primary: ANT_Primary = None
-		self.arguments: ANT_Arguments = None
-		self.IDENTIFIER: str = None
-		self.expression: ANT_Expression = None
+		self.calls: List[Union[ANT_Arguments, str, ANT_Expression]] = []
 	# OR
 		self.funAnon: ANT_FunAnon = None
 
