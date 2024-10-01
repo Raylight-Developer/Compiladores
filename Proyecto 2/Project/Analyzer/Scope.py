@@ -1,8 +1,6 @@
 from Include import *
 from Lace import *
 
-from Intermediate_Code.TAC import *
-
 from .Utils import *
 from .Symbols import *
 
@@ -23,9 +21,8 @@ class Tag:
 		return f"{self.ID} {self.type}"
 
 class Scope_Tracker:
-	def __init__(self, debug: Lace, tac: 'TAC_Generator'):
+	def __init__(self, debug: Lace):
 		self.debug = debug
-		self.tac = tac
 		
 		self.persistent_tree: List[str] = []
 		self.scope_stack: List[Dict[Tag, Class | Function | Variable]] = []
@@ -59,7 +56,6 @@ class Scope_Tracker:
 			error(self.debug, f"Class '{value.ID}' Redefinition not allowed")
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		value.tac_data = self.tac.declareClass(value)
 		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"cls<{value.ID}> : <{value.ID}>")
 
@@ -71,7 +67,6 @@ class Scope_Tracker:
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		value.tac_data = self.tac.declareFunction(value)
 		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"fun<{value.ID}> : <{value.ID}>")
 
@@ -83,7 +78,6 @@ class Scope_Tracker:
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		value.tac_data = self.tac.declareVariable(value)
 		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"var<{value.ID}> : <{value.ID}>")
 
@@ -94,7 +88,6 @@ class Scope_Tracker:
 
 		value.scope_depth = self.current_depth
 		value.scope_depth_count = self.depth_count.get(self.current_depth, 0)
-		value.tac_data = self.tac.declareAnonFunction(value)
 		self.current_scope[computed] = value
 		self.persistent_tree.append('    ' * (self.current_depth + 1) + f"anon_fun<{value.ID}> : <{value.ID}>")
 

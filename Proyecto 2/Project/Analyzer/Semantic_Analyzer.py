@@ -22,9 +22,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.compiled = True
 
 		self.debug = debug
-		self.tac = TAC_Generator()
-		self.scope_tracker = Scope_Tracker(debug, self.tac)
-		self.tac.scope_tracker = self.scope_tracker
+		self.scope_tracker = Scope_Tracker(debug)
+		self.tac = TAC_Generator(self.scope_tracker)
 
 		self.flags = {
 			"current_instance" : None,
@@ -169,6 +168,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				member.member = struct
 				struct.member_variables.append(member)
 				self.scope_tracker.declareVariable(member)
+				self.tac.declareVariable(member)
 				self.addSymbolToTable(member)
 
 			struct.initialzer = struct.parent.initializer
@@ -181,8 +181,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				struct.member_functions.remove(inherited)
 				self.removeSymbolFromTable(inherited)
 				member.data.origin = "Override"
-				member.data.tac_data
 			self.scope_tracker.declareFunction(member.data)
+			self.tac.declareFunction(member.data)
 			struct.member_functions.append(member.data)
 			self.addSymbolToTable(member.data)
 
@@ -303,11 +303,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 						self.flags["current_class"].member_variables.append(variable)
 						self.scope_tracker.declareVariable(variable)
+						self.tac.declareVariable(variable)
 						self.addSymbolToTable(variable)
-
-						if assignment.type == Type.PARAMETER:
-							variable.tac_data.data["expression"] = assignment.data.tac_data.ID
-							self.tac.assignVariable(variable, variable.tac_data.data)
 
 						res = Container(variable, Type.VARIABLE)
 					else:
@@ -335,7 +332,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				var = self.scope_tracker.lookupVariable(var_name, None)
 				var.data = self.visit(ctx.assignment())
 				self.updateSymbolFromTable(var)
-				self.tac.assignVariable(var, {"expression": "FOR LOOP"})
+				self.tac.assignVariable(var)
 
 				res = Container(var, Type.VARIABLE)
 			else:
@@ -356,7 +353,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			right: Container = self.visit(ctx.logic_and(i))
 			self.exitFull("Or")
 			res = Container(f"({left.data} or {right.data})", Type.BOOL)
-			res.tac_data["expression"] = [left.data, "or", right.data]
 
 		self.flags["visit_or"] -= 1
 		self.exitFull("Or")
@@ -373,7 +369,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			right: Container = self.visit(ctx.equality(i))
 			self.exitFull("And")
 			res = Container(f"({left.data} and {right.data})", Type.BOOL)
-			res.tac_data["expression"] = [left.data, "and", right.data]
 
 		self.flags["visit_and"] -= 1
 		self.exitFull("And")
@@ -393,7 +388,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				error(self.debug, f"Error Equality. {type(left)}({left}) {operator} {type(right)}({right})")
 			comparisonCheck(self.debug, left, operator, right)
 			res = Container(f"({left.data} {operator} {right.data})", Type.BOOL)
-			res.tac_data["expression"] = [left.data, operator, right.data]
 
 		self.flags["visit_equality"] -= 1
 		self.exitFull("Equality")
@@ -413,7 +407,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				error(self.debug, f"Error Comparison. {type(left)}({left}) {operator.replace('<', 'less').replace('>', 'greater')} {type(right)}({right})")
 			comparisonCheck(self.debug, left, operator, right)
 			res = Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", Type.BOOL)
-			res.tac_data["expression"] = [left.data, operator, right.data]
 
 		self.flags["visit_comparison"] -= 1
 		self.exitFull("Comparison")
@@ -436,7 +429,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			operation_type = operationType(self.debug, left, operator, right)
 
 			res = Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
-			res.tac_data["expression"] = [left.data, operator, right.data]
 
 		self.flags["visit_term"] -= 1
 		self.exitFull("Term")
@@ -460,7 +452,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			operation_type = operationType(self.debug, left, operator, right)
 
 			res = Container(f"({left.innermostCode()} {operator} {right.innermostCode()})", operation_type)
-			res.tac_data["expression"] = [left.data, operator, right.data]
 
 		self.flags["visit_factor"] -= 1
 		self.exitFull("Factor")
@@ -511,14 +502,12 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				if operand.type == Type.INT or operand.type == Type.FLOAT:
 					self.exitFull("Unary")
 					res = Container(f"-{operand.data}", operand.type)
-					res.tac_data["expression"] = ["-", operand.data]
 				else:
 					error(self.debug, f"Error Unary. Applying operator {operator} to <{operand.type}>({operand.data})")
 			elif operator == '!':
 				if operand.type == Type.BOOL:
 					self.exitFull("Unary")
 					res = Container(f"!{operand.data}", operand.type)
-					res.tac_data["expression"] = ["!", operand.data]
 				else:
 					error(self.debug, f"Error Unary. Applying {operator} to <{operand.type}>({operand.data})")
 		else:
@@ -676,11 +665,9 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				res = Container(text, Type.FLOAT)
 			else:
 				res = Container(text, Type.INT)
-			res.tac_data["expression"] = text
 		elif ctx.STRING():
 			text = str(ctx.STRING()).strip('"')
 			res = Container(text, Type.STRING)
-			res.tac_data["expression"] = f'"{text}"'
 		elif ctx.IDENTIFIER():
 			ID = ctx.IDENTIFIER().getText()
 			if self.scope_tracker.checkVariable(ID, self.flags["current_class"]):
@@ -713,9 +700,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			res = Container("this", Type.THIS)
 		elif ctx.superCall():
 			res = Container(ctx.superCall().getChild(2).getText(), Type.SUPER)
-
-		if "expression" not in res.tac_data:
-			res.tac_data["expression"] = "None"
 
 		self.flags["visit_primary"] -= 1
 		self.exitFull("Primary")
@@ -752,6 +736,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.exitScope()
 		if not self.flags["current_class"]:
 			self.scope_tracker.declareFunction(function)
+			self.tac.declareFunction(function)
 			self.addSymbolToTable(function)
 		self.flags["current_function"] = None
 #
@@ -774,12 +759,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.debug << NL() << f"Declaring Variable [{variable.ID}]"
 #
 		self.scope_tracker.declareVariable(variable)
+		self.tac.declareVariable(variable)
 		if ctx.expression():
 			var: Container = self.visit(ctx.expression())
 			variable.data = var.data
 			variable.type = var.type
 
-			self.tac.assignVariable(variable, var.tac_data)
+			self.tac.assignVariable(variable)
 
 		self.addSymbolToTable(variable)
 #

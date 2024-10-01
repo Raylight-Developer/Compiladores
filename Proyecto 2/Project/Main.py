@@ -18,14 +18,15 @@ class Display(QMainWindow):
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
 		self.code_input.setText((
 """
-
+/*
 fun saludar(val) {
 	print "Hola, mi nombre es " + val;
 }
 var nombre = "Alejandro";
 saludar("Alejandro");
 saludar(nombre);
-/*
+*/
+
 var menor = 3 < 5; // true
 var mayorIgual = 10 >= 10; // true
 var igual = 1 == 1; // true
@@ -85,7 +86,7 @@ var ropero = new Persona(nombre, 20);
 var juan = new Estudiante(nombre, 20, 3);
 juan.saludar();    // Salida: Hola, mi nombre es Alejandro
 juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
-*/
+
 """).strip())
 		self.tac_highlighter = None
 		self.tac_output = Logger()

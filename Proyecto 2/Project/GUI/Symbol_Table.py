@@ -26,8 +26,8 @@ class Symbol_Table(QTableWidget):
 
 		if isinstance(value, Class):
 			self.setItem(row, 0, QTableWidgetItem(str(value.ID)))
-			self.setItem(row, 1, QTableWidgetItem(str(value.tac_data.ID)))
-			self.setItem(row, 2, QTableWidgetItem(str(value.tac_data.data)))
+			self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
+			self.setItem(row, 2, QTableWidgetItem(str(value.data)))
 			self.setItem(row, 3, QTableWidgetItem("Yes" if value.initializer else "No"))
 			self.setItem(row, 4, QTableWidgetItem(str(len(value.member_functions))))
 			self.setItem(row, 5, QTableWidgetItem(str(len(value.member_variables))))
@@ -36,8 +36,8 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row, 8, QTableWidgetItem(str(value.scope_depth)))
 		elif isinstance(value, Function):
 			self.setItem(row, 0, QTableWidgetItem(str(value.ID)))
-			self.setItem(row, 1, QTableWidgetItem(str(value.tac_data.ID)))
-			self.setItem(row, 2, QTableWidgetItem(str(value.tac_data.data)))
+			self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
+			self.setItem(row, 2, QTableWidgetItem(str(value.data)))
 			self.setItem(row, 3, QTableWidgetItem(value.return_type.value))
 			self.setItem(row, 4, QTableWidgetItem(value.origin))
 			self.setItem(row, 5, QTableWidgetItem('|'.join([param.ID for param in value.parameters])))
@@ -47,8 +47,8 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row, 9, QTableWidgetItem(str(value.scope_depth) if not value.member else "-"))
 		elif isinstance(value, Variable):
 			self.setItem(row, 0, QTableWidgetItem(str(value.ID)))
-			self.setItem(row, 1, QTableWidgetItem(str(value.tac_data.ID)))
-			self.setItem(row, 2, QTableWidgetItem(str(value.tac_data.data)))
+			self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
+			self.setItem(row, 2, QTableWidgetItem(str(value.data)))
 			self.setItem(row, 3, QTableWidgetItem(value.type.value))
 			self.setItem(row, 4, QTableWidgetItem(value.origin))
 			self.setItem(row, 5, QTableWidgetItem(str(value.data)))
@@ -75,8 +75,8 @@ class Symbol_Table(QTableWidget):
 		for row in range(self.rowCount()):
 			if isinstance(value, Class):
 				if (self.item(row, 0).text() == value.ID and self.item(row, 6).text() == (value.parent.ID if value.parent else "Global")):
-					self.setItem(row, 1, QTableWidgetItem(str(value.tac_data.ID)))
-					self.setItem(row, 2, QTableWidgetItem(str(value.tac_data.data)))
+					self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
+					self.setItem(row, 2, QTableWidgetItem(str(value.data)))
 					self.setItem(row, 3, QTableWidgetItem("Yes" if value.initializer else "No"))
 					self.setItem(row, 4, QTableWidgetItem(str(len(value.member_functions))))
 					self.setItem(row, 5, QTableWidgetItem(str(len(value.member_variables))))
@@ -87,8 +87,8 @@ class Symbol_Table(QTableWidget):
 
 			elif isinstance(value, Function):
 				if (self.item(row, 0).text() == value.ID and self.item(row, 7).text() == (value.member.ID if value.member else "Global")):
-					self.setItem(row, 1, QTableWidgetItem(str(value.tac_data.ID)))
-					self.setItem(row, 2, QTableWidgetItem(str(value.tac_data.data)))
+					self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
+					self.setItem(row, 2, QTableWidgetItem(str(value.data)))
 					self.setItem(row, 3, QTableWidgetItem(value.return_type.value))
 					self.setItem(row, 4, QTableWidgetItem(value.origin))
 					self.setItem(row, 5, QTableWidgetItem('|'.join([param.ID for param in value.parameters])))
@@ -101,8 +101,8 @@ class Symbol_Table(QTableWidget):
 			elif isinstance(value, Variable):
 				# Check for matching ID and member
 				if (self.item(row, 0).text() == value.ID and self.item(row, 6).text() == (value.member.ID if value.member else "Global")):
-					self.setItem(row, 1, QTableWidgetItem(str(value.tac_data.ID)))
-					self.setItem(row, 2, QTableWidgetItem(str(value.tac_data.data)))
+					self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
+					self.setItem(row, 2, QTableWidgetItem(str(value.data)))
 					self.setItem(row, 3, QTableWidgetItem(value.type.value))
 					self.setItem(row, 4, QTableWidgetItem(value.origin))
 					self.setItem(row, 5, QTableWidgetItem(str(value.data)))
