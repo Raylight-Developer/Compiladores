@@ -108,7 +108,7 @@ class Tree_Generator(CompiscriptVisitor):
 		else:
 			val.exprStmt = self.visit(ctx.exprStmt())
 		if ctx.expression(0):
-			val.comapare_expression = self.visit(ctx.expression(0))
+			val.compare_expression = self.visit(ctx.expression(0))
 		if ctx.expression(1):
 			val.increment_expression = self.visit(ctx.expression(1))
 		val.statement = self.visit(ctx.statement())

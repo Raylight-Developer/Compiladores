@@ -52,7 +52,7 @@ class ANT_ForStmt:
 	def __init__(self):
 		self.varDecl: ANT_VarDecl = None
 		self.exprStmt: ANT_ExprStmt = None
-		self.comapare_expression: ANT_Expression = None
+		self.compare_expression: ANT_Expression = None
 		self.increment_expression: ANT_Expression = None
 		self.statement: ANT_Statement = None
 

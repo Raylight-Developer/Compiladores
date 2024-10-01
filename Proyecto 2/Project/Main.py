@@ -39,7 +39,6 @@ var no = ! true ; // false
 var min = 0;
 var max = 10;
 var promedio = ( min + max ) / 2;
-/*
 var string = "Hola Mundo";
 
 for (var i = 1; i <= 5; i = i + 1) {
@@ -50,6 +49,7 @@ for (var i = 1; i <= 5; i = i + 1) {
 	}
 }
 
+/*
 class Persona {
 	init(nombre, edad) {
 		this.nombre = nombre;
