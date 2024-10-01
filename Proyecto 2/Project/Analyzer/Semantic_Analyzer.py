@@ -554,7 +554,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						self.flags["current_call"] = None
 					if len(self.flags["current_function"].parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{self.flags['current_function'].ID}' with {len(call_params)} parameters. Expected {len(self.flags['current_function'].parameters)}")
-					self.tac.callFunction(self.flags["current_function"])
+					self.tac.callFunction(self.flags["current_function"], call_params)
 				elif (self.flags["current_function"] and self.flags["current_function"].ID == primary.data.ID) or (self.flags["current_call"] and self.flags["current_call"] == primary.data.ID):
 					if self.flags["current_function"]:
 						self.flags["current_function"].recursive = True
@@ -567,7 +567,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 							call_params.append(self.visit(arguments.getChild(i)))
 					if len(primary.data.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{primary.data.ID}' with {len(call_params)} parameters. Expected {len(primary.data.parameters)}")
-					self.tac.callFunction(primary.data)
+					self.tac.callFunction(primary.data, call_params)
 				res = primary
 			elif primary.type == Type.THIS: # Accesing a variable from self
 				if self.flags["current_class"] is None:
@@ -621,7 +621,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 							error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(function.parameters)}")
 						self.flags["current_call"] = None
 						# Return the called function
-						self.tac.callFunction(function)
+						self.tac.callFunction(function, call_params)
 						return function
 					# Variable access
 					else:
@@ -646,6 +646,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 	def visitSuperCall(self, ctx: CompiscriptParser.SuperCallContext):
 		self.enterFull("Super")
+		self.flags["visit_super"] = True
+		res = None
 
 		if not ctx.IDENTIFIER():
 			error(self.debug, "Error Super. Empy super call")
@@ -656,12 +658,15 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		member_name: str = ctx.IDENTIFIER().getText()
 		if self.flags["current_class"].parent.checkFunction(member_name):
-			self.exitFull("Super")
 			function = self.flags["current_class"].lookupFunction(member_name)
-			self.tac.callFunction(function)
-			return Container(function, Type.SUPER)
+			self.tac.callFunction(function, [])
+			res = Container(function, Type.SUPER)
 		else:
 			error(self.debug, f"Error Super. No function in hierarchy named '{member_name}'")
+
+		self.flags["visit_super"] = False
+		self.exitFull("Super")
+		return res
 
 	def visitPrimary(self, ctx:CompiscriptParser.PrimaryContext):
 		self.enterFull("Primary")
