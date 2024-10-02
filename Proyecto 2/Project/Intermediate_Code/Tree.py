@@ -296,13 +296,20 @@ class Tree_Generator(CompiscriptVisitor):
 			val.funAnon = self.visit(ctx.funAnon())
 		else:
 			val.primary = self.visit(ctx.primary())
-			for i in range(ctx.getChildCount() - 1):
-				if ctx.arguments(i):
-					val.calls.append(self.visit(ctx.arguments(i)))
+			i = 1  # Start after the primary
+			while i < ctx.getChildCount():
+				if ctx.getChild(i).getText() == '(':
+					if ctx.getChild(i+1).getText() == ")":
+						val.calls.append("()")
+						i+=1
+					else:
+						val.calls.append(self.visit(ctx.getChild(i+1)))
+						i+=2
 				elif ctx.IDENTIFIER(i):
 					val.calls.append(str(ctx.IDENTIFIER(i)))
 				elif ctx.expression(i):
 					val.calls.append(self.visit(ctx.expression(i)))
+				i+=1
 
 		return val
 
@@ -343,7 +350,7 @@ class Tree_Generator(CompiscriptVisitor):
 		val.IDENTIFIER = str(ctx.IDENTIFIER())
 		if ctx.parameters():
 			val.parameters = self.visit(ctx.parameters())
-			val.block = self.visit(ctx.block())
+		val.block = self.visit(ctx.block())
 
 		return val
 

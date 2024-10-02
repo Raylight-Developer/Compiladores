@@ -19,13 +19,20 @@ class Display(QMainWindow):
 		self.code_input.setText((
 """
 
+
 fun saludar(val) {
 	print "Hola, mi nombre es " + val;
 }
-saludar("Alejandro");
+//saludar("Alejandro");
 
 var nombre = "Alejandro";
 saludar(nombre);
+/*
+fun estudiar() {
+	print " esta estudiando en grado.";
+}
+estudiar();
+
 
 var testa = 3;
 var testb = "3";
@@ -73,17 +80,6 @@ class Estudiante extends Persona {
 		print this.nombre + " esta estudiando en " + this.grado + " grado.";
 	}
 }
-
-fun estudiar() {
-	print " esta estudiando en grado.";
-}
-estudiar();
-fun saludar(val) {
-	print "Hola, mi nombre es " + val;
-}
-saludar("Alejandro");
-
-var nombre = "Alejandro";
 
 var ropero = new Persona(nombre, 20);
 var juan = new Estudiante(nombre, 20, 3);

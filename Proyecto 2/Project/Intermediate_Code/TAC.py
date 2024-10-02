@@ -376,9 +376,12 @@ class TAC_Generator():
 							arguments = self.visit(nested)
 							for i, param in enumerate(self.param_map[res]):
 								self.code << NL() << param << " = " << arguments[i]
-							self.code << NL() << "CALL " << res
-						elif isinstance(nested, str): # Calling Member Variable
-							pass
+							self.code << NL() << "CALL " << res << " // Calling with params"
+						elif isinstance(nested, str): # Calling Member Variable OR Function
+							if nested == "()":
+								self.flags["Scope"] = "fun;"
+								res = self.visit(node.primary)
+								self.code << NL() << "CALL " << res << " // Calling with NO params"
 						elif isinstance(nested, ANT_Expression): # Calling Instance
 							pass
 
@@ -424,11 +427,12 @@ class TAC_Generator():
 			self.code << NL() << ID << ": // " << node.IDENTIFIER
 			self.code += 1
 			self.param_map[ID] = []
-			parameters = self.visit(node.parameters)
-			for parameter in parameters:
-				param_id = self.new_temp()
-				self.tac_map["prm;" + parameter] = param_id
-				self.param_map[ID].append(param_id)
+			if node.parameters:
+				parameters = self.visit(node.parameters)
+				for parameter in parameters:
+					param_id = self.new_temp()
+					self.tac_map["prm;" + parameter] = param_id
+					self.param_map[ID].append(param_id)
 
 			return_val = self.visit(node.block)
 			self.tac_map["fun;" + node.IDENTIFIER] = ID
