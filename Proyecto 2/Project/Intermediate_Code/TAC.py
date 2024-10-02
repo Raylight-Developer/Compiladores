@@ -24,6 +24,10 @@ class TAC_Generator():
 		self.program: ANT_Program = self.tree.visitProgram(program)
 
 		self.flags = {
+			"cls": None,
+			"fun": None,
+			"var": None,
+
 			"Declaration": 0,
 			"ClassDecl": 0,
 			"ClassBody": 0,
@@ -60,7 +64,7 @@ class TAC_Generator():
 		}
 
 		self.tac_map: Dict[str,str] = {}
-		self.param_map: Dict[str, List[str]] = {}
+		self.param_map: Dict[str, Dict[str, str]] = {}
 		self.code = Lace()
 		self.visit(self.program)
 
@@ -387,24 +391,28 @@ class TAC_Generator():
 			if node.funAnon:
 				res = self.visit(node.funAnon)
 			elif node.primary:
-				if len(node.calls) == 0:
-					self.flags["Scope"] = ["prm;", "var;"]
+				if node.calls == []:
+					self.flags["Call_Scope"] = "Primary"
 					res = self.visit(node.primary) # Calling Primary
 				else:
 					for nested in node.calls:
 						if isinstance(nested, ANT_Arguments): # Calling Function
-							self.flags["Scope"] = "fun;"
+							self.flags["Call_Scope"] = "Function"
 							res = self.visit(node.primary)
 							arguments = self.visit(nested)
 							for i, param in enumerate(self.param_map[res]):
 								self.code << NL() << param << ": " << arguments[i]
 							self.code << NL() << "CALL " << res << " // Calling with params"
-						elif isinstance(nested, str): # Calling Member Variable OR Function
-							if nested == "()":
-								self.flags["Scope"] = "fun;"
+						elif isinstance(nested, str):
+							if nested == "()": # Calling Function with no params
+								self.flags["Call_Scope"] = "Function"
 								res = self.visit(node.primary)
 								self.code << NL() << "CALL " << res << " // Calling with NO params"
-						elif isinstance(nested, ANT_Expression): # Calling Instance
+							else: # Calling Variable
+								self.flags["Call_Scope"] = "Primary"
+								res = self.visit(node.primary)
+						elif isinstance(nested, ANT_Expression): # Calling Nested
+							self.flags["Call_Scope"] = "Instance"
 							pass
 
 			self.flags["Call"] -= 1
@@ -421,13 +429,15 @@ class TAC_Generator():
 			elif node.STRING :
 				res = node.STRING
 			elif node.IDENTIFIER:
-				if isinstance(self.flags["Scope"], list):
-					for flag in self.flags["Scope"]:
-						if flag + node.IDENTIFIER in self.tac_map:
-							res = self.tac_map[flag + node.IDENTIFIER]
-							break
-				else:
-					res = self.tac_map[self.flags["Scope"] + node.IDENTIFIER]
+				if self.flags["fun"]:
+					if self.flags["fun"] in self.param_map:
+						res = self.param_map[self.flags["fun"]][node.IDENTIFIER]
+					else:
+						res = self.tac_map["var;" + node.IDENTIFIER]
+				elif self.flags["Call_Scope"] == "Primary":
+					res = self.tac_map["var;" + node.IDENTIFIER]
+				elif self.flags["Call_Scope"] == "Function":
+					res = self.tac_map["fun;" + node.IDENTIFIER]
 			elif node.operator:
 				res = node.operator
 			elif node.expression:
@@ -444,53 +454,59 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Function):
 			self.flags["Function"] += 1
 
-			if self.flags["ClassMember"] == 0: # Function
-				self.code << NL() << "// FUNCTION START {"
-				ID = self.new_label()
-				self.code << NL() << ID << ": // " << node.IDENTIFIER
-				self.code += 1
-				self.param_map[ID] = []
-				if node.parameters:
-					parameters = self.visit(node.parameters)
-					for parameter in parameters:
-						param_id = self.new_temp()
-						self.tac_map["prm;" + parameter] = param_id
-						self.param_map[ID].append(param_id)
-
-				return_val = self.visit(node.block)
-				self.tac_map["fun;" + node.IDENTIFIER] = ID
-				self.code -= 1
-				self.code << NL() << "RETURN"
-				self.code << NL() << "//} FUNCTION END"
-			else: # Function Member
+			if self.flags["ClassMember"] > 0: # Function Member
 				self.code << NL() << "// FUNCTION MEMBER START {"
 				ID = self.new_label()
+				self.flags["fun"] = ID
 				self.code << NL() << ID << ": // " << node.IDENTIFIER
 				self.code += 1
-				self.param_map[ID] = []
+				self.param_map[ID] = {}
 				if node.parameters:
 					parameters = self.visit(node.parameters)
 					for parameter in parameters:
 						param_id = self.new_temp()
-						self.tac_map["prm;" + parameter] = param_id
-						self.param_map[ID].append(param_id)
+						self.param_map[ID][parameter] = param_id
 
 				return_val = self.visit(node.block)
 				self.tac_map["fun;" + node.IDENTIFIER] = ID
 				self.code -= 1
 				self.code << NL() << "RETURN"
 				self.code << NL() << "//} FUNCTION MEMBER END"
+			else: # Function
+				self.code << NL() << "// FUNCTION START {"
+				ID = self.new_label()
+				self.flags["fun"] = ID
+				self.code << NL() << ID << ": // " << node.IDENTIFIER
+				self.code += 1
+				self.param_map[ID] = {}
+				if node.parameters:
+					parameters = self.visit(node.parameters)
+					for parameter in parameters:
+						param_id = self.new_temp()
+						self.param_map[ID][parameter] = param_id
+
+				return_val = self.visit(node.block)
+				self.tac_map["fun;" + node.IDENTIFIER] = ID
+				self.code -= 1
+				self.code << NL() << "RETURN"
+				self.code << NL() << "//} FUNCTION END"
+
+				self.flags["fun"] = None
 
 			self.flags["Function"] -= 1
 			return ID
 
 		elif isinstance(node, ANT_Variable):
 			self.flags["Variable"] += 1
+
 			if node.expression:
 				ID = self.new_temp()
+				self.flags["var"] = ID
 				self.tac_map["var;" + node.IDENTIFIER] = ID
 				expression = self.visit(node.expression)
 				self.code << NL() << ID << ": " << expression << " // " << node.IDENTIFIER << " = " << expression
+				self.flags["var"] = None
+
 			self.flags["Variable"] -= 1
 			return ID
 

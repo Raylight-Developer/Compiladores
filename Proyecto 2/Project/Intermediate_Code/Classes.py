@@ -171,6 +171,7 @@ class ANT_Unary:
 class ANT_Call:
 	def __init__(self):
 		self.primary: ANT_Primary = None
+		self.argument: bool = False
 		self.calls: List[Union[ANT_Arguments, str, ANT_Expression]] = []
 	# OR
 		self.funAnon: ANT_FunAnon = None

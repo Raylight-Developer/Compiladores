@@ -296,7 +296,7 @@ class Tree_Generator(CompiscriptVisitor):
 			val.funAnon = self.visit(ctx.funAnon())
 		else:
 			val.primary = self.visit(ctx.primary())
-			i = 1  # Start after the primary
+			i = 1 # Start after the primary
 			while i < ctx.getChildCount():
 				if ctx.getChild(i).getText() == '(':
 					if ctx.getChild(i+1).getText() == ")":

@@ -18,7 +18,6 @@ class Display(QMainWindow):
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
 		self.code_input.setText((
 """
-/*
 fun saludar(val) {
 	print "Hola, mi nombre es " + val;
 }
@@ -53,7 +52,7 @@ for (var i = 1; i <= 5; i = i + 1) {
 		print i + " es impar";
 	}
 }
-*/
+/*
 class Persona {
 	init(nombre, edad) {
 		this.nombre = nombre;
