@@ -153,7 +153,7 @@ class Tree_Generator(CompiscriptVisitor):
 		val = ANT_Block()
 
 		for i in range(len(ctx.declaration())):
-			val.declarations.append(ctx.declaration(i))
+			val.declarations.append(self.visit(ctx.declaration(i)))
 
 		return val
 

@@ -252,7 +252,7 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 		self.control = QTextCharFormat()
 		self.control.setForeground(QColor(216, 160, 223))
 		for pattern in [
-			"IF", "GO_TO", "LINK_BACK", "IF_NOT"
+			"IF", "GO_TO", "LINK_BACK", "IF_NOT", "SYSCALL", "PRINT"
 		]:
 			rule = HighlightingRule(
 				QRegularExpression(r"\b" + pattern + r"\b"),

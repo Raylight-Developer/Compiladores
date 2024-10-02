@@ -11,6 +11,15 @@ class ANT_Declaration:
 		self.funDecl: ANT_FunDecl = None
 		self.varDecl: ANT_VarDecl = None
 		self.statement: ANT_Statement = None
+	def __str__(self) -> str:
+		if self.classDecl:
+			return "classDecl"
+		if self.funDecl:
+			return "funDecl"
+		if self.varDecl:
+			return "varDecl"
+		if self.statement:
+			return "statement"
 
 class ANT_ClassDecl:
 	def __init__(self):
@@ -43,6 +52,22 @@ class ANT_Statement:
 		self.returnStmt: ANT_ReturnStmt = None
 		self.whileStmt: ANT_WhileStmt = None
 		self.block: ANT_Block = None
+
+	def __str__(self) -> str:
+		if self.exprStmt:
+			return "exprStmt"
+		if self.forStmt :
+			return "forStmt"
+		if self.ifStmt:
+			return "ifStmt"
+		if self.printStmt:
+			return "printStmt"
+		if self.returnStmt:
+			return "erturnStmt"
+		if self.whileStmt:
+			return "whileStmt"
+		if self.block:
+			return "blockStmt"
 
 class ANT_ExprStmt:
 	def __init__(self):

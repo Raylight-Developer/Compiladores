@@ -148,7 +148,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				member.member = struct
 				struct.member_variables.append(member)
 				self.scope_tracker.declareVariable(member)
-				self.tac.declareVariable(member)
 				self.addSymbolToTable(member)
 
 			struct.initialzer = struct.parent.initializer
@@ -162,7 +161,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				self.removeSymbolFromTable(inherited)
 				member.data.origin = "Override"
 			self.scope_tracker.declareFunction(member.data)
-			self.tac.declareFunction(member.data)
 			struct.member_functions.append(member.data)
 			self.addSymbolToTable(member.data)
 
@@ -282,7 +280,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 						self.flags["current_class"].member_variables.append(variable)
 						self.scope_tracker.declareVariable(variable)
-						self.tac.declareVariable(variable)
 						self.addSymbolToTable(variable)
 
 						res = Container(variable, Type.VARIABLE)
@@ -311,7 +308,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				var = self.scope_tracker.lookupVariable(var_name, None)
 				var.data = self.visit(ctx.assignment())
 				self.updateSymbolFromTable(var)
-				self.tac.assignVariable(var)
 
 				res = Container(var, Type.VARIABLE)
 			else:
@@ -501,7 +497,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						self.flags["current_call"] = None
 					if len(self.flags["current_function"].parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{self.flags['current_function'].ID}' with {len(call_params)} parameters. Expected {len(self.flags['current_function'].parameters)}")
-					self.tac.callFunction(self.flags["current_function"], call_params)
 				elif (self.flags["current_function"] and self.flags["current_function"].ID == primary.data.ID) or (self.flags["current_call"] and self.flags["current_call"] == primary.data.ID):
 					if self.flags["current_function"]:
 						self.flags["current_function"].recursive = True
@@ -514,7 +509,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 							call_params.append(self.visit(arguments.getChild(i)))
 					if len(primary.data.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{primary.data.ID}' with {len(call_params)} parameters. Expected {len(primary.data.parameters)}")
-					self.tac.callFunction(primary.data, call_params)
 				res = primary
 			elif primary.type == Type.THIS: # Accesing a variable from self
 				if self.flags["current_class"] is None:
@@ -568,7 +562,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 							error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(function.parameters)}")
 						self.flags["current_call"] = None
 						# Return the called function
-						self.tac.callFunction(function, call_params)
 						return function
 					# Variable access
 					else:
@@ -604,7 +597,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		member_name: str = ctx.IDENTIFIER().getText()
 		if self.flags["current_class"].parent.checkFunction(member_name):
 			function = self.flags["current_class"].lookupFunction(member_name)
-			self.tac.callFunction(function, [])
 			res = Container(function, Type.SUPER)
 		else:
 			error(self.debug, f"Error Super. No function in hierarchy named '{member_name}'")
@@ -678,7 +670,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				parameter = Function_Parameter()
 				parameter.ID = param.getText()
 				parameter.function = function
-				self.tac.declareParameter(parameter)
 				function.parameters.append(parameter)
 
 		if self.flags["current_class"]:
@@ -691,7 +682,6 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.exitScope()
 		if not self.flags["current_class"]:
 			self.scope_tracker.declareFunction(function)
-			self.tac.declareFunction(function)
 			self.addSymbolToTable(function)
 		self.flags["current_function"] = None
 #
@@ -712,13 +702,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.debug << NL() << f"Declaring Variable [{variable.ID}]"
 #
 		self.scope_tracker.declareVariable(variable)
-		self.tac.declareVariable(variable)
 		if ctx.expression():
 			var: Container = self.visit(ctx.expression())
 			variable.data = var.data
 			variable.type = var.type
-
-			self.tac.assignVariable(variable)
 
 		self.addSymbolToTable(variable)
 #
