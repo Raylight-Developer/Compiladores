@@ -296,9 +296,9 @@ class Tree_Generator(CompiscriptVisitor):
 			val.funAnon = self.visit(ctx.funAnon())
 		else:
 			val.primary = self.visit(ctx.primary())
-			for i in range(1, ctx.getChildCount() - 1):
+			for i in range(ctx.getChildCount() - 1):
 				if ctx.arguments(i):
-					val.calls.append(self.visit(ctx.arguments()))
+					val.calls.append(self.visit(ctx.arguments(i)))
 				elif ctx.IDENTIFIER(i):
 					val.calls.append(str(ctx.IDENTIFIER(i)))
 				elif ctx.expression(i):
@@ -359,7 +359,7 @@ class Tree_Generator(CompiscriptVisitor):
 	def visitParameters(self, ctx:CompiscriptParser.ParametersContext):
 		val = ANT_Parameters()
 
-		for i in range(1, len(ctx.IDENTIFIER())):
+		for i in range(len(ctx.IDENTIFIER())):
 			val.identifiers.append(str(ctx.IDENTIFIER(i)))
 
 		return val
@@ -367,7 +367,7 @@ class Tree_Generator(CompiscriptVisitor):
 	def visitArguments(self, ctx:CompiscriptParser.ArgumentsContext):
 		val = ANT_Arguments()
 
-		for i in range(1, len(ctx.expression())):
-			val.expressions.append(str(ctx.expression(i)))
+		for i in range(len(ctx.expression())):
+			val.expressions.append(self.visit(ctx.expression(i)))
 
 		return val

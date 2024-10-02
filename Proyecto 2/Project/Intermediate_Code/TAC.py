@@ -60,6 +60,7 @@ class TAC_Generator():
 		}
 
 		self.tac_map: Dict[str,str] = {}
+		self.param_map: Dict[str, List[str]] = {}
 		self.code = Lace()
 		self.visit(self.program)
 
@@ -106,8 +107,9 @@ class TAC_Generator():
 
 		elif isinstance(node, ANT_FunDecl):
 			self.flags["FunDecl"] += 1
-			self.visit(node.function)
+			res = self.visit(node.function)
 			self.flags["FunDecl"] -= 1
+			return res
 
 		elif isinstance(node, ANT_VarDecl):
 			self.flags["VarDecl"] += 1
@@ -245,8 +247,6 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Assignment):
 			self.flags["Assignment"] += 1
 			if node.IDENTIFIER:
-				if not node.assignment:
-					self.code << NL() << self.tac_map["var;"+node.IDENTIFIER] << " = "
 				if node.assignment:
 					res = self.visit(node.assignment)
 			elif node.logic_or:
@@ -366,9 +366,21 @@ class TAC_Generator():
 				res = self.visit(node.funAnon)
 			elif node.primary:
 				if len(node.calls) == 0:
-					res = self.visit(node.primary)
+					self.flags["Scope"] = ["prm;", "var;"]
+					res = self.visit(node.primary) # Calling Primary
 				else:
-					pass
+					for nested in node.calls:
+						if isinstance(nested, ANT_Arguments): # Calling Function
+							self.flags["Scope"] = "fun;"
+							res = self.visit(node.primary)
+							arguments = self.visit(nested)
+							for i, param in enumerate(self.param_map[res]):
+								self.code << NL() << param << " = " << arguments[i]
+							self.code << NL() << "CALL " << res
+						elif isinstance(nested, str): # Calling Member Variable
+							pass
+						elif isinstance(nested, ANT_Expression): # Calling Instance
+							pass
 
 			self.flags["Call"] -= 1
 			return res
@@ -382,40 +394,74 @@ class TAC_Generator():
 			if node.NUMBER:
 				res = node.NUMBER
 			elif node.STRING :
-				res =  node.STRING
+				res = node.STRING
 			elif node.IDENTIFIER:
-				res =  self.tac_map["var;"+node.IDENTIFIER]
+				if isinstance(self.flags["Scope"], list):
+					for flag in self.flags["Scope"]:
+						if flag + node.IDENTIFIER in self.tac_map:
+							res = self.tac_map[flag + node.IDENTIFIER]
+							break
+				else:
+					res = self.tac_map[self.flags["Scope"] + node.IDENTIFIER]
 			elif node.operator:
-				res =  node.operator
+				res = node.operator
 			elif node.expression:
-				res =  self.visit(node.expression)
+				res = self.visit(node.expression)
 			elif node.superCall:
-				res =  self.visit(node.superCall)
+				res = self.visit(node.superCall)
 			elif node.array:
-				res =  self.visit(node.array)
+				res = self.visit(node.array)
 			elif node.instantiation:
-				res =  self.visit(node.instantiation)
+				res = self.visit(node.instantiation)
 			self.flags["Primary"] -= 1
 			return res
 
 		elif isinstance(node, ANT_Function):
 			self.flags["Function"] += 1
+
+			self.code << NL() << "// FUNCTION START {"
+			ID = self.new_label()
+			self.code << NL() << ID << ": // " << node.IDENTIFIER
+			self.code += 1
+			self.param_map[ID] = []
+			parameters = self.visit(node.parameters)
+			for parameter in parameters:
+				param_id = self.new_temp()
+				self.tac_map["prm;" + parameter] = param_id
+				self.param_map[ID].append(param_id)
+
+			return_val = self.visit(node.block)
+			self.tac_map["fun;" + node.IDENTIFIER] = ID
+			self.code -= 1
+			self.code << NL() << "RETURN"
+			self.code << NL() << "//} FUNCTION END"
+
 			self.flags["Function"] -= 1
+			return ID
 
 		elif isinstance(node, ANT_Variable):
 			self.flags["Variable"] += 1
 			if node.expression:
 				ID = self.new_temp()
-				self.tac_map["var;"+node.IDENTIFIER] = ID
+				self.tac_map["var;" + node.IDENTIFIER] = ID
 				expression = self.visit(node.expression)
-				self.code << NL() << ID << ": " << expression << " // " << node.IDENTIFIER
+				self.code << NL() << ID << " = " << expression << " // " << node.IDENTIFIER
 			self.flags["Variable"] -= 1
 			return ID
 
 		elif isinstance(node, ANT_Parameters):
 			self.flags["Parameters"] += 1
+			parameters: List[str] = []
+			for identifier in node.identifiers:
+				parameters.append(identifier)
 			self.flags["Parameters"] -= 1
+			return parameters
 
 		elif isinstance(node, ANT_Arguments):
-			self.flags["Arguments)"] += 1
-			self.flags["Arguments)"] -= 1
+			self.flags["Arguments"] += 1
+			arguments: List[str] = []
+			for expression in node.expressions:
+				expr = self.visit(expression)
+				arguments.append(expr)
+			self.flags["Arguments"] -= 1
+			return arguments

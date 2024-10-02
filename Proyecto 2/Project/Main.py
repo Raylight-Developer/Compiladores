@@ -18,14 +18,14 @@ class Display(QMainWindow):
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
 		self.code_input.setText((
 """
-/*
+
 fun saludar(val) {
 	print "Hola, mi nombre es " + val;
 }
-var nombre = "Alejandro";
 saludar("Alejandro");
+
+var nombre = "Alejandro";
 saludar(nombre);
-*/
 
 var testa = 3;
 var testb = "3";
