@@ -260,10 +260,10 @@ class TAC_Generator():
 				res = self.visit(node.left)
 			else:
 				left = self.visit(node.left)
-				for op, right in node.array:
-					right_result = self.visit(right)
+				for op, right_node in node.array:
+					right = self.visit(right_node)
 					res = self.new_temp()
-					self.code << NL() << f"{res} = {left} || {right_result}"
+					self.code << NL() << f"OR {res}: {left}, {right} // {left} || {right}"
 					left = res
 			self.flags["LogicOr"] -= 1
 			return res
@@ -274,10 +274,10 @@ class TAC_Generator():
 				res = self.visit(node.left)
 			else:
 				left = self.visit(node.left)
-				for op, right in node.array:
-					right_result = self.visit(right)
+				for op, right_node in node.array:
+					right = self.visit(right_node)
 					res = self.new_temp()
-					self.code << NL() << f"{res} = {left} && {right_result}"
+					self.code << NL() << f"AND {res}: {left}, {right} // {left} && {right}"
 					left = res
 			self.flags["LogicAnd"] -= 1
 			return res
@@ -288,10 +288,13 @@ class TAC_Generator():
 				res = self.visit(node.left)
 			else:
 				left = self.visit(node.left)
-				for op, right in node.array:
-					right_result = self.visit(right)
+				for op, right_node in node.array:
+					right = self.visit(right_node)
 					res = self.new_temp()
-					self.code << NL() << f"{res} = {left} {op} {right_result}"
+					if op == "==":
+						self.code << NL() << f"EQ {res}: {left}, {right} // {left} == {right}"
+					elif op == "!=":
+						self.code << NL() << f"NEQ {res}: {left}, {right} // {left} != {right}"
 					left = res
 			self.flags["Equality"] -= 1
 			return res
@@ -302,10 +305,18 @@ class TAC_Generator():
 				res = self.visit(node.left)
 			else:
 				left = self.visit(node.left)
-				for op, right in node.array:
-					right_result = self.visit(right)
+				for op, right_node in node.array:
+					right = self.visit(right_node)
 					res = self.new_temp()
-					self.code << NL() << f"{res} = {left} {op} {right_result}"
+					res = self.new_temp()
+					if op == "<":
+						self.code << NL() << f"LT {res}: {left}, {right} // {left} < {right}"
+					elif op == "<=":
+						self.code << NL() << f"LEQ {res}: {left}, {right} // {left} <= {right}"
+					elif op == ">":
+						self.code << NL() << f"GT {res}: {left}, {right} // {left} > {right}"
+					elif op == ">=":
+						self.code << NL() << f"GEQ {res}: {left}, {right} // {left} >= {right}"
 					left = res
 			self.flags["Comparison"] -= 1
 			return res
@@ -316,10 +327,13 @@ class TAC_Generator():
 				res = self.visit(node.left)
 			else:
 				left = self.visit(node.left)
-				for op, right in node.array:
-					right_result = self.visit(right)
+				for op, right_node in node.array:
+					right = self.visit(right_node)
 					res = self.new_temp()
-					self.code << NL() << f"{res} = {left} {op} {right_result}"
+					if op == "+":
+						self.code << NL() << f"ADD {res}: {left}, {right} // {left} + {right}"
+					elif op == "-":
+						self.code << NL() << f"SUB {res}: {left}, {right} // {left} - {right}"
 					left = res
 			self.flags["Term"] -= 1
 			return res
@@ -330,10 +344,15 @@ class TAC_Generator():
 				res = self.visit(node.left)
 			else:
 				left = self.visit(node.left)
-				for op, right in node.array:
-					right_result = self.visit(right)
+				for op, right_node in node.array:
+					right = self.visit(right_node)
 					res = self.new_temp()
-					self.code << NL() << f"{res} = {left} {op} {right_result}"
+					if op == "*":
+						self.code << NL() << f"MUL {res}: {left}, {right} // {left} * {right}"
+					elif op == "/":
+						self.code << NL() << f"DIV {res}: {left}, {right} // {left} / {right}"
+					elif op == "%":
+						self.code << NL() << f"MOD {res}: {left}, {right} // {left} % {right}"
 					left = res
 				self.flags["Factor"] -= 1
 			return res
@@ -354,9 +373,12 @@ class TAC_Generator():
 			if node.call:
 				res = self.visit(node.call)
 			elif node.unary:
-				right_result = self.visit(node.unary)
+				right = self.visit(node.unary)
 				res = self.new_temp()
-				self.code << NL() << f"{res} = {node.operator}{right_result}"
+				if node.operator == "-":
+					self.code << NL() << f"SUB {res}: 0, {right} // - {right}"
+				elif node.operator == "!":
+					self.code << NL() << f"NOT {res}: {right} // ! {right}"
 			self.flags["Unary"] -= 1
 			return res
 
@@ -375,7 +397,7 @@ class TAC_Generator():
 							res = self.visit(node.primary)
 							arguments = self.visit(nested)
 							for i, param in enumerate(self.param_map[res]):
-								self.code << NL() << param << " = " << arguments[i]
+								self.code << NL() << param << ": " << arguments[i]
 							self.code << NL() << "CALL " << res << " // Calling with params"
 						elif isinstance(nested, str): # Calling Member Variable OR Function
 							if nested == "()":
@@ -422,23 +444,42 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Function):
 			self.flags["Function"] += 1
 
-			self.code << NL() << "// FUNCTION START {"
-			ID = self.new_label()
-			self.code << NL() << ID << ": // " << node.IDENTIFIER
-			self.code += 1
-			self.param_map[ID] = []
-			if node.parameters:
-				parameters = self.visit(node.parameters)
-				for parameter in parameters:
-					param_id = self.new_temp()
-					self.tac_map["prm;" + parameter] = param_id
-					self.param_map[ID].append(param_id)
+			if self.flags["ClassMember"] == 0: # Function
+				self.code << NL() << "// FUNCTION START {"
+				ID = self.new_label()
+				self.code << NL() << ID << ": // " << node.IDENTIFIER
+				self.code += 1
+				self.param_map[ID] = []
+				if node.parameters:
+					parameters = self.visit(node.parameters)
+					for parameter in parameters:
+						param_id = self.new_temp()
+						self.tac_map["prm;" + parameter] = param_id
+						self.param_map[ID].append(param_id)
 
-			return_val = self.visit(node.block)
-			self.tac_map["fun;" + node.IDENTIFIER] = ID
-			self.code -= 1
-			self.code << NL() << "RETURN"
-			self.code << NL() << "//} FUNCTION END"
+				return_val = self.visit(node.block)
+				self.tac_map["fun;" + node.IDENTIFIER] = ID
+				self.code -= 1
+				self.code << NL() << "RETURN"
+				self.code << NL() << "//} FUNCTION END"
+			else: # Function Member
+				self.code << NL() << "// FUNCTION MEMBER START {"
+				ID = self.new_label()
+				self.code << NL() << ID << ": // " << node.IDENTIFIER
+				self.code += 1
+				self.param_map[ID] = []
+				if node.parameters:
+					parameters = self.visit(node.parameters)
+					for parameter in parameters:
+						param_id = self.new_temp()
+						self.tac_map["prm;" + parameter] = param_id
+						self.param_map[ID].append(param_id)
+
+				return_val = self.visit(node.block)
+				self.tac_map["fun;" + node.IDENTIFIER] = ID
+				self.code -= 1
+				self.code << NL() << "RETURN"
+				self.code << NL() << "//} FUNCTION MEMBER END"
 
 			self.flags["Function"] -= 1
 			return ID
@@ -449,7 +490,7 @@ class TAC_Generator():
 				ID = self.new_temp()
 				self.tac_map["var;" + node.IDENTIFIER] = ID
 				expression = self.visit(node.expression)
-				self.code << NL() << ID << " = " << expression << " // " << node.IDENTIFIER
+				self.code << NL() << ID << ": " << expression << " // " << node.IDENTIFIER << " = " << expression
 			self.flags["Variable"] -= 1
 			return ID
 

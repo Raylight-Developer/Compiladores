@@ -260,6 +260,29 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 			)
 			self.highlightingRules.append(rule)
 
+		self.user_keywords = QTextCharFormat()
+		self.user_keywords.setForeground(QColor(86, 156, 214))
+		for pattern in [
+			"true", "false", "nil", "this"
+		]:
+			rule = HighlightingRule(
+				QRegularExpression(r"\b" + pattern + r"\b"),
+				self.user_keywords
+			)
+			self.highlightingRules.append(rule)
+
+		self.operation = QTextCharFormat()
+		self.operation.setForeground(QColor(100, 255, 120))
+		for pattern in [
+			"ADD", "SUB", "MUL", "DIV", "MOD",
+			"AND", "OR", "NOT", "EQ", "NEQ", "LEQ", "GEQ","LT", "GT"
+		]:
+			rule = HighlightingRule(
+				QRegularExpression(r"\b" + pattern + r"\b"),
+				self.operation
+			)
+			self.highlightingRules.append(rule)
+			
 		self.label = QTextCharFormat()
 		self.label.setForeground(QColor(255, 120, 100))
 		rule = HighlightingRule(
@@ -269,7 +292,7 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 		self.highlightingRules.append(rule)
 
 		self.temporal = QTextCharFormat()
-		self.temporal.setForeground(QColor(100, 120, 255))
+		self.temporal.setForeground(QColor(120, 130, 140))
 		rule = HighlightingRule(
 			QRegularExpression(r"\bT_[0-9]*\b"),
 			self.temporal

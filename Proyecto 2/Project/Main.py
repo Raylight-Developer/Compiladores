@@ -18,21 +18,19 @@ class Display(QMainWindow):
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
 		self.code_input.setText((
 """
-
-
+/*
 fun saludar(val) {
 	print "Hola, mi nombre es " + val;
 }
-//saludar("Alejandro");
+saludar("Alejandro");
 
 var nombre = "Alejandro";
 saludar(nombre);
-/*
+
 fun estudiar() {
 	print " esta estudiando en grado.";
 }
 estudiar();
-
 
 var testa = 3;
 var testb = "3";
@@ -41,7 +39,7 @@ var mayorIgual = 10 >= 10; // true
 var igual = 1 == 1; // true
 var diferente = "a" != "b" ; // true
 var y = true and false ; // false
-var o = true or false ; // true
+var o = true or false or true or false; // true
 var no = ! true ; // false
 var min = 0;
 var max = 10;
@@ -55,8 +53,7 @@ for (var i = 1; i <= 5; i = i + 1) {
 		print i + " es impar";
 	}
 }
-
-/*
+*/
 class Persona {
 	init(nombre, edad) {
 		this.nombre = nombre;
@@ -68,6 +65,7 @@ class Persona {
 		print "Hola, mi nombre es " + this.color;
 	}
 }
+/*
 
 class Estudiante extends Persona {
 	init(nombre, edad, grado) {
