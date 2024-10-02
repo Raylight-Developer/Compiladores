@@ -22,7 +22,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		self.debug = debug
 		self.scope_tracker = Scope_Tracker(debug)
-		self.tac = TAC_Generator(self.scope_tracker, program)
+		self.tac = TAC_Generator(program)
 
 		self.flags = {
 			"current_instance" : None,

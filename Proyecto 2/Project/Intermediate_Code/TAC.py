@@ -11,16 +11,18 @@ from GUI.Logger import *
 from Analyzer.Symbols import *
 from Analyzer.Scope import *
 
+from .TAC_Data import *
 from .Classes import *
 from .Tree import *
 
 class TAC_Generator():
-	def __init__(self, scope_tracker: Scope_Tracker, program: CompiscriptParser.ProgramContext):
+	def __init__(self, program: CompiscriptParser.ProgramContext):
 		super().__init__()
 		self.label_count = -1
 		self.temp_count = -1
 
 		self.tree = Tree_Generator()
+		self.scope = Tac_Scope_Tracker()
 		self.program: ANT_Program = self.tree.visitProgram(program)
 
 		self.flags = {
@@ -63,8 +65,10 @@ class TAC_Generator():
 			"Arguments": 0,
 		}
 
-		self.tac_map: Dict[str,str] = {}
+		self.tac_map: Dict[str, str] = {}
 		self.param_map: Dict[str, Dict[str, str]] = {}
+		self.var_member_map: Dict[str, Dict[str, str]] = {}
+		self.fun_member_map: Dict[str, Dict[str, str]] = {}
 		self.code = Lace()
 		self.visit(self.program)
 
@@ -84,9 +88,9 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Declaration):
 			self.flags["Declaration"] += 1
 			if node.classDecl:
-				self.visit(node.classDecl.class_body)
+				self.visit(node.classDecl)
 			elif node.funDecl:
-				self.visit(node.funDecl.function)
+				self.visit(node.funDecl)
 			elif node.varDecl:
 				self.visit(node.varDecl)
 			elif node.statement:
@@ -95,7 +99,13 @@ class TAC_Generator():
 
 		elif isinstance(node, ANT_ClassDecl):
 			self.flags["ClassDecl"] += 1
+
+			ID = self.new_label()
+			self.flags["cls"] = ID
+			self.tac_map["cls;" + node.IDENTIFIER] = ID
 			self.visit(node.class_body)
+			self.flags["cls"] = None
+
 			self.flags["ClassDecl"] -= 1
 
 		elif isinstance(node, ANT_ClassBody):
@@ -369,8 +379,12 @@ class TAC_Generator():
 
 		elif isinstance(node, ANT_Instantiation):
 			self.flags["Instantiation"] += 1
+
+			res = self.tac_map["cls;" + node.IDENTIFIER]
 			self.visit(node.arguments)
+
 			self.flags["Instantiation"] -= 1
+			return res
 
 		elif isinstance(node, ANT_Unary):
 			self.flags["Unary"] += 1
@@ -391,27 +405,39 @@ class TAC_Generator():
 			if node.funAnon:
 				res = self.visit(node.funAnon)
 			elif node.primary:
+				self.flags["Call_Scope"] = "Variable"
 				if node.calls == []:
-					self.flags["Call_Scope"] = "Primary"
 					res = self.visit(node.primary) # Calling Primary
+					if res == "this":
+						self.flags["Call_Scope"] = "Var_Member"
 				else:
 					for nested in node.calls:
-						if isinstance(nested, ANT_Arguments): # Calling Function
-							self.flags["Call_Scope"] = "Function"
-							res = self.visit(node.primary)
-							arguments = self.visit(nested)
-							for i, param in enumerate(self.param_map[res]):
-								self.code << NL() << param << ": " << arguments[i]
-							self.code << NL() << "CALL " << res << " // Calling with params"
-						elif isinstance(nested, str):
-							if nested == "()": # Calling Function with no params
+						if isinstance(nested, ANT_Arguments):
+							if self.flags["Instantiation"] > 0: # Calling new
+								res = self.visit(node.primary)
+								arguments = self.visit(nested)
+								for i, param in enumerate(self.param_map[res]):
+									self.code << NL() << param << ": " << arguments[i]
+								self.code << NL() << "NEW " << res << " // Calling instantiation with params"
+							else: # Calling Function with arguments
 								self.flags["Call_Scope"] = "Function"
 								res = self.visit(node.primary)
-								self.code << NL() << "CALL " << res << " // Calling with NO params"
-							else: # Calling Variable
-								self.flags["Call_Scope"] = "Primary"
+								arguments = self.visit(nested)
+								for i, param in enumerate(self.param_map[res]):
+									self.code << NL() << param << ": " << arguments[i]
+								self.code << NL() << "CALL " << res << " // Calling function with params"
+						elif isinstance(nested, str):
+							if nested == "()":
+								if self.flags["Instantiation"] > 0: # Calling new
+									res = self.visit(node.primary)
+									self.code << NL() << "NEW " << res << " // Calling instantiation with NO params"
+								else:
+									self.flags["Call_Scope"] = "Function" # Calling Function with no arguments
+									res = self.visit(node.primary)
+									self.code << NL() << "CALL " << res << " // Calling function with NO params"
+							else: # Calling Variable or Variable Member
 								res = self.visit(node.primary)
-						elif isinstance(nested, ANT_Expression): # Calling Nested
+						elif isinstance(nested, ANT_Expression): # Calling the index of an array [expression]
 							self.flags["Call_Scope"] = "Instance"
 							pass
 
@@ -420,6 +446,7 @@ class TAC_Generator():
 
 		elif isinstance(node, ANT_SuperCall):
 			self.flags["SuperCall"] += 1
+
 			self.flags["SuperCall"] -= 1
 
 		elif isinstance(node, ANT_Primary): # Can only be called from within a call
@@ -429,15 +456,24 @@ class TAC_Generator():
 			elif node.STRING :
 				res = node.STRING
 			elif node.IDENTIFIER:
-				if self.flags["fun"]:
-					if self.flags["fun"] in self.param_map:
-						res = self.param_map[self.flags["fun"]][node.IDENTIFIER]
-					else:
+				if self.flags["cls"]:
+					if self.flags["fun"]:
+						if self.flags["Call_Scope"] == "Var_Member":
+							pass
+						elif self.flags["fun"] in self.param_map:
+							res = self.param_map[self.flags["fun"]][node.IDENTIFIER]
+						else:
+							res = self.tac_map["var;" + node.IDENTIFIER]
+				else:
+					if self.flags["fun"]:
+						if self.flags["fun"] in self.param_map:
+							res = self.param_map[self.flags["fun"]][node.IDENTIFIER]
+						else:
+							res = self.tac_map["var;" + node.IDENTIFIER]
+					elif self.flags["Call_Scope"] == "Variable":
 						res = self.tac_map["var;" + node.IDENTIFIER]
-				elif self.flags["Call_Scope"] == "Primary":
-					res = self.tac_map["var;" + node.IDENTIFIER]
-				elif self.flags["Call_Scope"] == "Function":
-					res = self.tac_map["fun;" + node.IDENTIFIER]
+					elif self.flags["Call_Scope"] == "Function":
+						res = self.tac_map["fun;" + node.IDENTIFIER]
 			elif node.operator:
 				res = node.operator
 			elif node.expression:
@@ -491,7 +527,7 @@ class TAC_Generator():
 				self.code << NL() << "RETURN"
 				self.code << NL() << "//} FUNCTION END"
 
-				self.flags["fun"] = None
+			self.flags["fun"] = None
 
 			self.flags["Function"] -= 1
 			return ID
