@@ -7,10 +7,13 @@ class Tac_Variable:
 
 		self.member : Tac_Class = None
 
+		self.instance : Tac_Class = None
+
 class Tac_Function_Parameter:
 	def __init__(self):
 		self.ID   : str = None
 		self.name : str = None
+
 		self.function : Tac_Function = None
 
 class Tac_Function:

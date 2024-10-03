@@ -258,7 +258,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				if self.flags["current_class"]:
 					memeber_var_name = ctx.IDENTIFIER().getText()
 					if self.flags["current_class"]:
-						self.debug << NL() << f"Declaring Member Variable  [{memeber_var_name}]"
+						self.debug << NL() << f"Declaring Member Variable [{memeber_var_name}]"
 						variable = Variable()
 						variable.ctx = ctx
 						variable.ID = memeber_var_name

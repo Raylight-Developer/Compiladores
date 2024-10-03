@@ -95,18 +95,18 @@ class TAC_Generator():
 
 		elif isinstance(node, ANT_ClassDecl):
 			self.flags["ClassDecl"] += 1
-			self.scope.enter()
 
 			cls = Tac_Class()
 			cls.name = node.IDENTIFIER
 			self.scope.declareClass(cls)
 			self.cls = cls
 
+			self.scope.enter()
 			self.visit(node.class_body)
+			self.scope.exit()
 
 			self.cls = None
 
-			self.scope.exit()
 			self.flags["ClassDecl"] -= 1
 
 		elif isinstance(node, ANT_ClassBody):
@@ -175,11 +175,11 @@ class TAC_Generator():
 						self.code << NL() << "// INCREMENT"
 						increment = self.visit(node.increment_expression)
 						self.code << NL() << fun << " = " << increment
-				self.code << NL() << "// LOOP BODY START{"
+				self.code << NL() << "// FOR LOOP BODY START {"
 				self.code += 1
 				self.visit(node.statement)
 				self.code -= 1
-				self.code << NL() << "//} LOOP BODY END"
+				self.code << NL() << "//} FOR LOOP BODY END"
 				self.code << NL() << "GO_TO " << start
 
 				self.code -=1
@@ -238,6 +238,29 @@ class TAC_Generator():
 
 		elif isinstance(node, ANT_WhileStmt):
 			self.flags["WhileStmt"] += 1
+
+			start = self.new_label()
+			self.code << NL() << "// WHILE LOOP START {"
+			self.code << NL() << start << ":"
+			self.code +=1
+			end = self.new_label()
+
+			if node.expression:
+				self.code << NL() << "// COMPARE"
+				compare = self.visit(node.expression)
+				self.code << NL() << "IF " << compare << " GO_TO " << end
+			
+			self.code << NL() << "// WHILE LOOP BODY START {"
+			self.code += 1
+			self.visit(node.statement)
+			self.code -= 1
+			self.code << NL() << "//} WHILE LOOP BODY END"
+			self.code << NL() << "GO_TO " << start
+
+			self.code -=1
+			self.code << NL() << end << ":"
+			self.code << NL() << "//} WHILE LOOP END"
+
 			self.flags["WhileStmt"] -= 1
 
 		elif isinstance(node, ANT_Block):
@@ -268,6 +291,7 @@ class TAC_Generator():
 						var.ID = self.new_temp()
 						var.name = node.IDENTIFIER
 						var.member = self.cls
+						self.cls.member_variables.append(var)
 						self.scope.declareVariable(var)
 						self.var = var
 						res = self.visit(node.assignment)
@@ -393,8 +417,10 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Instantiation):
 			self.flags["Instantiation"] += 1
 
-			res = self.tac_map["cls;" + node.IDENTIFIER]
-			self.visit(node.arguments)
+			res = self.new_temp()
+			cls = self.scope.lookupClass(node.IDENTIFIER)
+			arguments: List[str] = self.visit(node.arguments)
+			#for argument in arguments:
 
 			self.flags["Instantiation"] -= 1
 			return res
@@ -492,8 +518,13 @@ class TAC_Generator():
 			fun = Tac_Function()
 			fun.ID = self.new_label()
 			fun.name = node.IDENTIFIER
-			fun.member = self.cls if self.cls else None
-			self.scope.declareFunction(fun)
+			if self.cls:
+				fun.member = self.cls
+				self.cls.member_functions.append(fun)
+				if fun.name == "init":
+					self.cls.initializer = fun
+			else:
+				self.scope.declareFunction(fun)
 			self.fun = fun
 
 			self.code << NL() << "// FUNCTION START {"
