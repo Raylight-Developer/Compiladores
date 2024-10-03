@@ -260,6 +260,15 @@ class CompiscriptListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CompiscriptParser#callSuffix.
+    def enterCallSuffix(self, ctx:CompiscriptParser.CallSuffixContext):
+        pass
+
+    # Exit a parse tree produced by CompiscriptParser#callSuffix.
+    def exitCallSuffix(self, ctx:CompiscriptParser.CallSuffixContext):
+        pass
+
+
     # Enter a parse tree produced by CompiscriptParser#superCall.
     def enterSuperCall(self, ctx:CompiscriptParser.SuperCallContext):
         pass

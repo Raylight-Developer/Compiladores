@@ -50,10 +50,15 @@ instantiation   : 'new' IDENTIFIER '(' arguments? ')';
 unary           : ( '!' | '-' ) unary
                 | call ;
 
-call            : primary ( '(' arguments? ')' | '.' IDENTIFIER | '[' expression ']')* 
+call            : primary callSuffix*
                 | funAnon;
 
-superCall       :      'super' '.' IDENTIFIER;
+callSuffix      : '(' ')'
+                | '(' arguments? ')'
+                | '.' IDENTIFIER
+                | '[' expression ']' ;
+
+superCall       : 'super' '.' IDENTIFIER;
 
 primary         : 'true' | 'false' | 'nil' | 'this'
                 | NUMBER | STRING | IDENTIFIER | '(' expression ')'

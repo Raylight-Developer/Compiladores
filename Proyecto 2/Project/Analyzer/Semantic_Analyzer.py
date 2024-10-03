@@ -481,16 +481,17 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		if ctx.getChildCount() == 1:
 			if ctx.primary():
-				visited = self.visit(ctx.primary())
-				return visited
+				res = self.visit(ctx.primary())
+			elif ctx.funAnon():
+				res = self.visit(ctx.funAnon())
 		elif ctx.primary():
 			primary: Container = self.visit(ctx.primary())
 			if primary.type == Type.FUNCTION:
 				if (self.flags["current_function"] and self.flags["current_function"].ID != primary.data.ID )or (self.flags["current_call"] and self.flags["current_call"] != primary.data.ID):
 					self.flags["current_call"] = primary.data.ID
 					call_params = []
-					if ctx.arguments() and len(ctx.arguments()) > 0:
-						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
+					if ctx.callSuffix() and len(ctx.callSuffix()) > 0:
+						arguments: CompiscriptParser.ArgumentsContext = ctx.callSuffix(0).arguments()
 						for i in range(0, arguments.getChildCount(), 2):
 							call_params.append(self.visit(arguments.getChild(i)))
 					elif self.flags["current_function"].parameters:
@@ -503,10 +504,11 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						self.updateSymbolFromTable(self.flags["current_function"])
 				else:
 					call_params = []
-					if ctx.arguments() and len(ctx.arguments()) > 0:
-						arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
-						for i in range(0, arguments.getChildCount(), 2):
-							call_params.append(self.visit(arguments.getChild(i)))
+					if ctx.callSuffix() and len(ctx.callSuffix()) > 0:
+						if ctx.callSuffix(0).arguments():
+							arguments: CompiscriptParser.ArgumentsContext = ctx.callSuffix(0).arguments()
+							for i in range(0, arguments.getChildCount(), 2):
+								call_params.append(self.visit(arguments.getChild(i)))
 					if len(primary.data.parameters) != len(call_params):
 						error(self.debug, f"Error Call. Tried to call Function '{primary.data.ID}' with {len(call_params)} parameters. Expected {len(primary.data.parameters)}")
 				res = primary
@@ -514,7 +516,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				if self.flags["current_class"] is None:
 					error(self.debug, "Error Call. Calling this outside of class")
 				elif self.flags["current_class"]:
-					var_name = ctx.IDENTIFIER(0).getText()
+					var_name = ctx.callSuffix(0).IDENTIFIER().getText()
 					if self.flags["current_class"].lookupVariable(var_name):
 						return Container(self.flags["current_class"].lookupVariable(var_name), Type.VARIABLE)
 					error(self.debug, f"Error Call. Trying to acces undefined variable {self.flags['current_class'].ID}.{var_name}")
@@ -531,8 +533,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						if i + 1 < child_count and ctx.getChild(i + 1).getText() == '(':
 							function = self.scope_tracker.lookupFunction(member_name, current_instance)
 							call_params = []
-							if ctx.arguments() and len(ctx.arguments()) > 0:
-								arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
+							if ctx.callSuffix() and len(ctx.callSuffix()) > 0:
+								arguments: CompiscriptParser.ArgumentsContext = ctx.callSuffix(0).arguments()
 								for j in range(0, arguments.getChildCount(), 2):
 									call_params.append(self.visit(arguments.getChild(j)))
 							# Check if the parameters match the function definition
@@ -549,13 +551,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 					return Container(current_instance, Type.INSTANCE)
 				# Single function call or variable access
 				else:
-					member_name = ctx.IDENTIFIER(0).getText()
+					member_name = ctx.callSuffix(0).IDENTIFIER().getText()
 					# Function call
 					if ctx.getChild(2).getText() == '(':
 						function = self.scope_tracker.lookupFunction(member_name, primary.data.data)
 						call_params = []
-						if ctx.arguments() and len(ctx.arguments()) > 0:
-							arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
+						if ctx.callSuffix() and len(ctx.callSuffix()) > 0:
+							arguments: CompiscriptParser.ArgumentsContext = ctx.callSuffix(0).arguments()
 							for i in range(0, arguments.getChildCount(), 2):
 								call_params.append(self.visit(arguments.getChild(i)))
 						if len(function.parameters) != len(call_params):
@@ -573,8 +575,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				if not self.flags["current_class"].parent.initializer:
 					error(self.debug, f"Calling super in a Class {self.flags['current_class']} whose parent class {self.flags['current_class'].parent} does not have a init() method.")
 				call_params = []
-				if ctx.arguments() and len(ctx.arguments()) > 0:
-					arguments: CompiscriptParser.ArgumentsContext = ctx.arguments(0)
+				if ctx.callSuffix() and len(ctx.callSuffix()) > 0:
+					arguments: CompiscriptParser.ArgumentsContext = ctx.callSuffix(0).arguments()
 					for i in range(0, arguments.getChildCount(), 2):
 						call_params.append(self.visit(arguments.getChild(i)))
 				if len(self.flags["current_class"].parent.initializer.parameters) != len(call_params):

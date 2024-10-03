@@ -299,20 +299,23 @@ class Tree_Generator(CompiscriptVisitor):
 			val.funAnon = self.visit(ctx.funAnon())
 		else:
 			val.primary = self.visit(ctx.primary())
-			i = 1 # Start after the primary
-			while i < ctx.getChildCount():
-				if ctx.getChild(i).getText() == '(':
-					if ctx.getChild(i+1).getText() == ")":
-						val.calls.append("()")
-						i+=1
-					else:
-						val.calls.append(self.visit(ctx.getChild(i+1)))
-						i+=2
-				elif ctx.IDENTIFIER(i):
-					val.calls.append(str(ctx.IDENTIFIER(i)))
-				elif ctx.expression(i):
-					val.calls.append(self.visit(ctx.expression(i)))
-				i+=1
+			if ctx.callSuffix():
+				for i in range(len(ctx.callSuffix())):
+					val.calls.append(self.visit(ctx.callSuffix(i)))
+
+		return val
+
+	def visitCallSuffix(self, ctx:CompiscriptParser.CallSuffixContext):
+		val = ANT_CallSuffix()
+
+		if ctx.IDENTIFIER():
+			val.IDENTIFIER = str(ctx.IDENTIFIER())
+		elif ctx.expression():
+			val.expression = self.visit(ctx.expression())
+		elif ctx.arguments():
+			val.arguments = self.visit(ctx.arguments())
+		elif ctx.getText() == "()":
+			val.empty = True
 
 		return val
 

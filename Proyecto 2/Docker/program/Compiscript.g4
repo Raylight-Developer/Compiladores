@@ -7,9 +7,13 @@ declaration     : classDecl
                 | varDecl
                 | statement ;
 
-classDecl       : 'class' IDENTIFIER ('extends' IDENTIFIER)? '{' function* '}' ;
+classDecl       : 'class' IDENTIFIER ('extends' IDENTIFIER)? '{' classBody '}' ;
+
+classBody       : classMember* ;
+classMember     : function ;
+
 funDecl         : 'fun' function ;
-varDecl         : 'var' IDENTIFIER ('=' expression)? ';' ;
+varDecl         : 'var' variable ;
 
 statement       : exprStmt
                 | forStmt
@@ -34,8 +38,8 @@ expression      : assignment
 assignment      : (call '.')? IDENTIFIER '=' assignment
                 | logic_or;
 
-logic_or        : logic_and ('or' logic_and)* ;
-logic_and       : equality ('and' equality)* ;
+logic_or        : logic_and (('or' | '||') logic_and)* ;
+logic_and       : equality (('and' | '&&') equality)* ;
 equality        : comparison (( '!=' | '==' ) comparison)* ;
 comparison      : term (( '>' | '>=' | '<' | '<=' ) term)* ;
 term            : factor (( '-' | '+' ) factor)* ;
@@ -46,15 +50,23 @@ instantiation   : 'new' IDENTIFIER '(' arguments? ')';
 unary           : ( '!' | '-' ) unary
                 | call ;
 
-call            : primary ( '(' arguments? ')' | '.' IDENTIFIER | '[' expression ']')* 
+call            : primary callSuffix*
                 | funAnon;
+
+callSuffix      : '(' ')'
+                | '(' arguments? ')'
+                | '.' IDENTIFIER
+                | '[' expression ']' ;
+
+superCall       : 'super' '.' IDENTIFIER;
 
 primary         : 'true' | 'false' | 'nil' | 'this'
                 | NUMBER | STRING | IDENTIFIER | '(' expression ')'
-                | 'super' '.' IDENTIFIER 
-                | array | instantiation;
+                | superCall
+                | array | instantiation ;
 
 function        : IDENTIFIER '(' parameters? ')' block ;
+variable        : IDENTIFIER ( '=' expression )? ';' ;
 parameters      : IDENTIFIER ( ',' IDENTIFIER )* ;
 arguments       : expression ( ',' expression )* ;
 
@@ -65,3 +77,4 @@ fragment ALPHA  : [a-zA-Z_] ;
 fragment DIGIT  : [0-9] ;
 WS              : [ \t\r\n]+ -> skip ;
 ONE_LINE_COMMENT: '//' (~ '\n')* '\n'? -> skip;
+MULTI_LINE_COMMENT: '/*' .*? '*/' -> skip;  // This is the new rule for multi-line comments
