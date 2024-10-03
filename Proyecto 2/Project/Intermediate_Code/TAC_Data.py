@@ -23,6 +23,7 @@ class Tac_Function:
 		for param in self.parameters:
 			if param.name == name:
 				return param
+		return None
 
 class Tac_Class:
 	def __init__(self):
@@ -48,13 +49,23 @@ class Tac_Class:
 				return member
 		if self.extends:
 			return self.extends.lookupVariable(name)
-
+		
+		
 class Tac_Scope_Tracker:
 	def __init__(self):
 		self.scope_stack: List[Dict[str, Union[Tac_Class, Tac_Function, Tac_Variable]]] = []
 
 		self.current_scope: Dict[str, Union[Tac_Class, Tac_Function, Tac_Variable]] = {}
 		self.scope_stack.append(self.current_scope)
+
+	def enter(self):
+		new_scope = {}
+		self.scope_stack.append(new_scope)
+		self.current_scope = new_scope
+
+	def exit(self):
+		self.scope_stack.pop()
+		self.current_scope = self.scope_stack[-1]
 
 	def declareClass(self, value: Tac_Class):
 		self.current_scope["cls;" + value.name] = value
