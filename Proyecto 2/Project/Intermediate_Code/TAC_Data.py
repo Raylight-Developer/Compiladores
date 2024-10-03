@@ -5,6 +5,8 @@ class Tac_Variable:
 		self.ID   : str = None
 		self.name : str = None
 
+		self.member : Tac_Class = None
+
 class Tac_Function_Parameter:
 	def __init__(self):
 		self.ID   : str = None
@@ -27,7 +29,6 @@ class Tac_Function:
 
 class Tac_Class:
 	def __init__(self):
-		self.ID   : str = None
 		self.name : str = None
 
 		self.extends : Tac_Class = None
@@ -42,6 +43,7 @@ class Tac_Class:
 				return member
 		if self.extends:
 			return self.extends.lookupFunction(name)
+		return None
 
 	def lookupVariable(self, name: str):
 		for member in self.member_variables:
@@ -49,8 +51,8 @@ class Tac_Class:
 				return member
 		if self.extends:
 			return self.extends.lookupVariable(name)
-		
-		
+		return None
+
 class Tac_Scope_Tracker:
 	def __init__(self):
 		self.scope_stack: List[Dict[str, Union[Tac_Class, Tac_Function, Tac_Variable]]] = []

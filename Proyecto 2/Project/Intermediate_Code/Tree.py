@@ -183,7 +183,10 @@ class Tree_Generator(CompiscriptVisitor):
 			val.logic_or = self.visit(ctx.logic_or())
 		else:
 			if ctx.call():
-				val.call = self.visit(ctx.call())
+				if ctx.call().getText() == "this":
+					val.call = "this"
+				else:
+					val.call = self.visit(ctx.call())
 			val.IDENTIFIER = str(ctx.IDENTIFIER())
 			val.assignment = self.visit(ctx.assignment())
 

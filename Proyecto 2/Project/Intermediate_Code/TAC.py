@@ -98,7 +98,6 @@ class TAC_Generator():
 			self.scope.enter()
 
 			cls = Tac_Class()
-			cls.ID = self.new_label()
 			cls.name = node.IDENTIFIER
 			self.scope.declareClass(cls)
 			self.cls = cls
@@ -263,7 +262,19 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Assignment):
 			self.flags["Assignment"] += 1
 			if node.IDENTIFIER:
-				if node.assignment:
+				if node.call:
+					if node.call == "this":
+						var = Tac_Variable()
+						var.ID = self.new_temp()
+						var.name = node.IDENTIFIER
+						var.member = self.cls
+						self.scope.declareVariable(var)
+						self.var = var
+						res = self.visit(node.assignment)
+						self.code << NL() << var.ID << ": " << res << " // " << node.IDENTIFIER << " = " << res
+					else:
+						self.visit(node.call)
+				elif node.assignment:
 					res = self.visit(node.assignment)
 			elif node.logic_or:
 				res = self.visit(node.logic_or)
@@ -410,9 +421,7 @@ class TAC_Generator():
 				self.flags["Call_Scope"] = "Variable"
 				if node.calls == []:
 					primary = self.visit(node.primary) # Calling Primary
-					if primary == "this":
-						self.flags["Call_Scope"] = "Var_Member"
-					elif isinstance(primary, Tac_Variable) or isinstance(primary, Tac_Function_Parameter):
+					if isinstance(primary, Tac_Variable) or isinstance(primary, Tac_Function_Parameter):
 						res = primary.ID
 					else:
 						res = primary
@@ -454,14 +463,16 @@ class TAC_Generator():
 				res = node.STRING
 			elif node.IDENTIFIER:
 				if self.fun:
+					if self.flags["Call_Scope"] == "Var_Member":
+						res = self.scope.lookupVariable(node.IDENTIFIER, self.cls)
 					if self.fun.lookupParameter(node.IDENTIFIER):
 						res = self.fun.lookupParameter(node.IDENTIFIER)
 					else:
 						res = self.scope.lookupVariable(node.IDENTIFIER)
 				elif self.flags["Call_Scope"] == "Variable":
-					res = self.scope.lookupVariable(node.IDENTIFIER)
+					res = self.scope.lookupVariable(node.IDENTIFIER, self.cls)
 				elif self.flags["Call_Scope"] == "Function":
-					res = self.scope.lookupFunction(node.IDENTIFIER)
+					res = self.scope.lookupFunction(node.IDENTIFIER, self.cls)
 			elif node.operator:
 				res = node.operator
 			elif node.expression:
@@ -481,6 +492,7 @@ class TAC_Generator():
 			fun = Tac_Function()
 			fun.ID = self.new_label()
 			fun.name = node.IDENTIFIER
+			fun.member = self.cls if self.cls else None
 			self.scope.declareFunction(fun)
 			self.fun = fun
 
