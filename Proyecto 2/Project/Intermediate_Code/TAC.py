@@ -301,6 +301,7 @@ class TAC_Generator():
 						self.visit(node.call)
 				elif node.assignment:
 					res = self.visit(node.assignment)
+				self.code << NL() << self.scope.lookupVariable(node.IDENTIFIER, self.cls).ID << ": " << res << " // " << node.IDENTIFIER << " = " << res
 			elif node.logic_or:
 				res = self.visit(node.logic_or)
 			self.flags["Assignment"] -= 1
@@ -542,16 +543,18 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Variable):
 			self.flags["Variable"] += 1
 
-			if node.expression:
-				var = Tac_Variable()
-				var.ID = self.new_temp()
-				var.name = node.IDENTIFIER
-				self.scope.declareVariable(var)
-				self.var = var
+			var = Tac_Variable()
+			var.ID = self.new_temp()
+			var.name = node.IDENTIFIER
+			self.scope.declareVariable(var)
+			self.var = var
 
+			if node.expression:
 				expression = self.visit(node.expression)
 				self.code << NL() << var.ID << ": " << expression << " // " << node.IDENTIFIER << " = " << expression
 				self.var = None
+			else:
+				self.code << NL() << "// Declare Empty Var: " << node.IDENTIFIER
 
 			self.flags["Variable"] -= 1
 			if node.expression:

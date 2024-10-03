@@ -18,6 +18,8 @@ class Display(QMainWindow):
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
 		self.code_input.setText((
 """
+var peko;
+peko = 10;
 
 fun saludar(val) {
 	print "Hola, mi nombre es " + val;
