@@ -213,7 +213,10 @@ class TAC_Generator():
 						var.name = node.IDENTIFIER
 						var.member = self.cls
 						self.cls.member_variables.append(var)
-						self.scope.declareVariable(var)
+						if self.cls:
+							self.cls.member_variables.append(var)
+						else:
+							self.scope.declareVariable(var)
 						self.var = var
 						res = self.visit(node.assignment)
 						self.add() << NL() << var.ID << ": " << res << " // " << node.IDENTIFIER << " = " << res
@@ -324,8 +327,27 @@ class TAC_Generator():
 
 		elif isinstance(node, ANT_Instantiation):
 			cls = self.scope.lookupClass(node.IDENTIFIER)
+
+			self.var.instance = cls
+			self.cls = cls
+			self.add() << NL() << "// INSTANTIATE CLASS " << cls.name << " {"
+			self.inc()
+			self.visit(cls.code)
+			self.dec()
+			self.add() << NL() << "//} INSTANTIATE CLASS"
+
+			self.add() << NL() << "// INIT CLASS {"
+			self.inc()
 			arguments: List[str] = self.visit(node.arguments)
-			#for argument in arguments:
+			for i, argument in enumerate(arguments):
+				self.add() << NL() << cls.initializer.parameters[i].ID << ": " << argument
+
+			self.add() << NL() << "CALL " << cls.initializer.ID
+			self.dec()
+			self.add() << NL() << "//} INIT CLASS"
+
+
+			self.cls = None
 			return cls
 
 		elif isinstance(node, ANT_Unary):
@@ -347,10 +369,10 @@ class TAC_Generator():
 				if len(node.calls) == 0 :
 					res = self.visit(node.primary) # Calling Variable
 					pass
-				elif len(node.calls) == 1 :
+				elif len(node.calls) == 1:
 					call = node.calls[0]
 					if call.IDENTIFIER: # Calling Member Variable
-						res = call.IDENTIFIER
+						res = self.scope.lookupVariable(call.IDENTIFIER, self.cls).ID
 					elif call.expression: # Calling the index of an array [expression]
 						res = "TODO"
 					elif call.arguments: # Calling Function with params
@@ -364,9 +386,62 @@ class TAC_Generator():
 						function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
 						res = function.ID
 						self.add() << NL() << "CALL " << res << " // Calling function with NO params"
+				elif len(node.calls) == 2: # Calling Instance
+					call_a = node.calls[0]
+					call_b = node.calls[1]
+					if call_a.IDENTIFIER:
+						if call_b.arguments:
+							function = self.scope.lookupVariable(node.primary.IDENTIFIER).instance.lookupFunction(call_a.IDENTIFIER)
+							res = function.ID
+							arguments = self.visit(call_b.arguments)
+							for i, param in enumerate(function.parameters):
+								self.add() << NL() << param.ID << ": " << arguments[i]
+							self.add() << NL() << "CALL " << res << " // Calling function with params"
+						elif call_b.empty:
+							function = self.scope.lookupVariable(node.primary.IDENTIFIER).instance.lookupFunction(call_a.IDENTIFIER)
+							res = function.ID
+							self.add() << NL() << "CALL " << res << " // Calling function with NO params"
+						res = call_a.IDENTIFIER
+					elif call_a.expression: # Calling the index of an array [expression]
+						res = "TODO"
+					elif call_a.arguments: # Calling Function with params
+						function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
+						res = function.ID
+						arguments = self.visit(call_a.arguments)
+						for i, param in enumerate(function.parameters):
+							self.add() << NL() << param.ID << ": " << arguments[i]
+						self.add() << NL() << "CALL " << res << " // Calling function with params"
+					elif call_a.empty: # Calling Function with no params
+						function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
+						res = function.ID
+						self.add() << NL() << "CALL " << res << " // Calling function with NO params"
 				else:
-					for call in node.calls: # Calling Nested eg. cls_instance_var.fun() , cls_instance_var.instance.fun()
-						res = self.visit(call)
+					# Calling Nested eg. cls_instance_var.fun() , cls_instance_var.instance.fun()
+					i = 1
+					while i < len(node.calls):
+						call = node.calls[i]
+						if i == len(node.calls) - 1: # Last Element
+							res = None
+						else:
+							if call.IDENTIFIER:
+								if i < len(node.calls):
+									if node.calls[i+1].empty:
+										nested = self.scope.lookupFunction(call.IDENTIFIER)
+										i += 1
+									elif node.calls[i+1].arguments:
+										pass
+										i += 1
+									else:
+										nested = self.scope.lookupVariable(call.IDENTIFIER)
+								else:
+									nested = self.scope.lookupVariable(call.IDENTIFIER)
+							elif call.expression:
+								nested = None
+							elif call.arguments:
+								nested = None
+							elif call.empty:
+								nested = None
+						i += 1
 			return res
 
 		elif isinstance(node, ANT_CallSuffix):
@@ -381,7 +456,10 @@ class TAC_Generator():
 			elif node.STRING :
 				return node.STRING
 			elif node.IDENTIFIER:
-				return node.IDENTIFIER
+				if self.fun and self.fun.lookupParameter(node.IDENTIFIER):
+					return self.fun.lookupParameter(node.IDENTIFIER).ID
+				else:
+					return self.scope.lookupVariable(node.IDENTIFIER, self.cls).ID
 			elif node.operator:
 				return node.operator
 			elif node.expression:
@@ -416,6 +494,7 @@ class TAC_Generator():
 					param.ID = self.new_temp()
 					param.name = parameter
 					fun.parameters.append(param)
+					self.add() << NL() << "// Fun: " << fun.name << " Has Param: " << param.ID
 
 			self.scope.enter()
 			return_val = self.visit(node.block)
@@ -437,18 +516,7 @@ class TAC_Generator():
 
 			if node.expression:
 				expression = self.visit(node.expression)
-				if isinstance(expression, Tac_Class):
-					var.instance = expression
-					self.cls = expression
-					self.add() << NL() << "// INSTANTIATE CLASS " << expression.name << " {"
-					self.inc()
-					self.scope.enter()
-					self.visit(expression.code)
-					self.scope.exit()
-					self.cls = None
-					self.dec()
-					self.add() << NL() << "//} INSTANTIATE CLASS"
-				else:
+				if not isinstance(expression, Tac_Class):
 					self.add() << NL() << var.ID << ": " << expression << " // " << node.IDENTIFIER << " = " << expression
 				self.var = None
 				return var.ID

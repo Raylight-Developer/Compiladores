@@ -27,7 +27,7 @@ class Tac_Function:
 		self.member : Tac_Class = None
 		self.parameters : List[Tac_Function_Parameter] = []
 
-	def lookupParameter(self, name: str):
+	def lookupParameter(self, name: str) -> Tac_Function_Parameter:
 		for param in self.parameters:
 			if param.name == name:
 				return param
@@ -91,10 +91,14 @@ class Tac_Scope_Tracker:
 				return scope[f"cls;{name}"]
 		raise Exception(f"Class '{name}' not in Scope")
 
-	def lookupFunction(self, name: str, cls: Union[Tac_Class, None] = None) -> Tac_Function:
+	def lookupFunction(self, name: str, cls: Union[Tac_Class, Tac_Variable, None] = None) -> Tac_Function:
 		for scope in reversed(self.scope_stack):
-			if cls:
+			if isinstance(cls, Tac_Class):
 				for member in cls.member_functions:
+					if name == member.name:
+						return member
+			elif isinstance(cls, Tac_Variable):
+				for member in cls.instance.member_functions:
 					if name == member.name:
 						return member
 			if f"fun;{name}" in scope:

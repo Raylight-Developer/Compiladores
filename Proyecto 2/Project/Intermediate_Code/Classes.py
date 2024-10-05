@@ -112,7 +112,14 @@ class ANT_FunAnon:
 class ANT_Expression:
 	def __init__(self):
 		self.assignment: ANT_Assignment = None
+	# OR
 		self.funAnon: ANT_FunAnon = None
+
+	def __str__(self) -> str:
+		if self.assignment:
+			return self.assignment
+		elif self.funAnon:
+			return self.funAnon
 
 class ANT_Assignment:
 	def __init__(self):
@@ -122,44 +129,80 @@ class ANT_Assignment:
 	# OR
 		self.logic_or: ANT_LogicOr = None
 
+	def __str__(self) -> str:
+		if self.call:
+			if self.IDENTIFIER:
+				if self.assignment:
+					return self.call + "." + self.IDENTIFIER + self.assignment
+				return self.call + "." + self.IDENTIFI
+			return self.call
+		elif self.logic_or:
+			return self.logic_or
+
 class ANT_LogicOr:
 	def __init__(self):
 		self.left:  ANT_LogicAnd = None
 		self.array: List[Tuple[str, ANT_LogicAnd]] = []
+
+	def __str__(self) -> str:
+		return self.left
 
 class ANT_LogicAnd:
 	def __init__(self):
 		self.left:  ANT_Equality = None
 		self.array: List[Tuple[str, ANT_Equality]] = []
 
+	def __str__(self) -> str:
+		return self.left
+
 class ANT_Equality:
 	def __init__(self):
 		self.left:  ANT_Comparison = None
 		self.array: List[Tuple[str, ANT_Comparison]] = []
+
+	def __str__(self) -> str:
+		return self.left
 
 class ANT_Comparison:
 	def __init__(self):
 		self.left:  ANT_Term = None
 		self.array: List[Tuple[str, ANT_Term]] = []
 
+	def __str__(self) -> str:
+		return self.left
+
 class ANT_Term:
 	def __init__(self):
 		self.left:  ANT_Factor = None
 		self.array: List[Tuple[str, ANT_Factor]] = []
+
+	def __str__(self) -> str:
+		return self.left
 
 class ANT_Factor:
 	def __init__(self):
 		self.left:  ANT_Unary = None
 		self.array: List[Tuple[str, ANT_Unary]] = []
 
+	def __str__(self) -> str:
+		return self.left
+
 class ANT_Array:
 	def __init__(self):
 		self.expressions: List[ANT_Expression] = []
+
+	def __str__(self) -> str:
+		return self.expressions
 
 class ANT_Instantiation:
 	def __init__(self):
 		self.IDENTIFIER: str = None
 		self.arguments: ANT_Arguments = None
+
+	def __str__(self) -> str:
+		if self.arguments:
+			return self.IDENTIFIER + "(" + self.arguments + ")"
+		return self.IDENTIFIER + "()"
 
 class ANT_Unary:
 	def __init__(self):
@@ -167,6 +210,13 @@ class ANT_Unary:
 		self.unary: ANT_Unary = None
 	# OR
 		self.call: ANT_Call = None
+
+	def __str__(self) -> str:
+		if self.call:
+			return self.call
+		elif self.operator:
+			return self.operator + self.unary
+		return self.unary
 
 class ANT_Call:
 	def __init__(self):
@@ -181,6 +231,16 @@ class ANT_CallSuffix:
 		self.expression: ANT_Expression = None
 		self.arguments: ANT_Arguments = None
 		self.empty: bool = False
+
+	def __str__(self) -> str:
+		if self.IDENTIFIER:
+			return self.IDENTIFIER
+		elif self.expression:
+			return "[" + self.expression + "]"
+		elif self.arguments:
+			return "(" + self.arguments + ")"
+		elif self.empty:
+			return "()"
 
 class ANT_SuperCall:
 	def __init__(self):
@@ -218,3 +278,6 @@ class ANT_Parameters:
 class ANT_Arguments:
 	def __init__(self):
 		self.expressions: List[ANT_Expression] = []
+
+	def __str__(self) -> str:
+		return self.expressions

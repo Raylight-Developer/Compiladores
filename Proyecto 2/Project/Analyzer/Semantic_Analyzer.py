@@ -24,13 +24,10 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker = Scope_Tracker(debug)
 		self.tac = TAC_Generator(program)
 
-		self.flags = {
-			"current_instance" : None,
-			"current_function" : None,
-			"current_variable" : None,
-			"current_class" : None,
-			"current_call" : None,
-		}
+		self.current_function = None
+		self.current_variable = None
+		self.current_class = None
+		self.current_call = None
 
 		self.table_c = table_c
 		self.table_f = table_f
@@ -105,7 +102,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		function.ctx = ctx
 		function.ID = "ANON"
 		function.data = ctx.block().getText()
-		self.flags["current_function"] = function
+		self.current_function = function
 
 		self.debug << NL() << f"Declaring Anon Function [{function.ID}]"
 
@@ -121,7 +118,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.exitScope()
 		self.scope_tracker.declareAnonFunction(function)
 		self.addSymbolToTable(function)
-		self.flags["current_function"] = None
+		self.current_function = None
 #
 		self.exitFull("Anon Function")
 		return Container(function, Type.FUN_ANON)
@@ -133,7 +130,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		struct = Class()
 		struct.ctx = ctx
 		struct.ID = ctx.IDENTIFIER(0).getText()
-		self.flags["current_class"] = struct
+		self.current_class = struct
 
 		self.debug << NL() << f"Declaring Class [{struct.ID}]"
 
@@ -168,7 +165,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		self.scope_tracker.declareClass(struct)
 		self.addSymbolToTable(struct)
 #
-		self.flags["current_class"] = None
+		self.current_class = None
 		self.exitFull("Class Declaration")
 		return Container(struct, Type.CLASS)
 
@@ -255,14 +252,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		elif ctx.call():
 			if ctx.call().getText() == "this":
-				if self.flags["current_class"]:
+				if self.current_class:
 					memeber_var_name = ctx.IDENTIFIER().getText()
-					if self.flags["current_class"]:
+					if self.current_class:
 						self.debug << NL() << f"Declaring Member Variable [{memeber_var_name}]"
 						variable = Variable()
 						variable.ctx = ctx
 						variable.ID = memeber_var_name
-						variable.member = self.flags["current_class"]
+						variable.member = self.current_class
 
 						assignment: Container[Function_Parameter] = self.visit(ctx.assignment())
 						if assignment.type == Type.PARAMETER:
@@ -272,13 +269,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 							variable.data = assignment.data
 							variable.type = assignment.type
 
-						for member in self.flags["current_class"].member_variables:
+						for member in self.current_class.member_variables:
 							if member.ID == variable.ID:
-								self.flags["current_class"].member_variables.remove(member)
+								self.current_class.member_variables.remove(member)
 								#self.removeSymbolFromTable(member)
 								variable.origin = "Override"
 
-						self.flags["current_class"].member_variables.append(variable)
+						self.current_class.member_variables.append(variable)
 						self.scope_tracker.declareVariable(variable)
 						self.addSymbolToTable(variable)
 
@@ -487,21 +484,21 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		elif ctx.primary():
 			primary: Container = self.visit(ctx.primary())
 			if primary.type == Type.FUNCTION:
-				if (self.flags["current_function"] and self.flags["current_function"].ID != primary.data.ID )or (self.flags["current_call"] and self.flags["current_call"] != primary.data.ID):
-					self.flags["current_call"] = primary.data.ID
+				if (self.current_function and self.current_function.ID != primary.data.ID )or (self.current_call and self.current_call != primary.data.ID):
+					self.current_call = primary.data.ID
 					call_params = []
 					if ctx.callSuffix() and len(ctx.callSuffix()) > 0:
 						arguments: CompiscriptParser.ArgumentsContext = ctx.callSuffix(0).arguments()
 						for i in range(0, arguments.getChildCount(), 2):
 							call_params.append(self.visit(arguments.getChild(i)))
-					elif self.flags["current_function"].parameters:
-						self.flags["current_call"] = None
-					if len(self.flags["current_function"].parameters) != len(call_params):
-						error(self.debug, f"Error Call. Tried to call Function '{self.flags['current_function'].ID}' with {len(call_params)} parameters. Expected {len(self.flags['current_function'].parameters)}")
-				elif (self.flags["current_function"] and self.flags["current_function"].ID == primary.data.ID) or (self.flags["current_call"] and self.flags["current_call"] == primary.data.ID):
-					if self.flags["current_function"]:
-						self.flags["current_function"].recursive = True
-						self.updateSymbolFromTable(self.flags["current_function"])
+					elif self.current_function.parameters:
+						self.current_call = None
+					if len(self.current_function.parameters) != len(call_params):
+						error(self.debug, f"Error Call. Tried to call Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_function.parameters)}")
+				elif (self.current_function and self.current_function.ID == primary.data.ID) or (self.current_call and self.current_call == primary.data.ID):
+					if self.current_function:
+						self.current_function.recursive = True
+						self.updateSymbolFromTable(self.current_function)
 				else:
 					call_params = []
 					if ctx.callSuffix() and len(ctx.callSuffix()) > 0:
@@ -513,13 +510,13 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						error(self.debug, f"Error Call. Tried to call Function '{primary.data.ID}' with {len(call_params)} parameters. Expected {len(primary.data.parameters)}")
 				res = primary
 			elif primary.type == Type.THIS: # Accesing a variable from self
-				if self.flags["current_class"] is None:
+				if self.current_class is None:
 					error(self.debug, "Error Call. Calling this outside of class")
-				elif self.flags["current_class"]:
+				elif self.current_class:
 					var_name = ctx.callSuffix(0).IDENTIFIER().getText()
-					if self.flags["current_class"].lookupVariable(var_name):
-						return Container(self.flags["current_class"].lookupVariable(var_name), Type.VARIABLE)
-					error(self.debug, f"Error Call. Trying to acces undefined variable {self.flags['current_class'].ID}.{var_name}")
+					if self.current_class.lookupVariable(var_name):
+						return Container(self.current_class.lookupVariable(var_name), Type.VARIABLE)
+					error(self.debug, f"Error Call. Trying to acces undefined variable {self.current_class.ID}.{var_name}")
 			elif primary.type == Type.INSTANCE:
 				child_count = ctx.getChildCount()
 				# Verify if there is a nested call or variable
@@ -563,7 +560,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 									call_params.append(self.visit(arguments.getChild(i)))
 						if len(function.parameters) != len(call_params):
 							error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(function.parameters)}")
-						self.flags["current_call"] = None
+						self.current_call = None
 						# Return the called function
 						return function
 					# Variable access
@@ -571,17 +568,17 @@ class Semantic_Analyzer(CompiscriptVisitor):
 						return Container(self.scope_tracker.lookupVariable(member_name, primary.data.data), Type.VARIABLE)
 			
 			elif primary.type == Type.SUPER:
-				if not self.flags["current_class"]:
+				if not self.current_class:
 					error(self.debug, "Calling super outside of Class")
-				if not self.flags["current_class"].parent.initializer:
-					error(self.debug, f"Calling super in a Class {self.flags['current_class']} whose parent class {self.flags['current_class'].parent} does not have a init() method.")
+				if not self.current_class.parent.initializer:
+					error(self.debug, f"Calling super in a Class {self.current_class} whose parent class {self.current_class.parent} does not have a init() method.")
 				call_params = []
 				if ctx.callSuffix() and len(ctx.callSuffix()) > 0:
 					arguments: CompiscriptParser.ArgumentsContext = ctx.callSuffix(0).arguments()
 					for i in range(0, arguments.getChildCount(), 2):
 						call_params.append(self.visit(arguments.getChild(i)))
-				if len(self.flags["current_class"].parent.initializer.parameters) != len(call_params):
-					error(self.debug, f"Error Call. Tried to call Super Function '{self.flags['current_function'].ID}' with {len(call_params)} parameters. Expected {len(self.flags['current_class'].parent.initializer.parameters)}")
+				if len(self.current_class.parent.initializer.parameters) != len(call_params):
+					error(self.debug, f"Error Call. Tried to call Super Function '{self.current_function.ID}' with {len(call_params)} parameters. Expected {len(self.current_class.parent.initializer.parameters)}")
 
 		self.exitFull("Call")
 		return res
@@ -592,14 +589,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 
 		if not ctx.IDENTIFIER():
 			error(self.debug, "Error Super. Empy super call")
-		if not self.flags["current_class"]:
+		if not self.current_class:
 			error(self.debug, "Error Super. Calling super outside of class")
-		if not self.flags["current_class"].parent:
+		if not self.current_class.parent:
 			error(self.debug, "Error Super. Calling super in a class with no parent")
 
 		member_name: str = ctx.IDENTIFIER().getText()
-		if self.flags["current_class"].parent.checkFunction(member_name):
-			function = self.flags["current_class"].lookupFunction(member_name)
+		if self.current_class.parent.checkFunction(member_name):
+			function = self.current_class.lookupFunction(member_name)
 			res = Container(function, Type.SUPER)
 		else:
 			error(self.debug, f"Error Super. No function in hierarchy named '{member_name}'")
@@ -622,14 +619,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 			res = Container(text, Type.STRING)
 		elif ctx.IDENTIFIER():
 			ID = ctx.IDENTIFIER().getText()
-			if self.scope_tracker.checkVariable(ID, self.flags["current_class"]):
-				variable = self.scope_tracker.lookupVariable(ID, self.flags["current_class"])
+			if self.scope_tracker.checkVariable(ID, self.current_class):
+				variable = self.scope_tracker.lookupVariable(ID, self.current_class)
 				type = Type.INSTANCE if variable.type == Type.CLASS else Type.VARIABLE
 				res = Container(variable, type)
-			elif self.scope_tracker.checkFunction(ID, self.flags["current_class"]):
-				res = Container(self.scope_tracker.lookupFunction(ID, self.flags["current_class"]), Type.FUNCTION)
-			elif self.flags["current_function"]:
-				res = Container(self.flags["current_function"].lookupParameter(ID), Type.PARAMETER)
+			elif self.scope_tracker.checkFunction(ID, self.current_class):
+				res = Container(self.scope_tracker.lookupFunction(ID, self.current_class), Type.FUNCTION)
+			elif self.current_function:
+				res = Container(self.current_function.lookupParameter(ID), Type.PARAMETER)
 			else:
 				error(self.debug, f"Error Primary. Variable '{ID}' not defined")
 
@@ -664,7 +661,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		function.ctx = ctx
 		function.ID = ctx.IDENTIFIER().getText()
 		function.data = ctx.block().getText()
-		self.flags["current_function"] = function
+		self.current_function = function
 
 		self.debug << NL() << f"Declaring Function [{function.ID}]"
 
@@ -675,18 +672,18 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				parameter.function = function
 				function.parameters.append(parameter)
 
-		if self.flags["current_class"]:
-			function.member = self.flags["current_class"]
+		if self.current_class:
+			function.member = self.current_class
 			if function.ID == "init":
-				self.flags["current_class"].initializer = function
+				self.current_class.initializer = function
 
 		self.visitChildren(ctx)
 #
 		self.scope_tracker.exitScope()
-		if not self.flags["current_class"]:
+		if not self.current_class:
 			self.scope_tracker.declareFunction(function)
 			self.addSymbolToTable(function)
-		self.flags["current_function"] = None
+		self.current_function = None
 #
 		self.exitFull("Function")
 		return Container(function, Type.FUNCTION)
@@ -699,8 +696,8 @@ class Semantic_Analyzer(CompiscriptVisitor):
 		variable.ID = ctx.IDENTIFIER().getText()
 		variable.data = ctx.getText()
 #
-		if self.flags["current_class"]:
-			variable.member = self.flags["current_class"]
+		if self.current_class:
+			variable.member = self.current_class
 #
 		self.debug << NL() << f"Declaring Variable [{variable.ID}]"
 #
