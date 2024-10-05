@@ -116,7 +116,7 @@ class TAC_Generator():
 					if node.increment_expression:
 						self.add() << NL() << "// INCREMENT"
 						increment = self.visit(node.increment_expression)
-						self.add() << NL() << fun << " = " << increment
+						self.add() << NL() << fun << ": " << increment
 				self.add() << NL() << "// FOR LOOP BODY START {"
 				self.inc()
 				self.visit(node.statement)
