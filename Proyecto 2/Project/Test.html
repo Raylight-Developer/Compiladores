@@ -93,7 +93,7 @@ persona.saludar();
 
 class Estudiante extends Persona {
 	init(nombre, edad, grado) {
-		//super.init(nombre, edad);
+		super.init(nombre, edad);
 		this.grado = grado;
 		this.edad = 10;
 	}
@@ -112,7 +112,6 @@ juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
 T_0: 10 // peko = 10
 // FUNCTION START {
 L_0: // saludar
-	// Fun: saludar Has Param: T_1
 	// PRINT START {
 	SYSCALL
 		ADD T_2: "Hola, mi nombre es ", T_1 // "Hola, mi nombre es " + T_1
@@ -220,8 +219,6 @@ L_7:
 // INSTANTIATE CLASS Persona {
 	// FUNCTION START {
 	L_8: // init
-		// Fun: init Has Param: T_39
-		// Fun: init Has Param: T_40
 		T_41: T_39 // nombre = T_39
 		T_42: T_40 // edad = T_40
 		T_43: "rojo" // color = "rojo"
@@ -246,8 +243,6 @@ L_7:
 CALL L_9 // Calling function with NO params
 // FUNCTION START {
 L_10: // init
-	// Fun: init Has Param: T_45
-	// Fun: init Has Param: T_46
 	T_47: T_45 // nombre = T_45
 	T_48: T_46 // edad = T_46
 	T_49: "rojo" // color = "rojo"
@@ -266,9 +261,9 @@ RETURN
 // INSTANTIATE CLASS Estudiante {
 	// FUNCTION START {
 	L_12: // init
-		// Fun: init Has Param: T_52
-		// Fun: init Has Param: T_53
-		// Fun: init Has Param: T_54
+		T_39: T_52
+		T_40: T_53
+		CALL L_8 // Calling function with params
 		T_55: T_54 // grado = T_54
 		T_56: 10 // edad = 10
 	RETURN
