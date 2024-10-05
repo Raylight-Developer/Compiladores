@@ -3,6 +3,7 @@ from PySide6.QtCore import *
 from PySide6.QtGui import *
 import traceback
 import antlr4
+import copy
 import sys
 import os
 import re

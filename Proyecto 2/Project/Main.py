@@ -70,11 +70,10 @@ class Persona {
 
 var persona = new Persona("Alejandro", 10);
 persona.saludar();
-/*
 
 class Estudiante extends Persona {
 	init(nombre, edad, grado) {
-		super.init(nombre, edad);
+		//super.init(nombre, edad);
 		this.grado = grado;
 		this.edad = 10;
 	}
@@ -87,7 +86,6 @@ class Estudiante extends Persona {
 var juan = new Estudiante(nombre, 20, 3);
 juan.saludar();    // Salida: Hola, mi nombre es Alejandro
 juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
-*/
 """).strip())
 		self.tac_highlighter = None
 		self.tac_output = Logger()

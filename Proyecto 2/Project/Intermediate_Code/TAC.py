@@ -61,6 +61,11 @@ class TAC_Generator():
 			cls.name = node.IDENTIFIER
 			self.scope.declareClass(cls)
 			cls.code = node.class_body
+			if node.extends:
+				self.cls = cls
+				cls.extends = self.scope.lookupClass(node.extends)
+				self.visit(cls.extends.code)
+				self.cls = None
 
 		elif isinstance(node, ANT_ClassBody):
 			for member in node.class_members:
@@ -338,9 +343,10 @@ class TAC_Generator():
 
 			self.add() << NL() << "// INIT CLASS {"
 			self.inc()
-			arguments: List[str] = self.visit(node.arguments)
-			for i, argument in enumerate(arguments):
-				self.add() << NL() << cls.initializer.parameters[i].ID << ": " << argument
+			if node.arguments:
+				arguments: List[str] = self.visit(node.arguments)
+				for i, argument in enumerate(arguments):
+					self.add() << NL() << cls.initializer.parameters[i].ID << ": " << argument
 
 			self.add() << NL() << "CALL " << cls.initializer.ID
 			self.dec()
@@ -448,7 +454,7 @@ class TAC_Generator():
 			pass
 
 		elif isinstance(node, ANT_SuperCall):
-			pass
+			print("SUPER")
 
 		elif isinstance(node, ANT_Primary): # Can only be called from within a call
 			if node.NUMBER:
