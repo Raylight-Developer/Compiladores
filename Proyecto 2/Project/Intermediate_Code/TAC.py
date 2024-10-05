@@ -382,7 +382,12 @@ class TAC_Generator():
 				elif len(node.calls) == 1:
 					call = node.calls[0]
 					if call.IDENTIFIER: # Calling Member Variable
-						res = self.scope.lookupVariable(call.IDENTIFIER, self.cls).ID
+						primary = self.visit(node.primary)
+						if primary == 'this':
+							res = self.scope.lookupVariable(call.IDENTIFIER, self.cls).ID
+						else:
+							var = self.scope.lookupVariable(node.primary.IDENTIFIER)
+							res = self.scope.lookupClass(var.instance.name).lookupVariable(call.IDENTIFIER).ID
 					elif call.expression: # Calling the index of an array [expression]
 						res = "TODO"
 					elif call.arguments: # Calling Function with params

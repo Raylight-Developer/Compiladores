@@ -550,7 +550,7 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				else:
 					member_name = ctx.callSuffix(0).IDENTIFIER().getText()
 					# Function call
-					if ctx.getChild(2).getText() == "()" or ctx.getChild(2).arguments():
+					if ctx.getChild(2) and (ctx.getChild(2).getText() == "()" or ctx.getChild(2).arguments()):
 						function = self.scope_tracker.lookupFunction(member_name, primary.data.data)
 						call_params = []
 						if ctx.callSuffix() and len(ctx.callSuffix()) > 0:

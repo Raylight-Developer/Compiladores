@@ -96,8 +96,9 @@ class Estudiante extends Persona {
 
 var juan = new Estudiante(nombre, 20, 3);
 juan.saludar();    // Salida: Hola, mi nombre es Alejandro
-
 juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
+
+var edad_juan = juan.edad;
 
 """).strip())
 		self.tac_highlighter = None
