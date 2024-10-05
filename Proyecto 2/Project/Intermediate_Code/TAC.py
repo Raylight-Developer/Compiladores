@@ -347,12 +347,17 @@ class TAC_Generator():
 
 			self.add() << NL() << "// INIT CLASS {"
 			self.inc()
+			params = []
 			if node.arguments:
 				arguments: List[str] = self.visit(node.arguments)
 				for i, argument in enumerate(arguments):
 					self.add() << NL() << cls.initializer.parameters[i].ID << ": " << argument
+					params.append((cls.initializer.parameters[i].name, cls.initializer.parameters[i].ID))
 
-			self.add() << NL() << "CALL " << cls.initializer.ID
+				self.add() << NL() << "CALL " << cls.initializer.ID << " // Calling " << cls.name << ".init function with params " << str(params)
+			else:
+				self.add() << NL() << "CALL " << cls.initializer.ID << " // Calling " << cls.name << ".init function with NOm params"
+				
 			self.dec()
 			self.add() << NL() << "//} INIT CLASS"
 
@@ -395,25 +400,29 @@ class TAC_Generator():
 							function: Tac_Function = self.cls.extends.initializer
 							res = function.return_ID
 							arguments = self.visit(call.arguments)
+							params = []
 							for i, param in enumerate(function.parameters):
 								self.add() << NL() << param.ID << ": " << arguments[i]
-							self.add() << NL() << "CALL " << function.ID << " // Calling super. function with params"
+								params.append((param.name, param.ID))
+							self.add() << NL() << "CALL " << function.ID << " // Calling super." << function.name << " function with params " << str(params)
 						else:
 							function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
 							res = function.return_ID
 							arguments = self.visit(call.arguments)
+							params = []
 							for i, param in enumerate(function.parameters):
 								self.add() << NL() << param.ID << ": " << arguments[i]
-							self.add() << NL() << "CALL " << function.ID << " // Calling function with params"
+								params.append((param.name, param.ID))
+							self.add() << NL() << "CALL " << function.ID << " // Calling function " << function.name << " with params " << str(params)
 					elif call.empty: # Calling Function with no params
 						if node.primary.superCall:
 							function: Tac_Function = self.cls.extends.initializer
 							res = function.return_ID
-							self.add() << NL() << "CALL " << function.ID << " // Calling super. function with NO params"
+							self.add() << NL() << "CALL " << function.ID << " // Calling super." << function.name << " function with NO params"
 						else:
 							function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
 							res = function.return_ID
-							self.add() << NL() << "CALL " << function.ID << " // Calling function with NO params"
+							self.add() << NL() << "CALL " << function.ID << " // Calling function " << function.name << " with NO params"
 				elif len(node.calls) == 2: # Calling Instance
 					call_a = node.calls[0]
 					call_b = node.calls[1]
@@ -422,9 +431,11 @@ class TAC_Generator():
 							function = self.scope.lookupVariable(node.primary.IDENTIFIER).instance.lookupFunction(call_a.IDENTIFIER)
 							res = function.return_ID
 							arguments = self.visit(call_b.arguments)
+							params = []
 							for i, param in enumerate(function.parameters):
 								self.add() << NL() << param.ID << ": " << arguments[i]
-							self.add() << NL() << "CALL " << function.ID << " // Calling function with params"
+								params.append((param.name, param.ID))
+							self.add() << NL() << "CALL " << function.ID << " // Calling function with params " << str(params)
 						elif call_b.empty:
 							function = self.scope.lookupVariable(node.primary.IDENTIFIER).instance.lookupFunction(call_a.IDENTIFIER)
 							res = function.return_ID
@@ -436,9 +447,11 @@ class TAC_Generator():
 						function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
 						res = function.return_ID
 						arguments = self.visit(call_a.arguments)
+						params = []
 						for i, param in enumerate(function.parameters):
 							self.add() << NL() << param.ID << ": " << arguments[i]
-						self.add() << NL() << "CALL " << res << " // Calling function with params"
+							params.append((param.name, param.ID))
+						self.add() << NL() << "CALL " << res << " // Calling function with params"  << str(params)
 					elif call_a.empty: # Calling Function with no params
 						function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
 						res = function.return_ID
