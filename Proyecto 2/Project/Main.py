@@ -4,6 +4,8 @@ from GUI.Syntax_Highlighting import *
 from Analyzer.Semantic_Analyzer import *
 from Intermediate_Code.TAC import *
 
+INFO = True
+
 class Display(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -108,7 +110,6 @@ var edad_juan = juan.edad;
 		self.log = Logger()
 		self.log.setPlaceholderText("Log")
 		self.log.setTabStopDistance(10)
-		self.debug = Lace()
 		LOG_Syntax_Highlighter(self.log.document())
 
 		self.tables = QTabWidget()
@@ -132,17 +133,17 @@ var edad_juan = juan.edad;
 		sub.addWidget(self.log)
 		sub.addWidget(tabcontainer)
 
-		main_splitter = QSplitter(Qt.Orientation.Horizontal)
-		main_splitter.addWidget(self.code_input)
-		main_splitter.addWidget(self.tac_output)
-		main_splitter.addWidget(sub)
-		main_splitter.setSizes([500,500,250])
+		self.main_splitter = QSplitter(Qt.Orientation.Horizontal)
+		self.main_splitter.addWidget(self.code_input)
+		self.main_splitter.addWidget(self.tac_output)
+		self.main_splitter.addWidget(sub)
+		self.main_splitter.setSizes([500,500,0])
 
 		button_compile = QPushButton("Compile")
 		button_compile.clicked.connect(self.compile)
 
 		main_layout = QVBoxLayout()
-		main_layout.addWidget(main_splitter)
+		main_layout.addWidget(self.main_splitter)
 		main_layout.addWidget(button_compile)
 
 		widget = QWidget()
@@ -162,8 +163,6 @@ var edad_juan = juan.edad;
 		code = self.code_input.toPlainText()
 		self.tac_output.clear()
 		self.tac_highlighter = None
-		self.debug.clear()
-		self.debug.current_tab = 1
 		self.log.clear()
 	
 		self.log.append("Compiling...\n{")
@@ -178,31 +177,36 @@ var edad_juan = juan.edad;
 			lexer = CompiscriptLexer(InputStream(code))
 			token_stream = CommonTokenStream(lexer)
 			parser = CompiscriptParser(token_stream)
-			analyzer = Semantic_Analyzer(self.debug, self.table_classes, self.table_functions, self.table_variables, parser.program())
+			program = parser.program()
+			sma = Semantic_Analyzer(self.table_classes, self.table_functions, self.table_variables, program)
+			tac = TAC_Generator(program, INFO)
 
 			self.table_classes.resizeColumnsToContents()
 			self.table_functions.resizeColumnsToContents()
 			self.table_variables.resizeColumnsToContents()
 
-			if self.debug.error:
-				self.log.append("\t" + str(self.debug).strip())
+			if sma.output.error:
+				self.log.append("\t" + str(sma.output).strip())
 				self.log.append("}" + f"\n{R} Compilation Failed")
 				self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
 				self.tac_output.clear()
+				self.main_splitter.setSizes([self.main_splitter.sizes()[0], self.main_splitter.sizes()[1], 500])
 				QTimer.singleShot(100, lambda: self.resizeErrorWidgets())
 			else:
-				self.log.append("\t" + str(self.debug).strip())
+				self.log.append("\t" + str(sma.output).strip())
 				self.log.append("}" + f"\n{G} Comiplation Succesful")
 				self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
-				self.tac_output.append(str(analyzer.tac.code).strip())
+				self.tac_output.append(str(tac.output).strip())
 				QTimer.singleShot(100, lambda: self.resizeWidgets())
+				self.main_splitter.setSizes([self.main_splitter.sizes()[0], self.main_splitter.sizes()[1], 0])
 
 		except Exception as e:
-			self.log.append("\t" + str(self.debug).strip())
+			self.log.append("\t" + str(traceback.format_exc()).strip())
 			self.log.append("}" + f"\n{R} Compilation Failed")
 			self.log.append(str(e))
 			self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
-			self.tac_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
+			self.tac_output.clear()
+			self.main_splitter.setSizes([self.main_splitter.sizes()[0], self.main_splitter.sizes()[1], 500])
 			QTimer.singleShot(100, lambda: self.resizeErrorWidgets())
 
 	def resizeWidgets(self):

@@ -16,7 +16,7 @@ from .Classes import *
 from .Tree import *
 
 class TAC_Generator():
-	def __init__(self, program: CompiscriptParser.ProgramContext):
+	def __init__(self, program: CompiscriptParser.ProgramContext, info: bool = True):
 		super().__init__()
 		self.label_count = -1
 		self.temp_count = -1
@@ -29,8 +29,10 @@ class TAC_Generator():
 		self.fun: Tac_Function = None
 		self.var: Tac_Variable = None
 
-		self.code = Lace()
+		self.info = info
+		self.output = Lace()
 		self.fallback = Lace()
+
 		self.visit(self.program)
 
 	def new_temp(self):
@@ -104,51 +106,51 @@ class TAC_Generator():
 				fun = self.visit(node.varDecl)
 
 				start = self.new_label()
-				self.add() << NL() << "// FOR LOOP START {"
+				self.deb() << NL() << "// FOR LOOP START {"
 				self.add() << NL() << start << ":"
 				self.inc()
 				end = self.new_label()
 
 				if node.compare_expression:
-					self.add() << NL() << "// COMPARE"
+					self.deb() << NL() << "// COMPARE"
 					compare = self.visit(node.compare_expression)
 					self.add() << NL() << "IF " << compare << " GO_TO " << end
 					if node.increment_expression:
-						self.add() << NL() << "// INCREMENT"
+						self.deb() << NL() << "// INCREMENT"
 						increment = self.visit(node.increment_expression)
 						self.add() << NL() << fun << ": " << increment
-				self.add() << NL() << "// FOR LOOP BODY START {"
+				self.deb() << NL() << "// FOR LOOP BODY START {"
 				self.inc()
 				self.visit(node.statement)
 				self.dec()
-				self.add() << NL() << "//} FOR LOOP BODY END"
+				self.deb() << NL() << "//} FOR LOOP BODY END"
 				self.add() << NL() << "GO_TO " << start
 
 				self.dec()
 				self.add() << NL() << end << ":"
-				self.add() << NL() << "//} FOR LOOP END"
+				self.deb() << NL() << "//} FOR LOOP END"
 			elif node.exprStmt:
 				self.visit(node.exprStmt)
 
 		elif isinstance(node, ANT_IfStmt):
 			true = self.new_label()
 
-			self.add() << NL() << "// IF START {"
+			self.deb() << NL() << "// IF START {"
 			end = self.new_label()
 
 			if node.expression:
-				self.add() << NL() << "// COMPARE"
+				self.deb() << NL() << "// COMPARE"
 				compare = self.visit(node.expression)
 				self.add() << NL() << "IF " << compare << " GO_TO " << true
 
 			if node.else_statement:
-				self.add() << NL() << "// FALSE"
+				self.deb() << NL() << "// FALSE"
 				self.inc()
 				self.visit(node.else_statement)
 				self.add() << NL() << "GO_TO " << end
 				self.dec()
 	
-			self.add() << NL() << "// TRUE"
+			self.deb() << NL() << "// TRUE"
 			self.add() << NL() << true << ":"
 			self.inc()
 			self.visit(node.if_statement)
@@ -156,43 +158,43 @@ class TAC_Generator():
 			self.dec()
 
 			self.add() << NL() << end << ":"
-			self.add() << NL() << "//} IF END"
+			self.deb() << NL() << "//} IF END"
 
 		elif isinstance(node, ANT_PrintStmt):
-			self.add() << NL() << "// PRINT START {"
+			self.deb() << NL() << "// PRINT START {"
 			self.add() << NL() << "SYSCALL"
 			self.inc()
 			expr = self.visit(node.expression)
 			self.dec()
 			self.add() << NL() << "PRINT " << expr
 			self.add() << NL() << "SYSCALL"
-			self.add() << NL() << "//} PRINT END"
+			self.deb() << NL() << "//} PRINT END"
 
 		elif isinstance(node, ANT_ReturnStmt):
 			return self.visit(node.expression)
 
 		elif isinstance(node, ANT_WhileStmt):
 			start = self.new_label()
-			self.add() << NL() << "// WHILE LOOP START {"
+			self.deb() << NL() << "// WHILE LOOP START {"
 			self.add() << NL() << start << ":"
 			self.inc()
 			end = self.new_label()
 
 			if node.expression:
-				self.add() << NL() << "// COMPARE"
+				self.deb() << NL() << "// COMPARE"
 				compare = self.visit(node.expression)
 				self.add() << NL() << "IF " << compare << " GO_TO " << end
 			
-			self.add() << NL() << "// WHILE LOOP BODY START {"
+			self.deb() << NL() << "// WHILE LOOP BODY START {"
 			self.inc()
 			self.visit(node.statement)
 			self.dec()
-			self.add() << NL() << "//} WHILE LOOP BODY END"
+			self.deb() << NL() << "//} WHILE LOOP BODY END"
 			self.add() << NL() << "GO_TO " << start
 
 			self.dec()
 			self.add() << NL() << end << ":"
-			self.add() << NL() << "//} WHILE LOOP END"
+			self.deb() << NL() << "//} WHILE LOOP END"
 
 		elif isinstance(node, ANT_Block):
 			self.scope.enter()
@@ -228,14 +230,16 @@ class TAC_Generator():
 							self.scope.declareVariable(var)
 						self.var = var
 						res = self.visit(node.assignment)
-						self.add() << NL() << var.ID << ": " << res << " // " << node.IDENTIFIER << " = " << res
+						self.add() << NL() << var.ID << ": " << res
+						self.deb() << " // " << node.IDENTIFIER << " = " << res
 					else:
 						self.visit(node.call)
 				elif node.assignment: # Late Init
 					res = self.visit(node.assignment)
 					if isinstance(res, Tac_Class):
 						print("INSTANCE LATE INIT")
-					self.add() << NL() << self.scope.lookupVariable(node.IDENTIFIER, self.cls).ID << ": " << res << " // " << node.IDENTIFIER << " = " << res
+					self.add() << NL() << self.scope.lookupVariable(node.IDENTIFIER, self.cls).ID << ": " << res
+					self.deb() << " // " << node.IDENTIFIER << " = " << res
 			elif node.logic_or:
 				res = self.visit(node.logic_or)
 			return res
@@ -248,7 +252,8 @@ class TAC_Generator():
 				for op, right_node in node.array:
 					right = self.visit(right_node)
 					res = self.new_temp()
-					self.add() << NL() << f"OR {res}: {left}, {right} // {left} || {right}"
+					self.add() << NL() << f"OR {res}: {left}, {right}"
+					self.deb() << f" // {left} || {right}"
 					left = res
 			return res
 
@@ -260,7 +265,8 @@ class TAC_Generator():
 				for op, right_node in node.array:
 					right = self.visit(right_node)
 					res = self.new_temp()
-					self.add() << NL() << f"AND {res}: {left}, {right} // {left} && {right}"
+					self.add() << NL() << f"AND {res}: {left}, {right}"
+					self.deb() << f" // {left} && {right}"
 					left = res
 			return res
 
@@ -273,9 +279,11 @@ class TAC_Generator():
 					right = self.visit(right_node)
 					res = self.new_temp()
 					if op == "==":
-						self.add() << NL() << f"EQ {res}: {left}, {right} // {left} == {right}"
+						self.add() << NL() << f"EQ {res}: {left}, {right}"
+						self.deb() << f" // {left} == {right}"
 					elif op == "!=":
-						self.add() << NL() << f"NEQ {res}: {left}, {right} // {left} != {right}"
+						self.add() << NL() << f"NEQ {res}: {left}, {right}"
+						self.deb() << f" // {left} != {right}"
 					left = res
 			return res
 
@@ -288,13 +296,17 @@ class TAC_Generator():
 					right = self.visit(right_node)
 					res = self.new_temp()
 					if op == "<":
-						self.add() << NL() << f"LT {res}: {left}, {right} // {left} < {right}"
+						self.add() << NL() << f"LT {res}: {left}, {right}"
+						self.deb() << f" // {left} < {right}"
 					elif op == "<=":
-						self.add() << NL() << f"LEQ {res}: {left}, {right} // {left} <= {right}"
+						self.add() << NL() << f"LEQ {res}: {left}, {right}"
+						self.deb() << f" // {left} <= {right}"
 					elif op == ">":
-						self.add() << NL() << f"GT {res}: {left}, {right} // {left} > {right}"
+						self.add() << NL() << f"GT {res}: {left}, {right}"
+						self.deb() << f" // {left} > {right}"
 					elif op == ">=":
-						self.add() << NL() << f"GEQ {res}: {left}, {right} // {left} >= {right}"
+						self.add() << NL() << f"GEQ {res}: {left}, {right}"
+						self.deb() << f" // {left} >= {right}"
 					left = res
 			return res
 
@@ -307,9 +319,11 @@ class TAC_Generator():
 					right = self.visit(right_node)
 					res = self.new_temp()
 					if op == "+":
-						self.add() << NL() << f"ADD {res}: {left}, {right} // {left} + {right}"
+						self.add() << NL() << f"ADD {res}: {left}, {right}"
+						self.deb() << f" // {left} + {right}"
 					elif op == "-":
-						self.add() << NL() << f"SUB {res}: {left}, {right} // {left} - {right}"
+						self.add() << NL() << f"SUB {res}: {left}, {right}"
+						self.deb() << f" // {left} - {right}"
 					left = res
 			return res
 
@@ -322,11 +336,14 @@ class TAC_Generator():
 					right = self.visit(right_node)
 					res = self.new_temp()
 					if op == "*":
-						self.add() << NL() << f"MUL {res}: {left}, {right} // {left} * {right}"
+						self.add() << NL() << f"MUL {res}: {left}, {right}"
+						self.deb() << f" // {left} * {right}"
 					elif op == "/":
-						self.add() << NL() << f"DIV {res}: {left}, {right} // {left} / {right}"
+						self.add() << NL() << f"DIV {res}: {left}, {right}"
+						self.deb() << f" // {left} / {right}"
 					elif op == "%":
-						self.add() << NL() << f"MOD {res}: {left}, {right} // {left} % {right}"
+						self.add() << NL() << f"MOD {res}: {left}, {right}"
+						self.deb() << f" // {left} % {right}"
 					left = res
 			return res
 
@@ -339,13 +356,13 @@ class TAC_Generator():
 
 			self.var.instance = cls
 			self.cls = cls
-			self.add() << NL() << "// INSTANTIATE CLASS " << cls.name << " {"
+			self.deb() << NL() << "// INSTANTIATE CLASS " << cls.name << " {"
 			self.inc()
 			self.visit(cls.code)
 			self.dec()
-			self.add() << NL() << "//} INSTANTIATE CLASS"
+			self.deb() << NL() << "//} INSTANTIATE CLASS"
 
-			self.add() << NL() << "// INIT CLASS {"
+			self.deb() << NL() << "// INIT CLASS {"
 			self.inc()
 			params = []
 			if node.arguments:
@@ -354,12 +371,14 @@ class TAC_Generator():
 					self.add() << NL() << cls.initializer.parameters[i].ID << ": " << argument
 					params.append((cls.initializer.parameters[i].name, cls.initializer.parameters[i].ID))
 
-				self.add() << NL() << "CALL " << cls.initializer.ID << " // Calling " << cls.name << ".init function with params " << str(params)
+				self.add() << NL() << "CALL " << cls.initializer.ID
+				self.deb() << " // Calling " << cls.name << ".init function with params " << str(params)
 			else:
-				self.add() << NL() << "CALL " << cls.initializer.ID << " // Calling " << cls.name << ".init function with NOm params"
+				self.add() << NL() << "CALL " << cls.initializer.ID
+				self.deb() << " // Calling " << cls.name << ".init function with NOm params"
 				
 			self.dec()
-			self.add() << NL() << "//} INIT CLASS"
+			self.deb() << NL() << "//} INIT CLASS"
 
 
 			self.cls = None
@@ -372,9 +391,11 @@ class TAC_Generator():
 				right = self.visit(node.unary)
 				res = self.new_temp()
 				if node.operator == "-":
-					self.add() << NL() << f"SUB {res}: 0, {right} // - {right}"
+					self.add() << NL() << f"SUB {res}: 0, {right}"
+					self.deb() << f" // - {right}"
 				elif node.operator == "!":
-					self.add() << NL() << f"NOT {res}: {right} // ! {right}"
+					self.add() << NL() << f"NOT {res}: {right}"
+					self.deb() << f" // ! {right}"
 				return res
 
 		elif isinstance(node, ANT_Call):
@@ -404,7 +425,8 @@ class TAC_Generator():
 							for i, param in enumerate(function.parameters):
 								self.add() << NL() << param.ID << ": " << arguments[i]
 								params.append((param.name, param.ID))
-							self.add() << NL() << "CALL " << function.ID << " // Calling super." << function.name << " function with params " << str(params)
+							self.add() << NL() << "CALL " << function.ID
+							self.deb() << " // Calling super." << function.name << " function with params " << str(params)
 						else:
 							function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
 							res = function.return_ID
@@ -413,16 +435,19 @@ class TAC_Generator():
 							for i, param in enumerate(function.parameters):
 								self.add() << NL() << param.ID << ": " << arguments[i]
 								params.append((param.name, param.ID))
-							self.add() << NL() << "CALL " << function.ID << " // Calling function " << function.name << " with params " << str(params)
+							self.add() << NL() << "CALL " << function.ID
+							self.deb() << " // Calling function " << function.name << " with params " << str(params)
 					elif call.empty: # Calling Function with no params
 						if node.primary.superCall:
 							function: Tac_Function = self.cls.extends.initializer
 							res = function.return_ID
-							self.add() << NL() << "CALL " << function.ID << " // Calling super." << function.name << " function with NO params"
+							self.add() << NL() << "CALL " << function.ID
+							self.deb() << " // Calling super." << function.name << " function with NO params"
 						else:
 							function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
 							res = function.return_ID
-							self.add() << NL() << "CALL " << function.ID << " // Calling function " << function.name << " with NO params"
+							self.add() << NL() << "CALL " << function.ID
+							self.deb() << " // Calling function " << function.name << " with NO params"
 				elif len(node.calls) == 2: # Calling Instance
 					call_a = node.calls[0]
 					call_b = node.calls[1]
@@ -435,11 +460,13 @@ class TAC_Generator():
 							for i, param in enumerate(function.parameters):
 								self.add() << NL() << param.ID << ": " << arguments[i]
 								params.append((param.name, param.ID))
-							self.add() << NL() << "CALL " << function.ID << " // Calling function with params " << str(params)
+							self.add() << NL() << "CALL " << function.ID
+							self.deb() << " // Calling function with params " << str(params)
 						elif call_b.empty:
 							function = self.scope.lookupVariable(node.primary.IDENTIFIER).instance.lookupFunction(call_a.IDENTIFIER)
 							res = function.return_ID
-							self.add() << NL() << "CALL " << function.ID << " // Calling function with NO params"
+							self.add() << NL() << "CALL " << function.ID
+							self.deb() << " // Calling function with NO params"
 						res = call_a.IDENTIFIER
 					elif call_a.expression: # Calling the index of an array [expression]
 						res = "TODO"
@@ -451,11 +478,13 @@ class TAC_Generator():
 						for i, param in enumerate(function.parameters):
 							self.add() << NL() << param.ID << ": " << arguments[i]
 							params.append((param.name, param.ID))
-						self.add() << NL() << "CALL " << res << " // Calling function with params"  << str(params)
+						self.add() << NL() << "CALL " << res
+						self.deb() << " // Calling function with params"  << str(params)
 					elif call_a.empty: # Calling Function with no params
 						function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
 						res = function.return_ID
-						self.add() << NL() << "CALL " << res << " // Calling function with NO params"
+						self.add() << NL() << "CALL " << res
+						self.deb() << " // Calling function with NO params"
 				else:
 					# Calling Nested eg. cls_instance_var.fun() , cls_instance_var.instance.fun()
 					i = 1
@@ -525,8 +554,9 @@ class TAC_Generator():
 				self.scope.declareFunction(fun)
 			self.fun = fun
 
-			self.add() << NL() << "// FUNCTION START {"
-			self.add() << NL() << fun.ID << ": // " << node.IDENTIFIER
+			self.deb() << NL() << "// FUNCTION START {"
+			self.add() << NL() << fun.ID << ":"
+			self.deb() << "// " << node.IDENTIFIER
 			self.inc()
 			if node.parameters:
 				parameters = self.visit(node.parameters)
@@ -535,14 +565,14 @@ class TAC_Generator():
 					param.ID = self.new_temp()
 					param.name = parameter
 					fun.parameters.append(param)
-					#self.add() << NL() << "// Fun: " << fun.name << " Has Param: " << param.ID
+					self.deb() << NL() << "// Fun: " << fun.name << " Has Param: " << param.ID
 
 			self.scope.enter()
 			fun.return_ID = self.visit(node.block)
 			self.scope.exit()
 			self.dec()
 			self.add() << NL() << "RETURN"
-			self.add() << NL() << "//} FUNCTION END"
+			self.deb() << NL() << "//} FUNCTION END"
 
 			self.fun = None
 
@@ -558,11 +588,12 @@ class TAC_Generator():
 			if node.expression:
 				expression = self.visit(node.expression)
 				if not isinstance(expression, Tac_Class):
-					self.add() << NL() << var.ID << ": " << expression << " // " << node.IDENTIFIER << " = " << str(expression)
+					self.add() << NL() << var.ID << ": " << expression
+					self.deb() << " // " << node.IDENTIFIER << " = " << str(expression)
 				self.var = None
 				return var.ID
 
-			self.add() << NL() << "// Declare Empty Var: " << node.IDENTIFIER
+			self.deb() << NL() << "// Declare Empty Var: " << node.IDENTIFIER
 			return var.ID
 
 		elif isinstance(node, ANT_Parameters):
@@ -578,11 +609,16 @@ class TAC_Generator():
 				arguments.append(expr)
 			return arguments
 
+	def deb(self):
+		if self.info:
+			return self.output
+		return self.fallback
+
 	def add(self):
-		return self.code
-	
+		return self.output
+
 	def inc(self):
-		self.code += 1
-	
+		self.output += 1
+
 	def dec(self):
-		self.code -= 1
+		self.output -= 1
