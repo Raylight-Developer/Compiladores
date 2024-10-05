@@ -34,6 +34,13 @@ fun estudiar() {
 }
 estudiar();
 
+for (var i = 1; i <= 5; i = i + 1) {
+	if (i % 2 == 0) {
+		print i + " es par";
+	} else {
+		print i + " es impar";
+	}
+}
 var testa = 3;
 var testb = "3";
 var menor = 3 < 5; // true
@@ -48,15 +55,6 @@ var max = 10;
 var promedio = ( min + max ) / 2;
 var string = "Hola Mundo";
 
-for (var i = 1; i <= 5; i = i + 1) {
-	if (i % 2 == 0) {
-		print i + " es par";
-	} else {
-		print i + " es impar";
-	}
-}
-
-/*
 
 class Persona {
 	init(nombre, edad) {
@@ -71,8 +69,9 @@ class Persona {
 }
 
 var persona = new Persona("Alejandro", 10);
-persona.saludar();
 
+/*
+persona.saludar();
 
 class Estudiante extends Persona {
 	init(nombre, edad, grado) {
