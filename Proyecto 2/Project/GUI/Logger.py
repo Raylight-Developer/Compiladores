@@ -6,3 +6,4 @@ class Logger(QTextBrowser):
 		super().__init__(parent)
 		self.setTabStopDistance(40)
 		self.setObjectName("Main")
+		self.setWordWrapMode(QTextOption.WrapMode.NoWrap)

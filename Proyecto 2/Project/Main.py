@@ -126,9 +126,9 @@ juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
 
 		main_splitter = QSplitter(Qt.Orientation.Horizontal)
 		main_splitter.addWidget(self.code_input)
-		main_splitter.addWidget(sub)
 		main_splitter.addWidget(self.tac_output)
-		main_splitter.setSizes([500,500,500])
+		main_splitter.addWidget(sub)
+		main_splitter.setSizes([500,500,250])
 
 		button_compile = QPushButton("Compile")
 		button_compile.clicked.connect(self.compile)
@@ -194,9 +194,14 @@ juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
 			self.log.append(str(e))
 			self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
 			self.tac_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
+		
+		QTimer.singleShot(100, lambda: self.resizeWidgets())
 
-		self.log.verticalScrollBar().setValue(self.log.verticalScrollBar().maximum())
-		self.tac_output.verticalScrollBar().setValue(self.tac_output.verticalScrollBar().maximum())
+	def resizeWidgets(self):
+		self.log.verticalScrollBar().setValue(0)
+		self.log.horizontalScrollBar().setValue(0)
+		self.tac_output.verticalScrollBar().setValue(0)
+		self.tac_output.horizontalScrollBar().setValue(0)
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")
