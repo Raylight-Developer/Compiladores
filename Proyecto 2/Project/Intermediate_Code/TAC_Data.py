@@ -1,6 +1,8 @@
 from Include import *
 from Lace import *
 
+from .Classes import *
+
 class Tac_Variable:
 	def __init__(self):
 		self.ID   : str = None
@@ -34,7 +36,7 @@ class Tac_Function:
 class Tac_Class:
 	def __init__(self):
 		self.name : str = None
-		self.code : Any = None
+		self.code : ANT_ClassBody = None
 
 		self.extends : Tac_Class = None
 

@@ -60,13 +60,7 @@ class TAC_Generator():
 			cls = Tac_Class()
 			cls.name = node.IDENTIFIER
 			self.scope.declareClass(cls)
-			self.cls = cls
-
-			#self.scope.enter()
-			#self.visit(node.class_body)
-			#self.scope.exit()
 			cls.code = node.class_body
-			self.cls = None
 
 		elif isinstance(node, ANT_ClassBody):
 			for member in node.class_members:
@@ -196,8 +190,10 @@ class TAC_Generator():
 			self.add() << NL() << "//} WHILE LOOP END"
 
 		elif isinstance(node, ANT_Block):
+			self.scope.enter()
 			for declaration in node.declarations:
 				self.visit(declaration)
+			self.scope.exit()
 
 		elif isinstance(node, ANT_FunAnon):
 			pass
@@ -421,7 +417,9 @@ class TAC_Generator():
 					param.name = parameter
 					fun.parameters.append(param)
 
+			self.scope.enter()
 			return_val = self.visit(node.block)
+			self.scope.exit()
 			self.dec()
 			self.add() << NL() << "RETURN"
 			self.add() << NL() << "//} FUNCTION END"
@@ -441,7 +439,15 @@ class TAC_Generator():
 				expression = self.visit(node.expression)
 				if isinstance(expression, Tac_Class):
 					var.instance = expression
-					self.add() << NL() << "// " << var.ID << " | " << node.IDENTIFIER << " = INSTANCE<" << expression.name << ">"
+					self.cls = expression
+					self.add() << NL() << "// INSTANTIATE CLASS " << expression.name << " {"
+					self.inc()
+					self.scope.enter()
+					self.visit(expression.code)
+					self.scope.exit()
+					self.cls = None
+					self.dec()
+					self.add() << NL() << "//} INSTANTIATE CLASS"
 				else:
 					self.add() << NL() << var.ID << ": " << expression << " // " << node.IDENTIFIER << " = " << expression
 				self.var = None
@@ -464,18 +470,10 @@ class TAC_Generator():
 			return arguments
 
 	def add(self):
-		if not self.cls:
-			return self.code
-		return self.fallback
+		return self.code
 	
 	def inc(self):
-		if not self.cls:
-			self.code += 1
-		else:
-			self.fallback += 1
+		self.code += 1
 	
 	def dec(self):
-		if not self.cls:
-			self.code -= 1
-		else:
-			self.fallback -= 1
+		self.code -= 1
