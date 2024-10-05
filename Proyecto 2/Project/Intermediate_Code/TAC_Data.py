@@ -24,6 +24,8 @@ class Tac_Function:
 		self.ID   : str = None
 		self.name : str = None
 
+		self.return_ID: str = None
+
 		self.member : Tac_Class = None
 		self.parameters : List[Tac_Function_Parameter] = []
 

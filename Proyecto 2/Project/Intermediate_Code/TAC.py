@@ -48,13 +48,13 @@ class TAC_Generator():
 		
 		elif isinstance(node, ANT_Declaration):
 			if node.classDecl:
-				self.visit(node.classDecl)
+				return self.visit(node.classDecl)
 			elif node.funDecl:
-				self.visit(node.funDecl)
+				return self.visit(node.funDecl)
 			elif node.varDecl:
-				self.visit(node.varDecl)
+				return self.visit(node.varDecl)
 			elif node.statement:
-				self.visit(node.statement)
+				return self.visit(node.statement)
 
 		elif isinstance(node, ANT_ClassDecl):
 			cls = Tac_Class()
@@ -90,7 +90,7 @@ class TAC_Generator():
 			if node.printStmt:
 				self.visit(node.printStmt)
 			if node.returnStmt:
-				self.visit(node.returnStmt)
+				return self.visit(node.returnStmt)
 			if node.whileStmt:
 				self.visit(node.whileStmt)
 			elif node.block:
@@ -169,7 +169,7 @@ class TAC_Generator():
 			self.add() << NL() << "//} PRINT END"
 
 		elif isinstance(node, ANT_ReturnStmt):
-			pass
+			return self.visit(node.expression)
 
 		elif isinstance(node, ANT_WhileStmt):
 			start = self.new_label()
@@ -196,9 +196,13 @@ class TAC_Generator():
 
 		elif isinstance(node, ANT_Block):
 			self.scope.enter()
+			res = None
 			for declaration in node.declarations:
-				self.visit(declaration)
+				decl = self.visit(declaration)
+				if decl: res = decl
+
 			self.scope.exit()
+			return res
 
 		elif isinstance(node, ANT_FunAnon):
 			pass
@@ -385,53 +389,53 @@ class TAC_Generator():
 						if node.primary.superCall:
 							#raise Exception("AAA")
 							function: Tac_Function = self.cls.extends.initializer
-							res = function.ID
+							res = function.return_ID
 							arguments = self.visit(call.arguments)
 							for i, param in enumerate(function.parameters):
 								self.add() << NL() << param.ID << ": " << arguments[i]
-							self.add() << NL() << "CALL " << res << " // Calling function with params"
+							self.add() << NL() << "CALL " << function.ID << " // Calling function with params"
 						else:
 							function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
-							res = function.ID
+							res = function.return_ID
 							arguments = self.visit(call.arguments)
 							for i, param in enumerate(function.parameters):
 								self.add() << NL() << param.ID << ": " << arguments[i]
-							self.add() << NL() << "CALL " << res << " // Calling function with params"
+							self.add() << NL() << "CALL " << function.ID << " // Calling function with params"
 					elif call.empty: # Calling Function with no params
 						if node.primary.superCall:
 							raise Exception("BBB")
 						else:
 							function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
-							res = function.ID
-							self.add() << NL() << "CALL " << res << " // Calling function with NO params"
+							res = function.return_ID
+							self.add() << NL() << "CALL " << function.ID << " // Calling function with NO params"
 				elif len(node.calls) == 2: # Calling Instance
 					call_a = node.calls[0]
 					call_b = node.calls[1]
 					if call_a.IDENTIFIER:
 						if call_b.arguments:
 							function = self.scope.lookupVariable(node.primary.IDENTIFIER).instance.lookupFunction(call_a.IDENTIFIER)
-							res = function.ID
+							res = function.return_ID
 							arguments = self.visit(call_b.arguments)
 							for i, param in enumerate(function.parameters):
 								self.add() << NL() << param.ID << ": " << arguments[i]
-							self.add() << NL() << "CALL " << res << " // Calling function with params"
+							self.add() << NL() << "CALL " << function.ID << " // Calling function with params"
 						elif call_b.empty:
 							function = self.scope.lookupVariable(node.primary.IDENTIFIER).instance.lookupFunction(call_a.IDENTIFIER)
-							res = function.ID
-							self.add() << NL() << "CALL " << res << " // Calling function with NO params"
+							res = function.return_ID
+							self.add() << NL() << "CALL " << function.ID << " // Calling function with NO params"
 						res = call_a.IDENTIFIER
 					elif call_a.expression: # Calling the index of an array [expression]
 						res = "TODO"
 					elif call_a.arguments: # Calling Function with params
 						function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
-						res = function.ID
+						res = function.return_ID
 						arguments = self.visit(call_a.arguments)
 						for i, param in enumerate(function.parameters):
 							self.add() << NL() << param.ID << ": " << arguments[i]
 						self.add() << NL() << "CALL " << res << " // Calling function with params"
 					elif call_a.empty: # Calling Function with no params
 						function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
-						res = function.ID
+						res = function.return_ID
 						self.add() << NL() << "CALL " << res << " // Calling function with NO params"
 				else:
 					# Calling Nested eg. cls_instance_var.fun() , cls_instance_var.instance.fun()
@@ -515,7 +519,7 @@ class TAC_Generator():
 					#self.add() << NL() << "// Fun: " << fun.name << " Has Param: " << param.ID
 
 			self.scope.enter()
-			return_val = self.visit(node.block)
+			fun.return_ID = self.visit(node.block)
 			self.scope.exit()
 			self.dec()
 			self.add() << NL() << "RETURN"
@@ -535,7 +539,7 @@ class TAC_Generator():
 			if node.expression:
 				expression = self.visit(node.expression)
 				if not isinstance(expression, Tac_Class):
-					self.add() << NL() << var.ID << ": " << expression << " // " << node.IDENTIFIER << " = " << expression
+					self.add() << NL() << var.ID << ": " << expression << " // " << node.IDENTIFIER << " = " << str(expression)
 				self.var = None
 				return var.ID
 

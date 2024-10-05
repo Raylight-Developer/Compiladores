@@ -18,6 +18,11 @@ class Display(QMainWindow):
 		self.highlighter = Syntax_Highlighter(self.code_input.document())
 		self.code_input.setText((
 """
+fun sumar() {
+	return 10 + 20;
+}
+var sum = sumar();
+
 var peko;
 peko = 10;
 
@@ -91,7 +96,9 @@ class Estudiante extends Persona {
 
 var juan = new Estudiante(nombre, 20, 3);
 juan.saludar();    // Salida: Hola, mi nombre es Alejandro
+
 juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
+
 """).strip())
 		self.tac_highlighter = None
 		self.tac_output = Logger()
