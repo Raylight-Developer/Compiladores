@@ -392,13 +392,12 @@ class TAC_Generator():
 						res = "TODO"
 					elif call.arguments: # Calling Function with params
 						if node.primary.superCall:
-							#raise Exception("AAA")
 							function: Tac_Function = self.cls.extends.initializer
 							res = function.return_ID
 							arguments = self.visit(call.arguments)
 							for i, param in enumerate(function.parameters):
 								self.add() << NL() << param.ID << ": " << arguments[i]
-							self.add() << NL() << "CALL " << function.ID << " // Calling function with params"
+							self.add() << NL() << "CALL " << function.ID << " // Calling super. function with params"
 						else:
 							function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
 							res = function.return_ID
@@ -408,7 +407,9 @@ class TAC_Generator():
 							self.add() << NL() << "CALL " << function.ID << " // Calling function with params"
 					elif call.empty: # Calling Function with no params
 						if node.primary.superCall:
-							raise Exception("BBB")
+							function: Tac_Function = self.cls.extends.initializer
+							res = function.return_ID
+							self.add() << NL() << "CALL " << function.ID << " // Calling super. function with NO params"
 						else:
 							function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
 							res = function.return_ID
