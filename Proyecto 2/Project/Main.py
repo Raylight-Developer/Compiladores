@@ -41,6 +41,7 @@ for (var i = 1; i <= 5; i = i + 1) {
 		print i + " es impar";
 	}
 }
+
 var testa = 3;
 var testb = "3";
 var menor = 3 < 5; // true
@@ -55,6 +56,11 @@ var max = 10;
 var promedio = ( min + max ) / 2;
 var string = "Hola Mundo";
 
+var i = 0;
+while (i < 10) {
+	print "Loop";
+	i = i +1;
+}
 
 class Persona {
 	init(nombre, edad) {
