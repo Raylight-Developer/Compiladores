@@ -5,7 +5,7 @@ def error(debug: 'Lace', message: str):
 	debug << NL() << R + " " + str(message)
 	debug.error = True
 	print("\n\n" + message)
-	#raise Exception(str(message).replace("<", "⟪").replace(">", "⟫"))
+	raise Exception(str(message).replace("<", "⟪").replace(">", "⟫"))
 
 class Lace:
 	def __init__(self):

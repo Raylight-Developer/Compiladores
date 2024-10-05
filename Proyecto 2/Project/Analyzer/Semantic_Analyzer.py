@@ -553,13 +553,14 @@ class Semantic_Analyzer(CompiscriptVisitor):
 				else:
 					member_name = ctx.callSuffix(0).IDENTIFIER().getText()
 					# Function call
-					if ctx.getChild(2).getText() == '(':
+					if ctx.getChild(2).getText() == "()" or ctx.getChild(2).arguments():
 						function = self.scope_tracker.lookupFunction(member_name, primary.data.data)
 						call_params = []
 						if ctx.callSuffix() and len(ctx.callSuffix()) > 0:
 							arguments: CompiscriptParser.ArgumentsContext = ctx.callSuffix(0).arguments()
-							for i in range(0, arguments.getChildCount(), 2):
-								call_params.append(self.visit(arguments.getChild(i)))
+							if arguments:
+								for i in range(0, arguments.getChildCount(), 2):
+									call_params.append(self.visit(arguments.getChild(i)))
 						if len(function.parameters) != len(call_params):
 							error(self.debug, f"Error Call. Tried to call Function '{function.ID}' with {len(call_params)} parameters. Expected {len(function.parameters)}")
 						self.flags["current_call"] = None

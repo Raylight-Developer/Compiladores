@@ -69,9 +69,8 @@ class Persona {
 }
 
 var persona = new Persona("Alejandro", 10);
-
-/*
 persona.saludar();
+/*
 
 class Estudiante extends Persona {
 	init(nombre, edad, grado) {
