@@ -382,16 +382,28 @@ class TAC_Generator():
 					elif call.expression: # Calling the index of an array [expression]
 						res = "TODO"
 					elif call.arguments: # Calling Function with params
-						function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
-						res = function.ID
-						arguments = self.visit(call.arguments)
-						for i, param in enumerate(function.parameters):
-							self.add() << NL() << param.ID << ": " << arguments[i]
-						self.add() << NL() << "CALL " << res << " // Calling function with params"
+						if node.primary.superCall:
+							#raise Exception("AAA")
+							function: Tac_Function = self.cls.extends.initializer
+							res = function.ID
+							arguments = self.visit(call.arguments)
+							for i, param in enumerate(function.parameters):
+								self.add() << NL() << param.ID << ": " << arguments[i]
+							self.add() << NL() << "CALL " << res << " // Calling function with params"
+						else:
+							function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
+							res = function.ID
+							arguments = self.visit(call.arguments)
+							for i, param in enumerate(function.parameters):
+								self.add() << NL() << param.ID << ": " << arguments[i]
+							self.add() << NL() << "CALL " << res << " // Calling function with params"
 					elif call.empty: # Calling Function with no params
-						function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
-						res = function.ID
-						self.add() << NL() << "CALL " << res << " // Calling function with NO params"
+						if node.primary.superCall:
+							raise Exception("BBB")
+						else:
+							function: Tac_Function = self.scope.lookupFunction(node.primary.IDENTIFIER, self.cls)
+							res = function.ID
+							self.add() << NL() << "CALL " << res << " // Calling function with NO params"
 				elif len(node.calls) == 2: # Calling Instance
 					call_a = node.calls[0]
 					call_b = node.calls[1]
@@ -454,7 +466,7 @@ class TAC_Generator():
 			pass
 
 		elif isinstance(node, ANT_SuperCall):
-			pass
+			return node
 
 		elif isinstance(node, ANT_Primary): # Can only be called from within a call
 			if node.NUMBER:
@@ -500,7 +512,7 @@ class TAC_Generator():
 					param.ID = self.new_temp()
 					param.name = parameter
 					fun.parameters.append(param)
-					self.add() << NL() << "// Fun: " << fun.name << " Has Param: " << param.ID
+					#self.add() << NL() << "// Fun: " << fun.name << " Has Param: " << param.ID
 
 			self.scope.enter()
 			return_val = self.visit(node.block)

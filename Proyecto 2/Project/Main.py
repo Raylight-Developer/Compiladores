@@ -79,7 +79,7 @@ persona.saludar();
 
 class Estudiante extends Persona {
 	init(nombre, edad, grado) {
-		//super.init(nombre, edad);
+		super.init(nombre, edad);
 		this.grado = grado;
 		this.edad = 10;
 	}
@@ -176,17 +176,18 @@ juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
 			self.table_functions.resizeColumnsToContents()
 			self.table_variables.resizeColumnsToContents()
 
-			if not self.debug.error:
-				self.log.append("\t" + str(self.debug).strip())
-				self.log.append("}" + f"\n{G} Comiplation Succesful")
-				self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
-				self.tac_output.append(str(analyzer.tac.code).strip())
-
-			else:
+			if self.debug.error:
 				self.log.append("\t" + str(self.debug).strip())
 				self.log.append("}" + f"\n{R} Compilation Failed")
 				self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
 				self.tac_output.clear()
+				QTimer.singleShot(100, lambda: self.resizeErrorWidgets())
+			else:
+				self.log.append("\t" + str(self.debug).strip())
+				self.log.append("}" + f"\n{G} Comiplation Succesful")
+				self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
+				self.tac_output.append(str(analyzer.tac.code).strip())
+				QTimer.singleShot(100, lambda: self.resizeWidgets())
 
 		except Exception as e:
 			self.log.append("\t" + str(self.debug).strip())
@@ -194,13 +195,18 @@ juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
 			self.log.append(str(e))
 			self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
 			self.tac_output.insertPlainText("\n".join(traceback.format_exc().splitlines()))
-		
-		QTimer.singleShot(100, lambda: self.resizeWidgets())
+			QTimer.singleShot(100, lambda: self.resizeErrorWidgets())
 
 	def resizeWidgets(self):
 		self.log.verticalScrollBar().setValue(0)
 		self.log.horizontalScrollBar().setValue(0)
 		self.tac_output.verticalScrollBar().setValue(0)
+		self.tac_output.horizontalScrollBar().setValue(0)
+
+	def resizeErrorWidgets(self):
+		self.log.verticalScrollBar().setValue(0)
+		self.log.horizontalScrollBar().setValue(0)
+		self.tac_output.verticalScrollBar().setValue(self.tac_output.verticalScrollBar().maximum())
 		self.tac_output.horizontalScrollBar().setValue(0)
 
 app = QApplication(sys.argv)
