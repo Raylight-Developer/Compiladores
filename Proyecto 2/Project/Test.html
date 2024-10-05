@@ -1,17 +1,38 @@
-<style>
-	* {
-		vertical-align: top;
-		background-color: rgb(30, 30, 30);
-		color: rgb(250, 250, 250);
-	}
-</style>
-<table border="1">
-	<tr>
-		<th>Codigo</th>
-		<th>CI</th>
-	</tr>
-	<tr>
-		<td><pre>var peko;
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Custom Syntax Highlighter</title>
+		<style>
+			* {
+				vertical-align: top;
+				background-color: rgb(30, 30, 30);
+				color: rgb(250, 250, 250);
+			}
+			.builtinFunctions { color: rgb(225, 225, 120); }
+			.builtinClasses { color: rgb(78, 201, 176); }
+			.control { color: rgb(216, 160, 223); }
+			.user_keywords { color: rgb(86, 156, 214); }
+			.operation { color: rgb(100, 255, 120); }
+			.label { color: rgb(255, 120, 100); }
+			.temporal { color: rgb(120, 130, 140); }
+			.brackets { color: rgb(255, 215, 0); }
+			.integers { color: rgb(181, 206, 168); }
+			.floats { color: rgb(185, 225, 172); }
+			.strings { color: rgb(214, 157, 133); }
+			.comments { color: rgb(85, 140, 70); }
+		</style>
+	</head>
+	<body>
+		<table border="1">
+			<tr>
+				<th>Codigo</th>
+				<th>CI</th>
+			</tr>
+			<tr>
+				<td><pre id="Code">
+var peko;
 peko = 10;
 
 fun saludar(val) {
@@ -86,7 +107,8 @@ var juan = new Estudiante(nombre, 20, 3);
 juan.saludar();    // Salida: Hola, mi nombre es Alejandro
 juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
 		</pre></td>
-		<td><pre>// Declare Empty Var: peko
+		<td><pre id="CI">
+// Declare Empty Var: peko
 T_0: 10 // peko = 10
 // FUNCTION START {
 L_0: // saludar
@@ -94,7 +116,7 @@ L_0: // saludar
 	// PRINT START {
 	SYSCALL
 		ADD T_2: "Hola, mi nombre es ", T_1 // "Hola, mi nombre es " + T_1
-	PRINT T_2
+	SYSPRINT T_2
 	SYSCALL
 	//} PRINT END
 RETURN
@@ -108,7 +130,7 @@ CALL L_0 // Calling function with params
 L_1: // estudiar
 	// PRINT START {
 	SYSCALL
-	PRINT " esta estudiando en grado."
+	SYSPRINT " esta estudiando en grado."
 	SYSCALL
 	//} PRINT END
 RETURN
@@ -134,7 +156,7 @@ L_2:
 			// PRINT START {
 			SYSCALL
 				ADD T_9: T_4, " es impar" // T_4 + " es impar"
-			PRINT T_9
+			SYSPRINT T_9
 			SYSCALL
 			//} PRINT END
 			GO_TO L_5
@@ -143,7 +165,7 @@ L_2:
 			// PRINT START {
 			SYSCALL
 				ADD T_10: T_4, " es par" // T_4 + " es par"
-			PRINT T_10
+			SYSPRINT T_10
 			SYSCALL
 			//} PRINT END
 			GO_TO L_5
@@ -186,7 +208,7 @@ L_6:
 	// WHILE LOOP BODY START {
 		// PRINT START {
 		SYSCALL
-		PRINT "Loop"
+		SYSPRINT "Loop"
 		SYSCALL
 		//} PRINT END
 		ADD T_37: T_35, 1 // T_35 + 1
@@ -210,7 +232,7 @@ L_7:
 		// PRINT START {
 		SYSCALL
 			ADD T_44: "Hola, mi nombre es ", T_43 // "Hola, mi nombre es " + T_43
-		PRINT T_44
+		SYSPRINT T_44
 		SYSCALL
 		//} PRINT END
 	RETURN
@@ -236,7 +258,7 @@ L_11: // saludar
 	// PRINT START {
 	SYSCALL
 		ADD T_50: "Hola, mi nombre es ", T_49 // "Hola, mi nombre es " + T_49
-	PRINT T_50
+	SYSPRINT T_50
 	SYSCALL
 	//} PRINT END
 RETURN
@@ -258,7 +280,7 @@ RETURN
 			ADD T_57: T_47, " esta estudiando en " // T_47 + " esta estudiando en "
 			ADD T_58: T_57, T_55 // T_57 + T_55
 			ADD T_59: T_58, " grado." // T_58 + " grado."
-		PRINT T_59
+		SYSPRINT T_59
 		SYSCALL
 		//} PRINT END
 	RETURN
@@ -271,6 +293,63 @@ RETURN
 	CALL L_12
 //} INIT CLASS
 CALL L_11 // Calling function with NO params
-CALL L_13 // Calling function with NO params</pre></td>
-	</tr>
-</table>
+CALL L_13 // Calling function with NO params
+				</pre></td>
+			</tr>
+		</table>
+		<script>
+
+			const a_highlightingRules = [
+				{ pattern: /\b(IF|GO_TO|LINK_BACK|IF_NOT|SYSCALL|SYSPRINT|RETURN|CALL)\b/g, cssClass: 'control' },
+				{ pattern: /\b(true|false|nil|this)\b/g, cssClass: 'user_keywords' },
+				{ pattern: /\b(ADD|SUB|MUL|DIV|MOD|AND|OR|NOT|EQ|NEQ|LEQ|GEQ|LT|GT)\b/g, cssClass: 'operation' },
+				{ pattern: /\bL_[0-9]*\b/g, cssClass: 'label' },
+				{ pattern: /\bT_[0-9]*\b/g, cssClass: 'temporal' },
+				{ pattern: /[\(\)\[\]\{\}]/g, cssClass: 'brackets' },
+				{ pattern: /\b[-+]?[0-9]+[uU]?\b/g, cssClass: 'integers' },
+				{ pattern: /\b[-+]?([0-9]*\.[0-9]+|[0-9]+\.)([eE][-+]?[0-9]+)?[fF]?\b/g, cssClass: 'floats' },
+				{ pattern: /"([^"\\]|\\.)*"|'([^'\\]|\\.)*'/g, cssClass: 'strings' },
+				{ pattern: /(\/\/[^\n]*|\/\*.*?\*\/)/g, cssClass: 'comments' }
+			];
+			const b_highlightingRules = [
+				{ pattern: /\b(float|int|uint|bool|class|struct|const|true|false)\b/g, cssClass: 'user_keywords' },
+				{ pattern: /\b(if|else|else if|while|for|return|switch|case|break|continue)\b/g, cssClass: 'control' },
+				{ pattern: /\b(fun|print|init|var)\b/g, cssClass: 'builtinFunctions' },
+				{ pattern: /\bsuper\b/g, cssClass: 'builtinClasses' },
+				{ pattern: /[\(\)\[\]\{\}]/g, cssClass: 'brackets' },
+				{ pattern: /\b[-+]?[0-9]+[uU]?\b/g, cssClass: 'integers' },
+				{ pattern: /\b[-+]?([0-9]*\.[0-9]+|[0-9]+\.)([eE][-+]?[0-9]+)?[fF]?\b/g, cssClass: 'floats' },
+				{ pattern: /"([^"\\]|\\.)*"|'([^'\\]|\\.)*'/g, cssClass: 'strings' },
+				{ pattern: /(\/\/[^\n]*|\/\*.*?\*\/)/g, cssClass: 'comments' }
+			]
+
+			window.onload = function() {
+				highlightCode();
+			}
+			function highlightCode() {
+				{
+					const codeElement = document.getElementById('CI');
+					let codeText = codeElement.textContent;
+
+					// Apply each highlighting rule
+					a_highlightingRules.forEach(rule => {
+						codeText = codeText.replace(rule.pattern, match => `<span class=${rule.cssClass}>${match}</span>`);
+					});
+
+					codeElement.innerHTML = codeText; // Update HTML with the highlighted code
+				}
+				{
+					const codeElement = document.getElementById('Code');
+					let codeText = codeElement.textContent;
+
+					// Apply each highlighting rule
+					b_highlightingRules.forEach(rule => {
+						codeText = codeText.replace(rule.pattern, match => `<span class=${rule.cssClass}>${match}</span>`);
+					});
+
+					codeElement.innerHTML = codeText; // Update HTML with the highlighted code
+				}
+			}
+		</script>
+	</body>
+</html>

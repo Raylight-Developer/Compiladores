@@ -454,7 +454,7 @@ class TAC_Generator():
 			pass
 
 		elif isinstance(node, ANT_SuperCall):
-			print("SUPER")
+			pass
 
 		elif isinstance(node, ANT_Primary): # Can only be called from within a call
 			if node.NUMBER:
