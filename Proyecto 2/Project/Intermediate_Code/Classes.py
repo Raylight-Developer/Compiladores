@@ -134,7 +134,7 @@ class ANT_Assignment:
 			if self.IDENTIFIER:
 				if self.assignment:
 					return self.call + "." + self.IDENTIFIER + self.assignment
-				return self.call + "." + self.IDENTIFI
+				return self.call + "." + self.IDENTIFIER
 			return self.call
 		elif self.logic_or:
 			return self.logic_or

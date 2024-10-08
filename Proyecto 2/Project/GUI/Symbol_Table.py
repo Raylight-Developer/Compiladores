@@ -98,3 +98,7 @@ class Symbol_Table(QTableWidget):
 					self.setItem(row, 5, QTableWidgetItem(str(value.scope_depth_count) if not value.member else "-"))
 					self.setItem(row, 6, QTableWidgetItem(str(value.scope_depth) if not value.member else "-"))
 					break
+
+	def clean(self):
+		self.clearContents()
+		self.setRowCount(0)

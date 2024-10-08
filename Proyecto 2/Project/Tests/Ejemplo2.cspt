@@ -1,56 +1,56 @@
 class Producto {
-  init(nombre, precio, cantidad) {
-    this.nombre = nombre;
-    this.precio = precio;
-    this.cantidad = cantidad;
-  }
+	init(nombre, precio, cantidad) {
+		this.nombre = nombre;
+		this.precio = precio;
+		this.cantidad = cantidad;
+	}
 
-  calcularValorInventario() {
-    var valor = this.precio * this.cantidad;
-    print "Valor del inventario de " + this.nombre + ": " + valor;
-    return valor;
-  }
+	calcularValorInventario() {
+		var valor = this.precio * this.cantidad;
+		print "Valor del inventario de " + this.nombre + ": " + valor;
+		return valor;
+	}
 
-  vender(cantidadVendida) {
-    if (cantidadVendida <= this.cantidad) {
-      this.cantidad = this.cantidad - cantidadVendida;
-      print "Se vendieron " + cantidadVendida + " unidades de " + this.nombre;
-    } else {
-      print "No hay suficiente inventario para vender " + cantidadVendida + " unidades de " + this.nombre;
-    }
-  }
+	vender(cantidadVendida) {
+		if (cantidadVendida <= this.cantidad) {
+			this.cantidad = this.cantidad - cantidadVendida;
+			print "Se vendieron " + cantidadVendida + " unidades de " + this.nombre;
+		} else {
+			print "No hay suficiente inventario para vender " + cantidadVendida + " unidades de " + this.nombre;
+		}
+	}
 
-  restock(cantidadAgregada) {
-    this.cantidad = this.cantidad + cantidadAgregada;
-    print "Se añadieron " + cantidadAgregada + " unidades de " + this.nombre + " al inventario.";
-  }
+	restock(cantidadAgregada) {
+		this.cantidad = this.cantidad + cantidadAgregada;
+		print "Se añadieron " + cantidadAgregada + " unidades de " + this.nombre + " al inventario.";
+	}
 }
 
 class Categoria {
-  init(nombre) {
-    this.nombre = nombre;
-    this.productos = [];
-  }
+	init(nombre) {
+		this.nombre = nombre;
+		this.productos = [];
+	}
 
-  agregarProducto(producto) {
-    this.productos.add(producto);
-    print "Producto " + producto.nombre + " añadido a la categoría " + this.nombre;
-  }
+	agregarProducto(producto) {
+		this.productos.add(producto);
+		print "Producto " + producto.nombre + " añadido a la categoría " + this.nombre;
+	}
 
-  // Método recursivo para calcular el valor total de la categoría
-  calcularValorTotalRecursivo(indice) {
-    if (indice >= this.productos.length) {
-      return 0;
-    } else {
-      var valorProducto = this.productos[indice].calcularValorInventario();
-      return valorProducto + this.calcularValorTotalRecursivo(indice + 1);
-    }
-  }
+	// Método recursivo para calcular el valor total de la categoría
+	calcularValorTotalRecursivo(indice) {
+		if (indice >= this.productos.length) {
+			return 0;
+		} else {
+			var valorProducto = this.productos[indice].calcularValorInventario();
+			return valorProducto + this.calcularValorTotalRecursivo(indice + 1);
+		}
+	}
 
-  mostrarValorTotal() {
-    var valorTotal = this.calcularValorTotalRecursivo(0);
-    print "El valor total de la categoría " + this.nombre + " es: " + valorTotal;
-  }
+	mostrarValorTotal() {
+		var valorTotal = this.calcularValorTotalRecursivo(0);
+		print "El valor total de la categoría " + this.nombre + " es: " + valorTotal;
+	}
 }
 
 // Ejemplos de uso
@@ -69,4 +69,3 @@ smartphone.restock(10);
 
 // Calcular el valor total
 electronica.mostrarValorTotal();
-

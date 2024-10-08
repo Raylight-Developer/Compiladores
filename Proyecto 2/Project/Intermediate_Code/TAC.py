@@ -469,11 +469,18 @@ class TAC_Generator():
 							self.add() << NL() << "CALL " << function.ID
 							self.deb() << " // Calling function with params " << str(params)
 						elif call_b.empty:
-							variable = self.scope.lookupVariable(node.primary.IDENTIFIER)
-							function = variable.instance.lookupFunction(call_a.IDENTIFIER)
-							res = function.return_ID
-							self.add() << NL() << "CALL " << function.ID
-							self.deb() << " // Calling function with NO params"
+							primary = self.visit(node.primary)
+							if primary == 'this':
+								function = self.cls.lookupFunction(call_a.IDENTIFIER)
+								res = function.return_ID
+								self.add() << NL() << "CALL " << function.ID
+								self.deb() << " // Calling function with NO params"
+							else:
+								variable = self.scope.lookupVariable(node.primary.IDENTIFIER, self.cls)
+								function = variable.instance.lookupFunction(call_a.IDENTIFIER)
+								res = function.return_ID
+								self.add() << NL() << "CALL " << function.ID
+								self.deb() << " // Calling function with NO params"
 						res = call_a.IDENTIFIER
 					elif call_a.expression: # Calling the index of an array [expression]
 						res = "TODO"

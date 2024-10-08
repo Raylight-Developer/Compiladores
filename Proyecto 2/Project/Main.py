@@ -18,60 +18,7 @@ class Display(QMainWindow):
 		self.code_input.setTabStopDistance(40)
 		self.code_input.setPlaceholderText("Code to compile...")
 		Syntax_Highlighter(self.code_input.document())
-		self.code_input.setText((
-"""
-class Persona {
-	init(nombre, edad) {
-		this.nombre = nombre;
-		this.edad = edad;
-		this.color = "rojo";
-	}
-
-	saludar() {
-		print "Hola, mi nombre es " + this.nombre;
-	}
-
-	incrementarEdad(anos) {
-		this.edad = this.edad + anos;
-		print "Ahora tengo " + this.edad + " años.";
-	}
-}
-
-class Estudiante extends Persona {
-	init(nombre, edad, grado) {
-		super.init(nombre, edad);
-		this.grado = grado;
-	}
-
-	estudiar() {
-		print this.nombre + " está estudiando en " + this.grado + " grado.";
-	}
-
-	promedioNotas(nota1, nota2, nota3) {
-		var promedio = (nota1 + nota2 + nota3) / 3;
-		print "El promedio de " + this.nombre + " es " + promedio;
-	}
-}
-
-var nombre = "Erick";
-
-var juan = new Estudiante(nombre, 20, 3);
-juan.saludar();    // Salida: Hola, mi nombre es Erick
-juan.estudiar();   // Salida: Erick está estudiando en 3 grado
-juan.incrementarEdad(5);
-
-for (var i = 1; i <= 5; i = i + 1) {
-	if (i % 2 == 0) {
-		print i + " es par";
-	} else {
-		print i + " es impar";
-	}
-}
-
-// Expresión aritmética
-var resultado = (juan.edad * 2) + (5 - 3) / 2;
-print "Resultado de la expresión: " + resultado;
-""").strip())
+		self.code_input.setText(open("./Tests/Ejemplo1.cspt", "r", -1, "utf-8").read())
 		self.tac_output = Logger()
 		self.tac_output.setPlaceholderText("TAC code")
 		self.tac_highlight = TAC_Syntax_Highlighter(self.tac_output.document())
@@ -129,21 +76,17 @@ print "Resultado de la expresión: " + resultado;
 		self.compile()
 
 	def compile(self):
-		self.tac_output.clear()
-		self.sam_output.clear()
-		
 		self.tac_highlight = TAC_Syntax_Highlighter(self.tac_output.document())
 		self.sam_highlight = SAM_Syntax_Highlighter(self.sam_output.document())
 
-		self.sam_output.append("Compiling...\n{")
-		self.table_functions.clearContents()
-		self.table_variables.clearContents()
-		self.table_classes.clearContents()
-		self.table_functions.setRowCount(0)
-		self.table_variables.setRowCount(0)
-		self.table_classes.setRowCount(0)
+		self.tac_output.clear()
+		self.sam_output.clear()
+		self.table_functions.clean()
+		self.table_variables.clean()
+		self.table_classes.clean()
 
 #		try:
+#			self.sam_output.append("Compiling...\n{")
 #			lexer = CompiscriptLexer(InputStream(self.code_input.toPlainText()))
 #			token_stream = CommonTokenStream(lexer)
 #			parser = CompiscriptParser(token_stream)
