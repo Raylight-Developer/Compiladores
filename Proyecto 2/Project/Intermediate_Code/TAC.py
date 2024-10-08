@@ -355,12 +355,14 @@ class TAC_Generator():
 			self.var.instance = cls
 			self.deb() << NL() << "// INSTANTIATE CLASS " << cls.name << " {"
 			self.cls = cls
-			if cls.extends:
+			parent = cls
+			while parent.extends != None:
+				parent = parent.extends
 				self.parent_depth += 1
 				self.inc()
-				self.visit(cls.extends.code)
+				self.visit(parent.code)
 				self.dec()
-				self.parent_depth -= 1
+			self.parent_depth = 0
 			self.inc()
 			self.visit(cls.code)
 			self.dec()
