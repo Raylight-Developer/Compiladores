@@ -356,7 +356,7 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 				match: QRegularExpressionMatch = matchIterator.next()
 				self.setFormat(match.capturedStart(), match.capturedLength(), rule.format)
 
-class LOG_Syntax_Highlighter(QSyntaxHighlighter) :
+class SAM_Syntax_Highlighter(QSyntaxHighlighter) :
 	def __init__(self, parent: QTextDocument = None):
 		super().__init__(parent)
 

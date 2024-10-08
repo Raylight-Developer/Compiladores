@@ -50,16 +50,16 @@ class Tac_Class:
 		for member in self.member_functions:
 			if member.name == name:
 				return member
-		#if self.extends:
-		#	return self.extends.lookupFunction(name)
+		if self.extends:
+			return self.extends.lookupFunction(name)
 		return None
 
 	def lookupVariable(self, name: str):
 		for member in self.member_variables:
 			if member.name == name:
 				return member
-		#if self.extends:
-		#	return self.extends.lookupVariable(name)
+		if self.extends:
+			return self.extends.lookupVariable(name)
 		return None
 
 class Tac_Scope_Tracker:

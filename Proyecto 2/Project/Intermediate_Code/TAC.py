@@ -25,6 +25,7 @@ class TAC_Generator():
 		self.scope = Tac_Scope_Tracker()
 		self.program: ANT_Program = self.tree.visitProgram(program)
 
+		self.parent_depth = 0
 		self.cls: Tac_Class = None
 		self.fun: Tac_Function = None
 		self.var: Tac_Variable = None
@@ -64,10 +65,7 @@ class TAC_Generator():
 			self.scope.declareClass(cls)
 			cls.code = node.class_body
 			if node.extends:
-				self.cls = cls
 				cls.extends = self.scope.lookupClass(node.extends)
-				self.visit(cls.extends.code)
-				self.cls = None
 
 		elif isinstance(node, ANT_ClassBody):
 			for member in node.class_members:
@@ -355,8 +353,14 @@ class TAC_Generator():
 			cls = self.scope.lookupClass(node.IDENTIFIER)
 
 			self.var.instance = cls
-			self.cls = cls
 			self.deb() << NL() << "// INSTANTIATE CLASS " << cls.name << " {"
+			self.cls = cls
+			if cls.extends:
+				self.parent_depth += 1
+				self.inc()
+				self.visit(cls.extends.code)
+				self.dec()
+				self.parent_depth -= 1
 			self.inc()
 			self.visit(cls.code)
 			self.dec()
@@ -375,7 +379,7 @@ class TAC_Generator():
 				self.deb() << " // Calling " << cls.name << ".init function with params " << str(params)
 			else:
 				self.add() << NL() << "CALL " << cls.initializer.ID
-				self.deb() << " // Calling " << cls.name << ".init function with NOm params"
+				self.deb() << " // Calling " << cls.name << ".init function with NO params"
 				
 			self.dec()
 			self.deb() << NL() << "//} INIT CLASS"
@@ -463,7 +467,8 @@ class TAC_Generator():
 							self.add() << NL() << "CALL " << function.ID
 							self.deb() << " // Calling function with params " << str(params)
 						elif call_b.empty:
-							function = self.scope.lookupVariable(node.primary.IDENTIFIER).instance.lookupFunction(call_a.IDENTIFIER)
+							variable = self.scope.lookupVariable(node.primary.IDENTIFIER)
+							function = variable.instance.lookupFunction(call_a.IDENTIFIER)
 							res = function.return_ID
 							self.add() << NL() << "CALL " << function.ID
 							self.deb() << " // Calling function with NO params"
@@ -546,10 +551,20 @@ class TAC_Generator():
 			fun.ID = self.new_label()
 			fun.name = node.IDENTIFIER
 			if self.cls:
-				fun.member = self.cls
-				self.cls.member_functions.append(fun)
-				if fun.name == "init":
-					self.cls.initializer = fun
+				parent = self.cls
+				if self.parent_depth > 0:
+					for i in range(self.parent_depth):
+						parent = parent.extends
+
+						fun.member = parent
+						parent.member_functions.append(fun)
+						if fun.name == "init":
+							parent.initializer = fun
+				else:
+					fun.member = self.cls
+					self.cls.member_functions.append(fun)
+					if fun.name == "init":
+						self.cls.initializer = fun
 			else:
 				self.scope.declareFunction(fun)
 			self.fun = fun

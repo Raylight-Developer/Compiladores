@@ -1,0 +1,51 @@
+class Persona {
+  init(nombre, edad) {
+    this.nombre = nombre;
+    this.edad = edad;
+    this.color = "rojo";
+  }
+
+  saludar() {
+    print "Hola, mi nombre es " + this.nombre;
+  }
+
+  incrementarEdad(anos) {
+    this.edad = this.edad + anos;
+    print "Ahora tengo " + this.edad + " años.";
+  }
+}
+
+class Estudiante extends Persona {
+  init(nombre, edad, grado) {
+    super.init(nombre, edad);
+    this.grado = grado;
+  }
+
+  estudiar() {
+    print this.nombre + " está estudiando en " + this.grado + " grado.";
+  }
+
+  promedioNotas(nota1, nota2, nota3) {
+    var promedio = (nota1 + nota2 + nota3) / 3;
+    print "El promedio de " + this.nombre + " es " + promedio;
+  }
+}
+
+var nombre = "Erick";
+
+var juan = new Estudiante(nombre, 20, 3);
+juan.saludar();    // Salida: Hola, mi nombre es Erick
+juan.estudiar();   // Salida: Erick está estudiando en 3 grado
+juan.incrementarEdad(5);
+
+for (var i = 1; i <= 5; i = i + 1) {
+  if (i % 2 == 0) {
+    print i + " es par";
+  } else {
+    print i + " es impar";
+  }
+}
+
+// Expresión aritmética
+var resultado = (juan.edad * 2) + (5 - 3) / 2;
+print "Resultado de la expresión: " + resultado;

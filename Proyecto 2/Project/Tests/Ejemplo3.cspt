@@ -1,0 +1,11 @@
+fun factorial(n) {
+  if (n <= 1) {
+    return 1;
+  } else {
+    return n * factorial(n - 1);
+  }
+}
+
+var numero = 5;
+var resultado = factorial(numero);
+print "El factorial de " + numero + " es: " + resultado;

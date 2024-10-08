@@ -17,29 +17,48 @@ class Display(QMainWindow):
 		self.code_input = QTextEdit()
 		self.code_input.setTabStopDistance(40)
 		self.code_input.setPlaceholderText("Code to compile...")
-		self.highlighter = Syntax_Highlighter(self.code_input.document())
+		Syntax_Highlighter(self.code_input.document())
 		self.code_input.setText((
 """
-fun sumar() {
-	return 10 + 20;
+class Persona {
+	init(nombre, edad) {
+		this.nombre = nombre;
+		this.edad = edad;
+		this.color = "rojo";
+	}
+
+	saludar() {
+		print "Hola, mi nombre es " + this.nombre;
+	}
+
+	incrementarEdad(anos) {
+		this.edad = this.edad + anos;
+		print "Ahora tengo " + this.edad + " años.";
+	}
 }
-var sum = sumar();
 
-var peko;
-peko = 10;
+class Estudiante extends Persona {
+	init(nombre, edad, grado) {
+		super.init(nombre, edad);
+		this.grado = grado;
+	}
 
-fun saludar(val) {
-	print "Hola, mi nombre es " + val;
+	estudiar() {
+		print this.nombre + " está estudiando en " + this.grado + " grado.";
+	}
+
+	promedioNotas(nota1, nota2, nota3) {
+		var promedio = (nota1 + nota2 + nota3) / 3;
+		print "El promedio de " + this.nombre + " es " + promedio;
+	}
 }
-saludar("Alejandro");
 
-var nombre = "Alejandro_var";
-saludar(nombre);
+var nombre = "Erick";
 
-fun estudiar() {
-	print " esta estudiando en grado.";
-}
-estudiar();
+var juan = new Estudiante(nombre, 20, 3);
+juan.saludar();    // Salida: Hola, mi nombre es Erick
+juan.estudiar();   // Salida: Erick está estudiando en 3 grado
+juan.incrementarEdad(5);
 
 for (var i = 1; i <= 5; i = i + 1) {
 	if (i % 2 == 0) {
@@ -49,68 +68,18 @@ for (var i = 1; i <= 5; i = i + 1) {
 	}
 }
 
-var testa = 3;
-var testb = "3";
-var menor = 3 < 5; // true
-var mayorIgual = 10 >= 10; // true
-var igual = 1 == 1; // true
-var diferente = "a" != "b" ; // true
-var y = true and false ; // false
-var o = true or false or true or false; // true
-var no = ! true ; // false
-var min = 0;
-var max = 10;
-var promedio = ( min + max ) / 2;
-var string = "Hola Mundo";
-
-var i = 0;
-while (i < 10) {
-	print "Loop";
-	i = i +1;
-}
-
-class Persona {
-	init(nombre, edad) {
-		this.nombre = nombre;
-		this.edad = edad;
-		this.color = "rojo";
-	}
-
-	saludar() {
-		print "Hola, mi nombre es " + this.color;
-	}
-}
-
-var persona = new Persona("Alejandro", 10);
-persona.saludar();
-
-class Estudiante extends Persona {
-	init(nombre, edad, grado) {
-		super.init(nombre, edad);
-		this.grado = grado;
-		this.edad = 10;
-	}
-
-	estudiar() {
-		print this.nombre + " esta estudiando en " + this.grado + " grado.";
-	}
-}
-
-var juan = new Estudiante(nombre, 20, 3);
-juan.saludar();    // Salida: Hola, mi nombre es Alejandro
-juan.estudiar();   // Salida: Juan esta estudiando en 3 grado
-
-var edad_juan = juan.edad;
-
+// Expresión aritmética
+var resultado = (juan.edad * 2) + (5 - 3) / 2;
+print "Resultado de la expresión: " + resultado;
 """).strip())
-		self.tac_highlighter = None
 		self.tac_output = Logger()
 		self.tac_output.setPlaceholderText("TAC code")
+		self.tac_highlight = TAC_Syntax_Highlighter(self.tac_output.document())
 
-		self.log = Logger()
-		self.log.setPlaceholderText("Log")
-		self.log.setTabStopDistance(10)
-		LOG_Syntax_Highlighter(self.log.document())
+		self.sam_output = Logger()
+		self.sam_output.setPlaceholderText("SAM output")
+		self.sam_output.setTabStopDistance(10)
+		self.sam_highlight = SAM_Syntax_Highlighter(self.sam_output.document())
 
 		self.tables = QTabWidget()
 
@@ -130,7 +99,7 @@ var edad_juan = juan.edad;
 		tabcontainer.setLayout(tablayout)
 
 		sub = QSplitter(Qt.Orientation.Vertical)
-		sub.addWidget(self.log)
+		sub.addWidget(self.sam_output)
 		sub.addWidget(tabcontainer)
 
 		self.main_splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -160,12 +129,13 @@ var edad_juan = juan.edad;
 		self.compile()
 
 	def compile(self):
-		code = self.code_input.toPlainText()
 		self.tac_output.clear()
-		self.tac_highlighter = None
-		self.log.clear()
-	
-		self.log.append("Compiling...\n{")
+		self.sam_output.clear()
+		
+		self.tac_highlight = TAC_Syntax_Highlighter(self.tac_output.document())
+		self.sam_highlight = SAM_Syntax_Highlighter(self.sam_output.document())
+
+		self.sam_output.append("Compiling...\n{")
 		self.table_functions.clearContents()
 		self.table_variables.clearContents()
 		self.table_classes.clearContents()
@@ -173,53 +143,66 @@ var edad_juan = juan.edad;
 		self.table_variables.setRowCount(0)
 		self.table_classes.setRowCount(0)
 
+#		try:
+#			lexer = CompiscriptLexer(InputStream(self.code_input.toPlainText()))
+#			token_stream = CommonTokenStream(lexer)
+#			parser = CompiscriptParser(token_stream)
+#			program = parser.program()
+#			sma = Semantic_Analyzer(self.table_classes, self.table_functions, self.table_variables, program)
+#
+#			self.table_classes.resizeColumnsToContents()
+#			self.table_functions.resizeColumnsToContents()
+#			self.table_variables.resizeColumnsToContents()
+#
+#			if sma.output.error:
+#				self.sam_output.append("\t" + str(sma.output).strip())
+#				self.sam_output.append("}" + f"\n{R} Compilation Failed")
+#				self.main_splitter.setSizes([self.main_splitter.sizes()[0], self.main_splitter.sizes()[1], 500])
+#				QTimer.singleShot(100, lambda: (
+#					self.sam_output.verticalScrollBar().setValue(0),
+#					self.sam_output.horizontalScrollBar().setValue(0),
+#					self.tac_output.verticalScrollBar().setValue(self.tac_output.verticalScrollBar().maximum()),
+#					self.tac_output.horizontalScrollBar().setValue(0)
+#				))
+#			else:
+#				self.sam_output.append("\t" + str(sma.output).strip())
+#				self.sam_output.append("}" + f"\n{G} Comiplation Succesful")
+#				QTimer.singleShot(100, lambda: (
+#					self.sam_output.verticalScrollBar().setValue(0),
+#					self.sam_output.horizontalScrollBar().setValue(0)
+#				))
+#				self.main_splitter.setSizes([self.main_splitter.sizes()[0], self.main_splitter.sizes()[1], 0])
+#
+#
+#		except Exception as e:
+#			self.sam_highlight = Python_Syntax_Highlighter(self.sam_output.document())
+#			self.sam_output.append("\t" + str(traceback.format_exc()).strip())
+#			self.sam_output.append("}" + f"\n{R} Compilation Failed")
+#			self.sam_output.append(str(e))
+#			self.main_splitter.setSizes([self.main_splitter.sizes()[0], self.main_splitter.sizes()[1], 500])
+#			QTimer.singleShot(100, lambda: (
+#				self.sam_output.verticalScrollBar().setValue(self.sam_output.verticalScrollBar().maximum()),
+#				self.sam_output.horizontalScrollBar().setValue(0)
+#			))
+
 		try:
-			lexer = CompiscriptLexer(InputStream(code))
+			lexer = CompiscriptLexer(InputStream(self.code_input.toPlainText()))
 			token_stream = CommonTokenStream(lexer)
 			parser = CompiscriptParser(token_stream)
 			program = parser.program()
-			sma = Semantic_Analyzer(self.table_classes, self.table_functions, self.table_variables, program)
 			tac = TAC_Generator(program, INFO)
-
-			self.table_classes.resizeColumnsToContents()
-			self.table_functions.resizeColumnsToContents()
-			self.table_variables.resizeColumnsToContents()
-
-			if sma.output.error:
-				self.log.append("\t" + str(sma.output).strip())
-				self.log.append("}" + f"\n{R} Compilation Failed")
-				self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
-				self.tac_output.clear()
-				self.main_splitter.setSizes([self.main_splitter.sizes()[0], self.main_splitter.sizes()[1], 500])
-				QTimer.singleShot(100, lambda: self.resizeErrorWidgets())
-			else:
-				self.log.append("\t" + str(sma.output).strip())
-				self.log.append("}" + f"\n{G} Comiplation Succesful")
-				self.tac_highlighter = TAC_Syntax_Highlighter(self.tac_output.document())
-				self.tac_output.append(str(tac.output).strip())
-				QTimer.singleShot(100, lambda: self.resizeWidgets())
-				self.main_splitter.setSizes([self.main_splitter.sizes()[0], self.main_splitter.sizes()[1], 0])
-
+			self.tac_output.append(str(tac.output).strip())
+			QTimer.singleShot(100, lambda: (
+				self.tac_output.verticalScrollBar().setValue(0),
+				self.tac_output.horizontalScrollBar().setValue(0)
+			))
 		except Exception as e:
-			self.log.append("\t" + str(traceback.format_exc()).strip())
-			self.log.append("}" + f"\n{R} Compilation Failed")
-			self.log.append(str(e))
-			self.tac_highlighter = Python_Syntax_Highlighter(self.tac_output.document())
-			self.tac_output.clear()
-			self.main_splitter.setSizes([self.main_splitter.sizes()[0], self.main_splitter.sizes()[1], 500])
-			QTimer.singleShot(100, lambda: self.resizeErrorWidgets())
-
-	def resizeWidgets(self):
-		self.log.verticalScrollBar().setValue(0)
-		self.log.horizontalScrollBar().setValue(0)
-		self.tac_output.verticalScrollBar().setValue(0)
-		self.tac_output.horizontalScrollBar().setValue(0)
-
-	def resizeErrorWidgets(self):
-		self.log.verticalScrollBar().setValue(0)
-		self.log.horizontalScrollBar().setValue(0)
-		self.tac_output.verticalScrollBar().setValue(self.tac_output.verticalScrollBar().maximum())
-		self.tac_output.horizontalScrollBar().setValue(0)
+			self.tac_highlight = Python_Syntax_Highlighter(self.tac_output.document())
+			self.tac_output.append(str(traceback.format_exc()).strip())
+			QTimer.singleShot(100, lambda: (
+				self.tac_output.verticalScrollBar().setValue(self.tac_output.verticalScrollBar().maximum()),
+				self.tac_output.horizontalScrollBar().setValue(0)
+			))
 
 app = QApplication(sys.argv)
 font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")
