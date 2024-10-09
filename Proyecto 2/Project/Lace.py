@@ -52,6 +52,8 @@ class Lace:
 			self.data.write(val.getvalue())
 		elif isinstance(val, bool):
 			self.data.write("true" if val else "false")
+		else:
+			self.data.write(str(val))
 		return self
 
 	def __iadd__(self, value = 1):

@@ -11,6 +11,7 @@ class Tac_Variable:
 		self.member : Tac_Class = None
 
 		self.instance : Tac_Class = None
+		self.array: List[str] = []
 
 class Tac_Function_Parameter:
 	def __init__(self):

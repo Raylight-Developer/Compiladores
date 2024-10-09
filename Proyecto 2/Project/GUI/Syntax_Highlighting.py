@@ -275,7 +275,8 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 		self.operation.setForeground(QColor(100, 255, 120))
 		for pattern in [
 			"ADD", "SUB", "MUL", "DIV", "MOD",
-			"AND", "OR", "NOT", "EQ", "NEQ", "LEQ", "GEQ","LT", "GT"
+			"AND", "OR", "NOT", "EQ", "NEQ", "LEQ", "GEQ","LT", "GT",
+			"ALLOCATE", "MOV"
 		]:
 			rule = HighlightingRule(
 				QRegularExpression(r"\b" + pattern + r"\b"),
@@ -296,6 +297,14 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 		rule = HighlightingRule(
 			QRegularExpression(r"\bT_[0-9]*\b"),
 			self.temporal
+		)
+		self.highlightingRules.append(rule)
+
+		self.internal = QTextCharFormat()
+		self.internal.setForeground(QColor(120, 220, 220))
+		rule = HighlightingRule(
+			QRegularExpression(r"\b(IT_|LT_)\S*\b"),
+			self.internal
 		)
 		self.highlightingRules.append(rule)
 	

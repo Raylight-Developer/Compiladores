@@ -4,7 +4,7 @@ from GUI.Syntax_Highlighting import *
 from Analyzer.Semantic_Analyzer import *
 from Intermediate_Code.TAC import *
 
-INFO = True
+TAC_INFO = False
 
 class Display(QMainWindow):
 	def __init__(self):
@@ -18,7 +18,7 @@ class Display(QMainWindow):
 		self.code_input.setTabStopDistance(40)
 		self.code_input.setPlaceholderText("Code to compile...")
 		Syntax_Highlighter(self.code_input.document())
-		self.code_input.setText(open("./Tests/Ejemplo1.cspt", "r", -1, "utf-8").read())
+		self.code_input.setText(open("./Tests/Ejemplo4.cspt", "r", -1, "utf-8").read())
 		self.tac_output = Logger()
 		self.tac_output.setPlaceholderText("TAC code")
 		self.tac_highlight = TAC_Syntax_Highlighter(self.tac_output.document())
@@ -133,7 +133,7 @@ class Display(QMainWindow):
 			token_stream = CommonTokenStream(lexer)
 			parser = CompiscriptParser(token_stream)
 			program = parser.program()
-			tac = TAC_Generator(program, INFO)
+			tac = TAC_Generator(program, TAC_INFO)
 			self.tac_output.append(str(tac.output).strip())
 			QTimer.singleShot(100, lambda: (
 				self.tac_output.verticalScrollBar().setValue(0),

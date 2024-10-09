@@ -1,24 +1,24 @@
 class CajaRegistradora {
-  init(impuesto) {
-    this.impuesto = impuesto;
-    this.total = 0;
-  }
+	init(impuesto) {
+		this.impuesto = impuesto;
+		this.total = 0;
+	}
 
-  agregarProducto(precio) {
-    this.total = this.total + precio;
-    print "Producto añadido con precio: " + precio;
-  }
+	agregarProducto(precio) {
+		this.total = this.total + precio;
+		print "Producto añadido con precio: " + precio;
+	}
 
-  calcularTotalConImpuesto() {
-    var totalConImpuesto = this.total + (this.total * this.impuesto / 100);
-    print "El total con impuesto es: " + totalConImpuesto;
-    return totalConImpuesto;
-  }
+	calcularTotalConImpuesto() {
+		var totalConImpuesto = this.total + (this.total * this.impuesto / 100);
+		print "El total con impuesto es: " + totalConImpuesto;
+		return totalConImpuesto;
+	}
 
-  reiniciar() {
-    this.total = 0;
-    print "La caja registradora se ha reiniciado.";
-  }
+	reiniciar() {
+		this.total = 0;
+		print "La caja registradora se ha reiniciado.";
+	}
 }
 
 // Uso de la caja registradora

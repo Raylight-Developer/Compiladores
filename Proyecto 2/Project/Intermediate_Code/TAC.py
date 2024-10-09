@@ -34,6 +34,8 @@ class TAC_Generator():
 		self.output = Lace()
 		self.fallback = Lace()
 
+		self.predefined = { "array": False }
+
 		self.visit(self.program)
 
 	def new_temp(self):
@@ -345,9 +347,41 @@ class TAC_Generator():
 					left = res
 			return res
 
+			"""
+			LT_INIT_ARRAY:
+				ALLOCATE IT_ARRAY_PTR, IT_ARRAY_CAPACITY
+				RETURN
+
+			LT_APPEND_ARRAY:
+				ALLOCATE IT_ARRAY_PTR, IT_ARRAY_END
+				MOV [IT_ARRAY_PTR + IT_ARRAY_END], IT_ARRAY_NEW_ELEMENT
+				RETURN
+			"""
 		elif isinstance(node, ANT_Array):
+			self.predefineArrayCode()
+			array = []
+			ID = self.new_temp()
 			for expression in node.expressions:
-				self.visit(expression)
+				array.append(self.visit(expression))
+			self.deb() << NL() << "// ARRAY START {"
+			self.inc()
+			self.add() << NL() << "IT_ARRAY_CAPACITY: " << len(array)
+			self.add() << NL() << "IT_ARRAY_PTR: " << ID
+			self.add() << NL() << "CALL LT_INIT_ARRAY"
+			self.deb() << NL() << "// ELEMENT START {"
+			self.inc()
+			for i, element in enumerate(array):
+				self.add() << NL() << f"MOV [IT_ARRAY_PTR + {i}], " << element
+			self.dec()
+			self.deb() << NL() << "//} ELEMENT END"
+			self.dec()
+			self.deb() << NL() << "//} ARRAY END"
+
+			# Append to:
+			#self.add() << NL() << "IT_ARRAY_END: " << len(array)
+			#self.add() << NL() << "IT_ARRAY_NEW_ELEMENT: " << array[-1]
+			#self.add() << NL() << "CALL LT_APPEND_ARRAY"
+			return ID
 
 		elif isinstance(node, ANT_Instantiation):
 			cls = self.scope.lookupClass(node.IDENTIFIER)
@@ -646,3 +680,19 @@ class TAC_Generator():
 
 	def dec(self):
 		self.output -= 1
+
+	def predefineArrayCode(self):
+		if not self.predefined["array"]:
+			val = copy.deepcopy(self.output)
+			self.output.clear()
+			self.output << """LT_INIT_ARRAY:
+	ALLOCATE IT_ARRAY_PTR, IT_ARRAY_CAPACITY
+	RETURN
+
+LT_APPEND_ARRAY:
+	ALLOCATE IT_ARRAY_PTR, IT_ARRAY_END
+	MOV [IT_ARRAY_PTR + IT_ARRAY_END], IT_ARRAY_NEW_ELEMENT
+	RETURN
+"""
+			self.output << NL() << val.data
+			self.predefined["array"] = True
