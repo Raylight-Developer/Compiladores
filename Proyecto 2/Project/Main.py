@@ -18,7 +18,7 @@ class Display(QMainWindow):
 		self.code_input.setTabStopDistance(40)
 		self.code_input.setPlaceholderText("Code to compile...")
 		Syntax_Highlighter(self.code_input.document())
-		self.code_input.setText(open("./Tests/Ejemplo4.cspt", "r", -1, "utf-8").read())
+		self.code_input.setText(open("./Tests/Ejemplo2.cspt", "r", -1, "utf-8").read())
 		self.tac_output = Logger()
 		self.tac_output.setPlaceholderText("TAC code")
 		self.tac_highlight = TAC_Syntax_Highlighter(self.tac_output.document())

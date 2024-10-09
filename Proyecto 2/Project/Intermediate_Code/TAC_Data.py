@@ -12,6 +12,7 @@ class Tac_Variable:
 
 		self.instance : Tac_Class = None
 		self.array: List[str] = []
+		self.length: int = None
 
 class Tac_Function_Parameter:
 	def __init__(self):
@@ -116,4 +117,5 @@ class Tac_Scope_Tracker:
 						return member
 			if f"var;{name}" in scope:
 				return scope[f"var;{name}"]
+		return None
 		raise Exception(f"Variable '{name}' not in Scope {cls.name if cls else 'Global'}")

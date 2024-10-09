@@ -169,7 +169,10 @@ class TAC_Generator():
 			self.deb() << NL() << "//} PRINT END"
 
 		elif isinstance(node, ANT_ReturnStmt):
-			return self.visit(node.expression)
+			expr = self.visit(node.expression)
+			self.add() << NL() << self.fun.return_ID << ": " << expr
+			self.deb() << " // return val"
+			#self.add() << NL() << "RETURN"
 
 		elif isinstance(node, ANT_WhileStmt):
 			start = self.new_label()
@@ -348,11 +351,13 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Array):
 			array = []
 			ID = self.new_temp()
+			length = self.new_temp()
 			for expression in node.expressions:
 				array.append(self.visit(expression))
 			self.deb() << NL() << "// ARRAY START {"
 			self.inc()
-			self.add() << NL() << "ALLOCATE " << ID << ", " << len(array)
+			self.add() << NL() << length << ": " << len(array)
+			self.add() << NL() << "ALLOCATE " << ID << ", " << length
 			self.deb() << NL() << "// ELEMENT START {"
 			self.inc()
 			for i, element in enumerate(array):
@@ -362,6 +367,7 @@ class TAC_Generator():
 			self.dec()
 			self.deb() << NL() << "//} ARRAY END"
 			self.var.array = array
+			self.var.length = length
 			return ID
 
 		elif isinstance(node, ANT_Instantiation):
@@ -434,7 +440,13 @@ class TAC_Generator():
 							res = self.scope.lookupVariable(call.IDENTIFIER, self.cls).ID
 						else:
 							var = self.scope.lookupVariable(node.primary.IDENTIFIER, self.cls)
-							res = var.instance.lookupVariable(call.IDENTIFIER).ID
+							if call.IDENTIFIER == "length":
+								if var.length:
+									res = var.length
+								else:
+									res = var.instance.lookupVariable(call.IDENTIFIER).ID
+							else:
+								res = var.instance.lookupVariable(call.IDENTIFIER).ID
 					elif call.expression: # Calling the index of an array [expression]
 						expression = self.visit(call.expression)
 						self.add() << NL() << "IT_ADDR: " << primary << ", [" << expression << "]"
@@ -497,7 +509,7 @@ class TAC_Generator():
 							res = function.return_ID
 							self.add() << NL() << "CALL " << function.ID
 							self.deb() << " // Calling function with NO params"
-						res = call_a.IDENTIFIER
+						#res = call_a.IDENTIFIER
 					elif call_a.expression: # Calling the index of an array [expression]
 						res = "TODO"
 					elif call_a.arguments: # Calling Function with params
@@ -558,8 +570,10 @@ class TAC_Generator():
 			elif node.IDENTIFIER:
 				if self.fun and self.fun.lookupParameter(node.IDENTIFIER):
 					return self.fun.lookupParameter(node.IDENTIFIER).ID
-				else:
+				elif self.scope.lookupVariable(node.IDENTIFIER, self.cls):
 					return self.scope.lookupVariable(node.IDENTIFIER, self.cls).ID
+				else:
+					return self.scope.lookupFunction(node.IDENTIFIER, self.cls).return_ID # Recursive Function Call
 			elif node.operator:
 				return node.operator
 			elif node.expression:
@@ -574,6 +588,7 @@ class TAC_Generator():
 		elif isinstance(node, ANT_Function):
 			fun = Tac_Function()
 			fun.ID = self.new_label()
+			fun.return_ID = self.new_temp()
 			fun.name = node.IDENTIFIER
 			if self.cls:
 				parent = self.cls
@@ -608,7 +623,7 @@ class TAC_Generator():
 					self.deb() << NL() << "// Fun: " << fun.name << " Has Param: " << param.ID
 
 			self.scope.enter()
-			fun.return_ID = self.visit(node.block)
+			self.visit(node.block)
 			self.scope.exit()
 			self.dec()
 			self.add() << NL() << "RETURN"
