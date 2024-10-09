@@ -20,6 +20,6 @@ class Busqueda {
 
 var uno = 1;
 var arr = [uno, 3, 5, 7, 9, 11, 13];
-//var buscador = new Busqueda();
+var buscador = new Busqueda();
 //var indice = buscador.busquedaBinaria(arr, 0, arr.length - 1, 7);
 //print "El elemento está en el índice: " + indice;

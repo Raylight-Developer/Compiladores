@@ -4,7 +4,7 @@ from GUI.Syntax_Highlighting import *
 from Analyzer.Semantic_Analyzer import *
 from Intermediate_Code.TAC import *
 
-TAC_INFO = False
+TAC_INFO = True
 
 class Display(QMainWindow):
 	def __init__(self):
@@ -152,4 +152,4 @@ font_id = QFontDatabase.addApplicationFont("./Resources/RobotoMono-Medium.ttf")
 app.setStyleSheet(open("./Resources/QStyleSheet.css", "r").read())
 Window = Display()
 Window.showMaximized()
-app.exec()
+sys.exit(app.exec())

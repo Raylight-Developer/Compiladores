@@ -34,8 +34,6 @@ class TAC_Generator():
 		self.output = Lace()
 		self.fallback = Lace()
 
-		self.predefined = { "array": False }
-
 		self.visit(self.program)
 
 	def new_temp(self):
@@ -347,27 +345,14 @@ class TAC_Generator():
 					left = res
 			return res
 
-			"""
-			LT_INIT_ARRAY:
-				ALLOCATE IT_ARRAY_PTR, IT_ARRAY_CAPACITY
-				RETURN
-
-			LT_APPEND_ARRAY:
-				ALLOCATE IT_ARRAY_PTR, IT_ARRAY_END
-				MOV [IT_ARRAY_PTR + IT_ARRAY_END], IT_ARRAY_NEW_ELEMENT
-				RETURN
-			"""
 		elif isinstance(node, ANT_Array):
-			self.predefineArrayCode()
 			array = []
 			ID = self.new_temp()
 			for expression in node.expressions:
 				array.append(self.visit(expression))
 			self.deb() << NL() << "// ARRAY START {"
 			self.inc()
-			self.add() << NL() << "IT_ARRAY_CAPACITY: " << len(array)
-			self.add() << NL() << "IT_ARRAY_PTR: " << ID
-			self.add() << NL() << "CALL LT_INIT_ARRAY"
+			self.add() << NL() << "ALLOCATE " << ID << ", " << len(array)
 			self.deb() << NL() << "// ELEMENT START {"
 			self.inc()
 			for i, element in enumerate(array):
@@ -376,11 +361,7 @@ class TAC_Generator():
 			self.deb() << NL() << "//} ELEMENT END"
 			self.dec()
 			self.deb() << NL() << "//} ARRAY END"
-
-			# Append to:
-			#self.add() << NL() << "IT_ARRAY_END: " << len(array)
-			#self.add() << NL() << "IT_ARRAY_NEW_ELEMENT: " << array[-1]
-			#self.add() << NL() << "CALL LT_APPEND_ARRAY"
+			self.var.array = array
 			return ID
 
 		elif isinstance(node, ANT_Instantiation):
@@ -442,20 +423,22 @@ class TAC_Generator():
 			if node.funAnon:
 				res = self.visit(node.funAnon)
 			elif node.primary:
+				primary = self.visit(node.primary)
 				if len(node.calls) == 0 :
-					res = self.visit(node.primary) # Calling Variable
+					res = primary # Calling Variable
 					pass
 				elif len(node.calls) == 1:
 					call = node.calls[0]
 					if call.IDENTIFIER: # Calling Member Variable
-						primary = self.visit(node.primary)
 						if primary == 'this':
 							res = self.scope.lookupVariable(call.IDENTIFIER, self.cls).ID
 						else:
-							var = self.scope.lookupVariable(node.primary.IDENTIFIER)
-							res = self.scope.lookupClass(var.instance.name).lookupVariable(call.IDENTIFIER).ID
+							var = self.scope.lookupVariable(node.primary.IDENTIFIER, self.cls)
+							res = var.instance.lookupVariable(call.IDENTIFIER).ID
 					elif call.expression: # Calling the index of an array [expression]
-						res = "TODO"
+						expression = self.visit(call.expression)
+						self.add() << NL() << "IT_ADDR: " << primary << ", [" << expression << "]"
+						res = "IT_ADDR"
 					elif call.arguments: # Calling Function with params
 						if node.primary.superCall:
 							function: Tac_Function = self.cls.extends.initializer
@@ -493,7 +476,10 @@ class TAC_Generator():
 					call_b = node.calls[1]
 					if call_a.IDENTIFIER:
 						if call_b.arguments:
-							function = self.scope.lookupVariable(node.primary.IDENTIFIER).instance.lookupFunction(call_a.IDENTIFIER)
+							if primary == 'this':
+								function = self.cls.lookupFunction(call_a.IDENTIFIER)
+							else:
+								function = self.scope.lookupVariable(node.primary.IDENTIFIER).instance.lookupFunction(call_a.IDENTIFIER)
 							res = function.return_ID
 							arguments = self.visit(call_b.arguments)
 							params = []
@@ -506,15 +492,11 @@ class TAC_Generator():
 							primary = self.visit(node.primary)
 							if primary == 'this':
 								function = self.cls.lookupFunction(call_a.IDENTIFIER)
-								res = function.return_ID
-								self.add() << NL() << "CALL " << function.ID
-								self.deb() << " // Calling function with NO params"
 							else:
-								variable = self.scope.lookupVariable(node.primary.IDENTIFIER, self.cls)
-								function = variable.instance.lookupFunction(call_a.IDENTIFIER)
-								res = function.return_ID
-								self.add() << NL() << "CALL " << function.ID
-								self.deb() << " // Calling function with NO params"
+								function = self.scope.lookupVariable(node.primary.IDENTIFIER, self.cls).instance.lookupFunction(call_a.IDENTIFIER)
+							res = function.return_ID
+							self.add() << NL() << "CALL " << function.ID
+							self.deb() << " // Calling function with NO params"
 						res = call_a.IDENTIFIER
 					elif call_a.expression: # Calling the index of an array [expression]
 						res = "TODO"
@@ -680,19 +662,3 @@ class TAC_Generator():
 
 	def dec(self):
 		self.output -= 1
-
-	def predefineArrayCode(self):
-		if not self.predefined["array"]:
-			val = copy.deepcopy(self.output)
-			self.output.clear()
-			self.output << """LT_INIT_ARRAY:
-	ALLOCATE IT_ARRAY_PTR, IT_ARRAY_CAPACITY
-	RETURN
-
-LT_APPEND_ARRAY:
-	ALLOCATE IT_ARRAY_PTR, IT_ARRAY_END
-	MOV [IT_ARRAY_PTR + IT_ARRAY_END], IT_ARRAY_NEW_ELEMENT
-	RETURN
-"""
-			self.output << NL() << val.data
-			self.predefined["array"] = True
