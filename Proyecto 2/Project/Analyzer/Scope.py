@@ -26,12 +26,14 @@ class Scope_Tracker:
 		
 		self.persistent_tree: List[str] = []
 		self.scope_stack: List[Dict[Tag, Class | Function | Variable]] = []
+		self.persistent_stack: List[Dict[Tag, Class | Function | Variable]] = []
 
 		self.current_depth = 0
 		self.depth_count: Dict[int, int] = {}
 	
 		self.current_scope: Dict[Tag, Class | Function | Variable] = {}
 		self.scope_stack.append(self.current_scope)
+		self.persistent_stack.append(self.current_scope)
 		self.persistent_tree.append("Global {")
 
 	def enterScope(self):
@@ -41,6 +43,7 @@ class Scope_Tracker:
 		self.current_depth += 1
 		self.persistent_tree.append('    ' * self.current_depth + f"{self.current_depth}" + " {")
 		self.scope_stack.append(new_scope)
+		self.persistent_stack.append(new_scope)
 		self.current_scope = new_scope
 
 	def exitScope(self):

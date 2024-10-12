@@ -16,7 +16,7 @@ from .Classes import *
 from .Tree import *
 
 class TAC_Generator():
-	def __init__(self, table_f: Symbol_Table, table_v: Symbol_Table, program: CompiscriptParser.ProgramContext, info: bool = True):
+	def __init__(self, table_c: Symbol_Table, table_f: Symbol_Table, table_v: Symbol_Table, program: CompiscriptParser.ProgramContext, info: bool = True):
 		super().__init__()
 		self.label_count = -1
 		self.temp_count = -1
@@ -35,10 +35,12 @@ class TAC_Generator():
 		self.output = Lace()
 		self.fallback = Lace()
 
+		self.table_c = table_c
 		self.table_f = table_f
 		self.table_v = table_v
 
 		self.visit(self.program)
+		self.addSymbols()
 
 	def new_temp(self):
 		self.temp_count += 1
@@ -411,7 +413,6 @@ class TAC_Generator():
 			self.dec()
 			self.com() << NL() << "//} INIT CLASS"
 
-
 			self.cls = None
 			return cls
 
@@ -688,8 +689,15 @@ class TAC_Generator():
 
 	def dec(self):
 		self.output -= 1
-	
+
+	def addSymbols(self):
+		for scope in reversed(self.scope.persistent_stack):
+			for key, val in scope.items():
+				self.addSymbolToTable(val)
+
 	def addSymbolToTable(self, value: Tac_Class | Tac_Function | Tac_Variable):
+		if isinstance(value, Tac_Class):
+			self.table_c.addSymbol(value)
 		if isinstance(value, Tac_Function):
 			self.table_f.addSymbol(value)
 		elif isinstance(value, Tac_Variable):

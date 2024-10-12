@@ -9,37 +9,57 @@ class Symbol_Table(QTableWidget):
 
 		self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
 
+		if type == "Classes":
+			self.columns = ["ID", "Extends", "Init?", "Fun", "Var", "Scope"]
 		if type == "Functions":
-			self.columns = ["ID", "TAC", "Params", "Scope"]
+			self.columns = ["ID", "TAC", "Type", "Params", "Scope"]
 		if type == "Variables":
-			self.columns = ["ID", "TAC", "Scope"]
+			self.columns = ["ID", "TAC", "Type", "Scope"]
 
 		self.setRowCount(0)
 		self.setColumnCount(len(self.columns))
 		self.setHorizontalHeaderLabels(self.columns)
 
 	def addSymbol(self, value: Tac_Class | Tac_Function | Tac_Variable):
+		for row in range(self.rowCount()):
+			if isinstance(value, Tac_Class):
+				if (self.item(row, 0).text() == value.name):
+					self.setItem(row, 1, QTableWidgetItem(str(value.extends.name) if value.extends else "-"))
+					self.setItem(row, 2, QTableWidgetItem(str(value.initializer.name) if value.initializer else "-"))
+					self.setItem(row, 3, QTableWidgetItem(str(len(value.member_functions))))
+					self.setItem(row, 4, QTableWidgetItem(str(len(value.member_variables))))
+					return
+			elif isinstance(value, Tac_Function):
+				if (self.item(row, 0).text() == value.name):
+					self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
+					self.setItem(row, 2, QTableWidgetItem('|'.join([param.name for param in value.parameters])))
+					self.setItem(row, 4, QTableWidgetItem(value.member.name if value.member else "Global"))
+					return
+			elif isinstance(value, Tac_Variable):
+				if (self.item(row, 0).text() == value.name):
+					self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
+					self.setItem(row, 3, QTableWidgetItem(value.member.name if value.member else "Global"))
+					return
+
 		row = self.rowCount()
 		self.setRowCount(row + 1)
-
-		if isinstance(value, Tac_Variable) and value.instance:
-			self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
+		if isinstance(value, Tac_Class):
+			self.setItem(row, 0, QTableWidgetItem(str(value.name)))
+			self.setItem(row, 1, QTableWidgetItem(str(value.extends.name) if value.extends else "-"))
+			self.setItem(row, 2, QTableWidgetItem(str(value.initializer.name) if value.initializer else "-"))
+			self.setItem(row, 3, QTableWidgetItem(str(len(value.member_functions))))
+			self.setItem(row, 4, QTableWidgetItem(str(len(value.member_variables))))
 		elif isinstance(value, Tac_Function):
 			self.setItem(row, 0, QTableWidgetItem(str(value.name)))
 			self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
 			self.setItem(row, 2, QTableWidgetItem('|'.join([param.name for param in value.parameters])))
-			self.setItem(row, 3, QTableWidgetItem(value.member.name if value.member else "Global"))
+			self.setItem(row, 3, QTableWidgetItem(value.return_ID))
+			self.setItem(row, 4, QTableWidgetItem(value.member.name if value.member else "Global"))
 		elif isinstance(value, Tac_Variable):
 			self.setItem(row, 0, QTableWidgetItem(str(value.name)))
 			self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
-			self.setItem(row, 2, QTableWidgetItem(value.member.name if value.member else "Global"))
-	
-			if value.instance:
-				self.setItem(row, 3, QTableWidgetItem(str(value.instance.name)))
-				self.setItem(row, 4, QTableWidgetItem("Yes" if value.instance.initializer else "No"))
-				self.setItem(row, 5, QTableWidgetItem(str(len(value.instance.member_functions))))
-				self.setItem(row, 6, QTableWidgetItem(str(len(value.instance.member_variables))))
-				self.setItem(row, 7, QTableWidgetItem(value.instance.extends.name if value.instance.extends else 'Global'))
+			self.setItem(row, 2, QTableWidgetItem("Instance of "+str(value.instance.name) if value.instance else (str(value.array if value.array else "Object"))))
+			self.setItem(row, 3, QTableWidgetItem(value.member.name if value.member else "Global"))
 
 	def clean(self):
 		self.clearContents()

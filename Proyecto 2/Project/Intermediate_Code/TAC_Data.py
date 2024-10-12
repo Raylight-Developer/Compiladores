@@ -67,13 +67,16 @@ class Tac_Class:
 class Tac_Scope_Tracker:
 	def __init__(self):
 		self.scope_stack: List[Dict[str, Union[Tac_Class, Tac_Function, Tac_Variable]]] = []
+		self.persistent_stack: List[Dict[str, Union[Tac_Class, Tac_Function, Tac_Variable]]] = []
 
 		self.current_scope: Dict[str, Union[Tac_Class, Tac_Function, Tac_Variable]] = {}
 		self.scope_stack.append(self.current_scope)
+		self.persistent_stack.append(self.current_scope)
 
 	def enter(self):
 		new_scope = {}
 		self.scope_stack.append(new_scope)
+		self.persistent_stack.append(new_scope)
 		self.current_scope = new_scope
 
 	def exit(self):

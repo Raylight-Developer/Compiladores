@@ -30,9 +30,11 @@ class Display(QMainWindow):
 
 		self.tables = QTabWidget()
 
+		self.table_classes   = Symbol_Table("Classes")
 		self.table_functions = Symbol_Table("Functions")
 		self.table_variables = Symbol_Table("Variables")
 
+		self.tables.addTab(self.table_classes  , QIcon(), "Classes")
 		self.tables.addTab(self.table_functions, QIcon(), "Functions")
 		self.tables.addTab(self.table_variables, QIcon(), "Variables")
 
@@ -65,11 +67,12 @@ class Display(QMainWindow):
 
 		self.setCentralWidget(widget)
 		
-		QTimer.singleShot(200, lambda: (
+		self.compile()
+		QTimer.singleShot(50, lambda: (
+			self.table_classes.resizeColumnsToContents(),
 			self.table_functions.resizeColumnsToContents(),
 			self.table_variables.resizeColumnsToContents()
 		))
-		self.compile()
 
 	def compile(self):
 		self.tac_highlight = TAC_Syntax_Highlighter(self.tac_output.document())
@@ -77,6 +80,7 @@ class Display(QMainWindow):
 
 		self.tac_output.clear()
 		self.debug_output.clear()
+		self.table_classes.clean()
 		self.table_functions.clean()
 		self.table_variables.clean()
 
@@ -85,16 +89,16 @@ class Display(QMainWindow):
 			token_stream = CommonTokenStream(lexer)
 			parser = CompiscriptParser(token_stream)
 			program = parser.program()
-			tac = TAC_Generator(self.table_functions, self.table_variables, program, TAC_INFO)
+			tac = TAC_Generator(self.table_classes, self.table_functions, self.table_variables, program, TAC_INFO)
 			self.tac_output.append(str(tac.output).strip())
-			QTimer.singleShot(100, lambda: (
+			QTimer.singleShot(50, lambda: (
 				self.tac_output.verticalScrollBar().setValue(0),
 				self.tac_output.horizontalScrollBar().setValue(0)
 			))
 		except Exception as e:
 			self.tac_highlight = Python_Syntax_Highlighter(self.tac_output.document())
 			self.tac_output.append(str(traceback.format_exc()).strip())
-			QTimer.singleShot(100, lambda: (
+			QTimer.singleShot(50, lambda: (
 				self.tac_output.verticalScrollBar().setValue(self.tac_output.verticalScrollBar().maximum()),
 				self.tac_output.horizontalScrollBar().setValue(0)
 			))
