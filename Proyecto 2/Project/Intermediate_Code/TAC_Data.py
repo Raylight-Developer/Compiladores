@@ -45,11 +45,11 @@ class Tac_Class:
 		self.extends : Tac_Class = None
 
 		self.initializer      : Tac_Function       = None
-		self.member_functions : List[Tac_Function] = []
-		self.member_variables : List[Tac_Variable] = []
+		self.member_functions : Dict[str, Tac_Function] = {}
+		self.member_variables : Dict[str, Tac_Variable] = {}
 
 	def lookupFunction(self, name: str):
-		for member in self.member_functions:
+		for key, member in self.member_functions.items():
 			if member.name == name:
 				return member
 		if self.extends:
@@ -57,7 +57,7 @@ class Tac_Class:
 		return None
 
 	def lookupVariable(self, name: str):
-		for member in self.member_variables:
+		for key, member in self.member_variables.items():
 			if member.name == name:
 				return member
 		if self.extends:
@@ -101,13 +101,19 @@ class Tac_Scope_Tracker:
 	def lookupFunction(self, name: str, cls: Union[Tac_Class, Tac_Variable, None] = None) -> Tac_Function:
 		for scope in reversed(self.scope_stack):
 			if isinstance(cls, Tac_Class):
-				for member in cls.member_functions:
-					if name == member.name:
-						return member
+				parent = cls
+				while parent:
+					for key, member in cls.member_functions.items():
+						if name == member.name:
+							return member
+					parent = parent.extends
 			elif isinstance(cls, Tac_Variable):
-				for member in cls.instance.member_functions:
-					if name == member.name:
-						return member
+				parent = cls.instance
+				while parent:
+					for key, member in parent.member_functions.items():
+						if name == member.name:
+							return member
+					parent = parent.extends
 			if f"fun;{name}" in scope:
 				return scope[f"fun;{name}"]
 		raise Exception(f"Function '{name}' not in Scope {cls.name if cls else 'Global'}")
@@ -115,10 +121,12 @@ class Tac_Scope_Tracker:
 	def lookupVariable(self, name: str, cls: Tac_Class | None = None) -> Tac_Variable:
 		for scope in reversed(self.scope_stack):
 			if cls:
-				for member in cls.member_variables:
-					if name == member.name:
-						return member
+				parent = cls
+				while parent:
+					for key, member in parent.member_variables.items():
+						if name == member.name:
+							return member
+					parent = parent.extends
 			if f"var;{name}" in scope:
 				return scope[f"var;{name}"]
-		return None
 		raise Exception(f"Variable '{name}' not in Scope {cls.name if cls else 'Global'}")

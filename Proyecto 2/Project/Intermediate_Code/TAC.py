@@ -230,9 +230,17 @@ class TAC_Generator():
 						var.ID = self.new_temp()
 						var.name = node.IDENTIFIER
 						var.member = self.cls
-						self.cls.member_variables.append(var)
+
 						if self.cls:
-							self.cls.member_variables.append(var)
+							parent = self.cls
+							if self.parent_depth > 0:
+								for i in range(self.parent_depth):
+									parent = parent.extends
+									var.member = parent
+									parent.member_variables[var.name] = var
+							else:
+								var.member = self.cls
+								self.cls.member_variables[var.name] = var
 						else:
 							self.scope.declareVariable(var)
 						self.var = var
@@ -602,12 +610,12 @@ class TAC_Generator():
 						parent = parent.extends
 
 						fun.member = parent
-						parent.member_functions.append(fun)
+						parent.member_functions[fun.name] = fun
 						if fun.name == "init":
 							parent.initializer = fun
 				else:
 					fun.member = self.cls
-					self.cls.member_functions.append(fun)
+					self.cls.member_functions[fun.name] = fun
 					if fun.name == "init":
 						self.cls.initializer = fun
 			else:
