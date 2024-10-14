@@ -136,7 +136,7 @@ class Syntax_Highlighter(QSyntaxHighlighter) :
 				start_match = self.multi_line_start.match(text, end_idx)
 				start_idx = start_match.capturedStart() if start_match.hasMatch() else -1
 
-class Python_Syntax_Highlighter(QSyntaxHighlighter) :
+class PYT_Syntax_Highlighter(QSyntaxHighlighter) :
 	def __init__(self, parent: QTextDocument = None):
 		super().__init__(parent)
 

@@ -50,3 +50,13 @@ class BiMap(Generic[K, V]):
 	
 	def __contains__(self, item):
 		return item in self.map.keys()
+	
+from antlr4.error.ErrorListener import ErrorListener
+
+class MyErrorListener(ErrorListener):
+	def __init__(self):
+		super(MyErrorListener, self).__init__()
+
+	def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+		print(f"Syntax error at line {line}:{column} - {msg}")
+		raise Exception(f"Syntax error at line {line}:{column} - {msg}")

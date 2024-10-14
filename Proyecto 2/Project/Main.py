@@ -1,4 +1,4 @@
-from GUI.Logger import*
+from GUI.QT import*
 from GUI.Syntax_Highlighting import *
 
 from Intermediate_Code.TAC import *
@@ -8,21 +8,20 @@ TAC_INFO = True
 class Display(QMainWindow):
 	def __init__(self):
 		super().__init__()
-		args = sys.argv[1:]
-		self.options = parse_args(args)
+		self.setWindowTitle("Compiler")
 
-		self.setWindowTitle("Semantic Compiler")
-
-		self.code_input = QTextEdit()
-		self.code_input.setTabStopDistance(40)
+		self.code_input = Input()
+		self.code_number = LineNumberWidget(self.code_input)
 		self.code_input.setPlaceholderText("Code to compile...")
 		Syntax_Highlighter(self.code_input.document())
-		self.code_input.setText(open("./Tests/Ejemplo1.cspt", "r", -1, "utf-8").read())
+		self.code_input.setPlainText(open("./Tests/Ejemplo1.cspt", "r", -1, "utf-8").read())
 		self.tac_output = Logger()
 		self.tac_output.setPlaceholderText("TAC code")
 		self.tac_highlight = TAC_Syntax_Highlighter(self.tac_output.document())
+		self.tac_number = LineNumberWidget(self.tac_output)
 
 		self.debug_output = Logger()
+		self.debug_output.setWordWrapMode(QTextOption.WrapMode.NoWrap)
 		self.debug_output.setPlaceholderText("Debug output")
 		self.debug_output.setTabStopDistance(10)
 		self.debug_highlight = SAM_Syntax_Highlighter(self.debug_output.document())
@@ -44,14 +43,30 @@ class Display(QMainWindow):
 		tabcontainer.setObjectName("Table")
 		tabcontainer.setLayout(tablayout)
 
-		sub = QSplitter(Qt.Orientation.Vertical)
-		sub.addWidget(self.debug_output)
-		sub.addWidget(tabcontainer)
+		self.sub = QSplitter(Qt.Orientation.Vertical)
+		self.sub.addWidget(self.debug_output)
+		self.sub.addWidget(tabcontainer)
 
+		h_layout = QHBoxLayout()
+		h_layout.addWidget(self.code_number)
+		h_layout.addWidget(self.code_input)
+		h_layout.setContentsMargins(0,0,0,0)
+		h_widget = QWidget()
+		h_widget.setContentsMargins(0,0,0,0)
+		h_widget.setLayout(h_layout)
+		
+		h2_layout = QHBoxLayout()
+		h2_layout.addWidget(self.tac_number)
+		h2_layout.addWidget(self.tac_output)
+		h2_layout.setContentsMargins(0,0,0,0)
+		h2_widget = QWidget()
+		h2_widget.setContentsMargins(0,0,0,0)
+		h2_widget.setLayout(h2_layout)
+		
 		self.main_splitter = QSplitter(Qt.Orientation.Horizontal)
-		self.main_splitter.addWidget(self.code_input)
-		self.main_splitter.addWidget(self.tac_output)
-		self.main_splitter.addWidget(sub)
+		self.main_splitter.addWidget(h_widget)
+		self.main_splitter.addWidget(h2_widget)
+		self.main_splitter.addWidget(self.sub)
 
 		button_compile = QPushButton("Compile")
 		button_compile.clicked.connect(self.compile)
@@ -74,8 +89,8 @@ class Display(QMainWindow):
 		))
 
 	def compile(self):
-		self.tac_highlight = TAC_Syntax_Highlighter(self.tac_output.document())
-		self.debug_highlight = SAM_Syntax_Highlighter(self.debug_output.document())
+		TAC_Syntax_Highlighter(self.tac_output.document())
+		PYT_Syntax_Highlighter(self.debug_output.document())
 
 		self.tac_output.clear()
 		self.debug_output.clear()
@@ -87,19 +102,27 @@ class Display(QMainWindow):
 			lexer = CompiscriptLexer(InputStream(self.code_input.toPlainText()))
 			token_stream = CommonTokenStream(lexer)
 			parser = CompiscriptParser(token_stream)
+			parser.removeErrorListeners()
+			parser.addErrorListener(MyErrorListener())
 			program = parser.program()
 			tac = TAC_Generator(self.table_classes, self.table_functions, self.table_variables, program, TAC_INFO)
-			self.tac_output.append(str(tac.output).strip())
+			self.table_classes.end()
+			self.table_functions.end()
+			self.table_variables.end()
+			self.tac_output.setPlainText(str(tac.output).strip())
 			QTimer.singleShot(50, lambda: (
 				self.tac_output.verticalScrollBar().setValue(0),
-				self.tac_output.horizontalScrollBar().setValue(0)
+				self.tac_output.horizontalScrollBar().setValue(0),
+				self.sub.setSizes([0,500]),
+				self.main_splitter.setSizes([500,500,500])
 			))
 		except Exception as e:
-			self.tac_highlight = Python_Syntax_Highlighter(self.tac_output.document())
-			self.tac_output.append(str(traceback.format_exc()).strip())
+			self.debug_output.setPlainText(str(e))
 			QTimer.singleShot(50, lambda: (
 				self.tac_output.verticalScrollBar().setValue(self.tac_output.verticalScrollBar().maximum()),
-				self.tac_output.horizontalScrollBar().setValue(0)
+				self.tac_output.horizontalScrollBar().setValue(0),
+				self.sub.setSizes([500,0]),
+				self.main_splitter.setSizes([500,0,500])
 			))
 
 app = QApplication(sys.argv)

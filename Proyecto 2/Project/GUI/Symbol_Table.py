@@ -24,7 +24,7 @@ class Symbol_Table(QTableWidget):
 		for row in range(self.rowCount()):
 			if isinstance(value, Tac_Class):
 				if (self.item(row, 0).text() == value.name):
-					self.setItem(row, 1, QTableWidgetItem(str(value.extends.name) if value.extends else "-"))
+					self.setItem(row, 1, QTableWidgetItem(str(value.extends.name) if value.extends else "-", Qt.ItemFlag.NoItemFlags))
 					self.setItem(row, 2, QTableWidgetItem("Yes" if value.initializer else "-"))
 					self.setItem(row, 3, QTableWidgetItem(str(len(value.member_functions))))
 					self.setItem(row, 4, QTableWidgetItem(str(len(value.member_variables))))
@@ -71,3 +71,13 @@ class Symbol_Table(QTableWidget):
 	def clean(self):
 		self.clearContents()
 		self.setRowCount(0)
+
+	def end(self):
+		row_count = self.rowCount()
+		column_count = self.columnCount()
+
+		for row in range(row_count):
+			for col in range(column_count):
+				item = self.item(row, col)
+				if item:  # Make sure the item exists
+					item.setFlags(item.flags() & ~Qt.ItemIsEditable)

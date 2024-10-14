@@ -6,7 +6,7 @@ from Include import *
 from Lace import *
 
 from GUI.Symbol_Table import *
-from GUI.Logger import *
+from GUI.QT import *
 
 from .Symbols import *
 from .Scope import *
