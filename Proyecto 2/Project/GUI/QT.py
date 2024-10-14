@@ -53,16 +53,17 @@ class LineNumberWidget(QWidget):
 			self.update_width(0)
 
 	def paintEvent(self, event):
+		rect = self.rect().adjusted(0,10,0,-10)
 		painter = QPainter(self)
-		painter.fillRect(self.rect(), QColor(15,15,15))
+		painter.fillRect(rect, Qt.transparent)
 
 		block = self.editor.firstVisibleBlock()
 		block_number = block.blockNumber()
 		top = int(self.editor.blockBoundingGeometry(block).translated(self.editor.contentOffset()).top()) + 15
 		bottom = top + int(self.editor.blockBoundingRect(block).height())
 
-		while block.isValid() and top <= event.rect().bottom():
-			if block.isVisible() and bottom >= event.rect().top():
+		while block.isValid() and top <= rect.bottom() - 15:
+			if block.isVisible() and bottom >= rect.top():
 				number = str(block_number + 1)
 				painter.setPen(Qt.white)
 				painter.drawText(0, top, self.width(), self.fontMetrics().height(), Qt.AlignRight, number)
