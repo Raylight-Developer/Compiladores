@@ -241,6 +241,7 @@ class TAC_Generator():
 							else:
 								var.member = self.cls
 								self.cls.member_variables[var.name] = var
+							self.addSymbolToTable(var)
 						else:
 							self.scope.declareVariable(var)
 						self.var = var
