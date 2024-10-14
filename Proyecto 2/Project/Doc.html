@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Custom Syntax Highlighter</title>
+		<style>
+			* {
+				vertical-align: top;
+				background-color: rgb(30, 30, 30);
+				font-size: 16pt;
+				color: rgb(250, 250, 250);
+			}
+			.builtinFunctions { color: rgb(225, 225, 120); }
+			.builtinClasses { color: rgb(78, 201, 176); }
+			.control { color: rgb(216, 160, 223); }
+			.user_keywords { color: rgb(86, 156, 214); }
+			.operation { color: rgb(100, 255, 120); }
+			.label { color: rgb(255, 120, 100); }
+			.temporal { color: rgb(120, 130, 140); }
+			.brackets { color: rgb(255, 215, 0); }
+			.integers { color: rgb(181, 206, 168); }
+			.floats { color: rgb(185, 225, 172); }
+			.strings { color: rgb(214, 157, 133); }
+			.comments { color: rgb(85, 140, 70); }
+			.internal { color: rgb(120, 220, 220); }
+		</style>
+	</head>
+	<body>
+		<pre>
+Arithmetic:
+	<span class="operation">ADD </span> +
+	<span class="operation">SUB </span> -
+	<span class="operation">MUL </span> *
+	<span class="operation">DIV </span> /
+	<span class="operation">MOD </span> %
+Boolean:
+	<span class="operation">AND </span> &&
+	<span class="operation">NOT </span> !
+	<span class="operation">OR  </span> ||
+Comaprison:
+	<span class="operation">NEQ </span> !=
+	<span class="operation">LEQ </span> <=
+	<span class="operation">GEQ </span> >=
+	<span class="operation">EQ  </span> ==
+	<span class="operation">LT  </span> <
+	<span class="operation">GT  </span> >
+Instructions:
+	<span class="control">ALLOCATE</span> Allocate pointer locations for Arrays
+	<span class="control">SYSCALL</span>  Call for Print
+	<span class="control">RETURN</span>   Pop item of call stack and go_to where called
+	<span class="control">GO_TO</span>    Go to label
+	<span class="control">PRINT</span>    Print Value at address
+	<span class="control">CALL</span>     Go to label, push self to call stack
+	<span class="control">MOV</span>      Move value into array offset pointer
+	<span class="control">IF</span>       Compare two values
+		</pre>
+		<table border="1">
+			<tr>
+				<th>Codigo</th>
+				<th>CI</th>
+				<th>Table</th>
+				<th>Explanation</th>
+			</tr>
+			<tr>
+				<td><pre class="Code">
+var test = 1 < 2;
+				</pre></td>
+				<td><pre class="CI">
+LT T_1: 1, 2
+T_0: T_1
+				</pre></td>
+				<td><pre class="Table">
+T_0 test
+				</pre></td>
+				<td><pre class="Table">
+Result of LESS_THAN (LT) is stored on T_1 (1 < 2)
+T_1 is assigned to T_0 (test)
+				</pre></td>
+			</tr>
+			<tr>
+				<td><pre class="Code">
+var test = 1 < 2;
+var a = 0;
+var b;
+var b = a;
+var b = b + 5;
+				</pre></td>
+				<td><pre class="CI">
+LT T_1: 1, 2
+T_0: T_1
+T_2: 0
+T_4: T_2
+ADD T_6: T_5, 5
+T_5: T_6
+				</pre></td>
+				<td><pre class="Table">
+T_0 test
+T_2 a
+T_5 b
+				</pre></td>
+				<td><pre class="Table">
+Result of LESS_THAN (LT) is stored on T_1 (1 < 2)
+T_1 is assigned to T_0 (test)
+0 is assigned to T_2 (a)
+T_2 is assigned to T_4 (b)
+Result of ADDITION (ADD) is stored on T_6 (b + 5)
+T_6 is assigned to T_5 (b)
+				</pre></td>
+			</tr>
+			<tr>
+				<td><pre class="Code">
+fun factorial(n) {
+	if (n <= 1) {
+		return 1;
+	} else {
+		return n * factorial(n - 1);
+	}
+}
+
+var numero = 5;
+var resultado = factorial(numero);
+print "El factorial de " + numero + " es: " + resultado;
+				</pre></td>
+				<td><pre class="CI">
+L_0:
+	LEQ T_2: T_1, 1
+	IF T_2 GO_TO L_1
+		SUB T_3: T_1, 1
+		T_1: T_3
+		CALL L_0
+		MUL T_4: T_1, T_0
+		T_0: T_4
+		GO_TO L_2
+	L_1:
+		T_0: 1
+		GO_TO L_2
+	L_2:
+RETURN
+T_5: 5
+T_1: T_5
+CALL L_0
+T_6: T_0
+SYSCALL
+	ADD T_7: "El factorial de ", T_5
+	ADD T_8: T_7, " es: "
+	ADD T_9: T_8, T_6
+PRINT T_9
+SYSCALL
+				</pre></td>
+				<td><pre class="Table">
+T_1 factorial::n
+T_5 numero
+T_6 reultado
+
+L_0 factorial
+				</pre></td>
+				<td><pre class="Table">
+5 is assigned to T_5(numero)
+T_5 is assigned to T_1(parameter n)
+L_0 is Called
+Result of LESS_OR_EQUAL (LEQ) is stored on T_2 (n < 1)
+IF T_2 is True, GO_TO L_1(if true) else keep going (else)
+...
+				</pre></td>
+			</tr>
+			<tr>
+				<td><pre class="Code">
+class CajaRegistradora {
+	init(impuesto) {
+		this.impuesto = impuesto;
+		this.total = 0;
+	}
+
+	agregarProducto(precio) {
+		this.total = this.total + precio;
+		print "Producto añadido con precio: " + precio;
+	}
+
+	calcularTotalConImpuesto() {
+		var totalConImpuesto = this.total + (this.total * this.impuesto / 100);
+		print "El total con impuesto es: " + totalConImpuesto;
+		return totalConImpuesto;
+	}
+
+	reiniciar() {
+		this.total = 0;
+		print "La caja registradora se ha reiniciado.";
+	}
+}
+
+var caja = new CajaRegistradora(12);
+caja.agregarProducto(100);
+caja.agregarProducto(50);
+caja.agregarProducto(25);
+caja.calcularTotalConImpuesto();
+caja.reiniciar();
+				</pre></td>
+				<td><pre class="CI">
+L_0:
+	T_3: T_2
+	T_4: 0
+RETURN
+L_1:
+	ADD T_8: T_7, T_6
+	T_7: T_8
+	SYSCALL
+		ADD T_9: "Producto añadido con precio: ", T_6
+	PRINT T_9
+	SYSCALL
+RETURN
+L_2:
+	MUL T_12: T_7, T_3
+	DIV T_13: T_12, 100
+	ADD T_14: T_7, T_13
+	T_11: T_14
+	SYSCALL
+		ADD T_15: "El total con impuesto es: ", T_11
+	PRINT T_15
+	SYSCALL
+	T_10: T_11
+RETURN
+L_3:
+	T_17: 0
+	SYSCALL
+	PRINT "La caja registradora se ha reiniciado."
+	SYSCALL
+RETURN
+T_2: 12
+CALL L_0
+T_6: 100
+CALL L_1
+T_6: 50
+CALL L_1
+T_6: 25
+CALL L_1
+CALL L_2
+CALL L_3
+				</pre></td>
+				<td><pre class="Table">
+T_11 totalConImpuesto
+T_3  impuesto
+T_17 total
+T_0  caja
+
+L_0 init
+L_1 agregarProducto
+L_2 calcularTotalConImpuesto
+L_3 reiniciar
+				</pre></td>
+				<td><pre class="Table">
+...
+				</pre></td>
+			</tr>
+			<tr>
+				<td><pre class="Code">
+				</pre></td>
+				<td><pre class="CI">
+				</pre></td>
+				<td><pre class="Table">
+				</pre></td>
+				<td><pre>
+				</pre></td>
+			</tr>
+		</table>
+		<script>
+
+			const a_highlightingRules = [
+				{ pattern: /\b(IF|GO_TO|LINK_BACK|IF_NOT|SYSCALL|PRINT|RETURN|CALL)\b/g, cssClass: 'control' },
+				{ pattern: /\b(true|false|nil|this)\b/g, cssClass: 'user_keywords' },
+				{ pattern: /\b(ADD|SUB|MUL|DIV|MOD|AND|OR|NOT|EQ|NEQ|LEQ|GEQ|LT|GT|ALLOCATE|MOV)\b/g, cssClass: 'operation' },
+				{ pattern: /\bL_[0-9]*\b/g, cssClass: 'label' },
+				{ pattern: /\bT_[0-9]*\b/g, cssClass: 'temporal' },
+				{ pattern: /\b(IT_|LT_)\S*\b/g, cssClass: 'internal' },
+				{ pattern: /[\(\)\[\]\{\}]/g, cssClass: 'brackets' },
+				{ pattern: /\b[-+]?[0-9]+[uU]?\b/g, cssClass: 'integers' },
+				{ pattern: /\b[-+]?([0-9]*\.[0-9]+|[0-9]+\.)([eE][-+]?[0-9]+)?[fF]?\b/g, cssClass: 'floats' },
+				{ pattern: /"([^"\\]|\\.)*"|'([^'\\]|\\.)*'/g, cssClass: 'strings' },
+				{ pattern: /(\/\/[^\n]*|\/\*.*?\*\/)/g, cssClass: 'comments' }
+			]
+			const b_highlightingRules = [
+				{ pattern: /\b(float|int|uint|bool|class|struct|const|true|false)\b/g, cssClass: 'user_keywords' },
+				{ pattern: /\b(if|else|else if|while|for|return|switch|case|break|continue)\b/g, cssClass: 'control' },
+				{ pattern: /\b(fun|print|init|var)\b/g, cssClass: 'builtinFunctions' },
+				{ pattern: /\bsuper\b/g, cssClass: 'builtinClasses' },
+				{ pattern: /[\(\)\[\]\{\}]/g, cssClass: 'brackets' },
+				{ pattern: /\b[-+]?[0-9]+[uU]?\b/g, cssClass: 'integers' },
+				{ pattern: /\b[-+]?([0-9]*\.[0-9]+|[0-9]+\.)([eE][-+]?[0-9]+)?[fF]?\b/g, cssClass: 'floats' },
+				{ pattern: /"([^"\\]|\\.)*"|'([^'\\]|\\.)*'/g, cssClass: 'strings' },
+				{ pattern: /(\/\/[^\n]*|\/\*.*?\*\/)/g, cssClass: 'comments' }
+			]
+			const c_highlightingRules = [
+				{ pattern: /\bL_[0-9]*\b/g, cssClass: 'label' },
+				{ pattern: /\bT_[0-9]*\b/g, cssClass: 'temporal' }
+			]
+
+			window.onload = function() {
+				highlightCode();
+			}
+			function highlightCode() {
+				{
+					var elements = document.querySelectorAll(".CI");
+					elements.forEach(function(codeElement) {
+						let codeText = codeElement.textContent;
+
+						// Apply each highlighting rule
+						a_highlightingRules.forEach(rule => {
+							codeText = codeText.replace(rule.pattern, match => `<span class=${rule.cssClass}>${match}</span>`);
+						});
+
+						codeElement.innerHTML = codeText; // Update HTML with the highlighted code
+					});
+				}
+				{
+					var elements = document.querySelectorAll(".Code");
+					elements.forEach(function(codeElement) {
+						let codeText = codeElement.textContent;
+
+						// Apply each highlighting rule
+						b_highlightingRules.forEach(rule => {
+							codeText = codeText.replace(rule.pattern, match => `<span class=${rule.cssClass}>${match}</span>`);
+						});
+
+						codeElement.innerHTML = codeText; // Update HTML with the highlighted code
+					});
+				}
+				{
+					var elements = document.querySelectorAll(".Table");
+					elements.forEach(function(codeElement) {
+						let codeText = codeElement.textContent;
+
+						// Apply each highlighting rule
+						c_highlightingRules.forEach(rule => {
+							codeText = codeText.replace(rule.pattern, match => `<span class=${rule.cssClass}>${match}</span>`);
+						});
+
+						codeElement.innerHTML = codeText; // Update HTML with the highlighted code
+					});
+				}
+			}
+		</script>
+	</body>
+</html>

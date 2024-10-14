@@ -120,6 +120,7 @@ class Tac_Scope_Tracker:
 					parent = parent.extends
 			if f"fun;{name}" in scope:
 				return scope[f"fun;{name}"]
+		return None
 		raise Exception(f"Function '{name}' not in Scope {cls.name if cls else 'Global'}")
 
 	def lookupVariable(self, name: str, cls: Tac_Class | None = None) -> Tac_Variable:
@@ -133,4 +134,5 @@ class Tac_Scope_Tracker:
 					parent = parent.extends
 			if f"var;{name}" in scope:
 				return scope[f"var;{name}"]
+		return None
 		raise Exception(f"Variable '{name}' not in Scope {cls.name if cls else 'Global'}")

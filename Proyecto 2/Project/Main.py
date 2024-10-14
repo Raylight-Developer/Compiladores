@@ -14,7 +14,7 @@ class Display(QMainWindow):
 		self.code_number = LineNumberWidget(self.code_input)
 		self.code_input.setPlaceholderText("Code to compile...")
 		Syntax_Highlighter(self.code_input.document())
-		self.code_input.setPlainText(open("./Tests/Ejemplo1.cspt", "r", -1, "utf-8").read())
+		self.code_input.setPlainText(open("./Tests/Ejemplo4.cspt", "r", -1, "utf-8").read())
 		self.tac_output = Logger()
 		self.tac_output.setPlaceholderText("TAC code")
 		TAC_Syntax_Highlighter(self.tac_output.document())
@@ -88,9 +88,6 @@ class Display(QMainWindow):
 		))
 
 	def compile(self):
-		#TAC_Syntax_Highlighter(self.tac_output.document())
-		#PYT_Syntax_Highlighter(self.debug_output.document())
-
 		self.tac_output.clear()
 		self.debug_output.clear()
 		self.table_classes.clean()
@@ -116,7 +113,7 @@ class Display(QMainWindow):
 				self.main_splitter.setSizes([500,500,500])
 			))
 		except Exception as e:
-			self.debug_output.setPlainText(str(e))
+			self.debug_output.setPlainText(str(traceback.format_exc())+"\n\n\n"+str(e))
 			QTimer.singleShot(50, lambda: (
 				self.tac_output.verticalScrollBar().setValue(self.tac_output.verticalScrollBar().maximum()),
 				self.tac_output.horizontalScrollBar().setValue(0),

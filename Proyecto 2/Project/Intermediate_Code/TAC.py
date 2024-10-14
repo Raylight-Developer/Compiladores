@@ -704,6 +704,8 @@ class TAC_Generator():
 						offset += 8
 						var.offset = i*8 + 8
 						self.table_v.addSymbol(var)
+					for fun in value.member_functions.values():
+						self.table_f.addSymbol(fun)
 					self.table_c.addSymbol(value)
 				elif isinstance(value, Tac_Function):
 					self.table_f.addSymbol(value)
