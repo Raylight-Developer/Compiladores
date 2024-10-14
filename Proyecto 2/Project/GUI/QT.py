@@ -13,6 +13,7 @@ class Input(QPlainTextEdit):
 	def __init__(self):
 		super().__init__()
 		self.setTabStopDistance(40)
+		self.setWordWrapMode(QTextOption.WrapMode.NoWrap)
 		self.cursorPositionChanged.connect(self.highlight_current_line)
 
 	def highlight_current_line(self):

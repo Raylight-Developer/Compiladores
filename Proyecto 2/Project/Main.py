@@ -21,7 +21,6 @@ class Display(QMainWindow):
 		self.tac_number = LineNumberWidget(self.tac_output)
 
 		self.debug_output = Logger()
-		self.debug_output.setWordWrapMode(QTextOption.WrapMode.NoWrap)
 		self.debug_output.setPlaceholderText("Debug output")
 		self.debug_output.setTabStopDistance(10)
 		self.debug_highlight = SAM_Syntax_Highlighter(self.debug_output.document())
