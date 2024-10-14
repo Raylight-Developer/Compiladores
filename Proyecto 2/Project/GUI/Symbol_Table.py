@@ -10,11 +10,11 @@ class Symbol_Table(QTableWidget):
 		self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
 
 		if type == "Classes":
-			self.columns = ["ID", "Extends", "Init?", "Fun", "Var", "Functions", "Variables", "Size"]
+			self.columns = ["ID", "Extends", "Init?", "Fun", "Var", "Functions", "Variables", "Size", "Addr"]
 		if type == "Functions":
 			self.columns = ["ID", "TAC", "Type", "Params", "Member"]
 		if type == "Variables":
-			self.columns = ["ID", "TAC", "Type", "Member", "Size"]
+			self.columns = ["ID", "TAC", "Type", "Member", "Size", "Addr"]
 
 		self.setRowCount(0)
 		self.setColumnCount(len(self.columns))
@@ -30,7 +30,8 @@ class Symbol_Table(QTableWidget):
 					self.setItem(row, 4, QTableWidgetItem(str(len(value.member_variables))))
 					self.setItem(row, 5, QTableWidgetItem("[" + ", ".join([mem.name for key, mem in value.member_functions.items()]) + "]"))
 					self.setItem(row, 6, QTableWidgetItem("[" + ", ".join([mem.name for key, mem in value.member_variables.items()]) + "]"))
-					self.setItem(row, 7, QTableWidgetItem(str(8+len(value.member_variables)*8)))
+					self.setItem(row, 7, QTableWidgetItem(str(len(value.member_variables)*8)))
+					self.setItem(row, 8, QTableWidgetItem(str(value.offset)))
 					return
 			elif isinstance(value, Tac_Function):
 				if (self.item(row, 0).text() == value.name and self.item(row, 1).text() == value.ID):
@@ -41,7 +42,14 @@ class Symbol_Table(QTableWidget):
 			elif isinstance(value, Tac_Variable):
 				if (self.item(row, 0).text() == value.name and self.item(row, 1).text() == value.ID):
 					self.setItem(row, 3, QTableWidgetItem(value.member.name if value.member else "-"))
-					self.setItem(row, 4, QTableWidgetItem("8"))
+					if value.instance:
+						self.setItem(row, 4, QTableWidgetItem(str(len(value.instance.member_variables)*8+8)))
+					else:
+						self.setItem(row, 4, QTableWidgetItem("8"))
+					if value.member:
+						self.setItem(row, 5, QTableWidgetItem(f"{value.member.offset} + {value.offset}"))
+					else:
+						self.setItem(row, 5, QTableWidgetItem(str(value.offset)))
 					return
 
 		row = self.rowCount()
@@ -54,7 +62,8 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row, 4, QTableWidgetItem(str(len(value.member_variables))))
 			self.setItem(row, 5, QTableWidgetItem("[" + ", ".join([mem.name for key, mem in value.member_functions.items()]) + "]"))
 			self.setItem(row, 6, QTableWidgetItem("[" + ", ".join([mem.name for key, mem in value.member_variables.items()]) + "]"))
-			self.setItem(row, 7, QTableWidgetItem(str(8+len(value.member_variables)*8)))
+			self.setItem(row, 7, QTableWidgetItem(str(len(value.member_variables)*8)))
+			self.setItem(row, 8, QTableWidgetItem(str(value.offset)))
 		elif isinstance(value, Tac_Function):
 			self.setItem(row, 0, QTableWidgetItem(str(value.name)))
 			self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
@@ -66,7 +75,14 @@ class Symbol_Table(QTableWidget):
 			self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
 			self.setItem(row, 2, QTableWidgetItem("Instance of "+str(value.instance.name) if value.instance else (str(value.array if value.array else "Object"))))
 			self.setItem(row, 3, QTableWidgetItem(value.member.name if value.member else "-"))
-			self.setItem(row, 4, QTableWidgetItem("8"))
+			if value.instance:
+				self.setItem(row, 4, QTableWidgetItem(str(len(value.instance.member_variables)*8+8)))
+			else:
+				self.setItem(row, 4, QTableWidgetItem("8"))
+			if value.member:
+				self.setItem(row, 5, QTableWidgetItem(f"{value.member.offset} + {value.offset}"))
+			else:
+				self.setItem(row, 5, QTableWidgetItem(str(value.offset)))
 
 	def clean(self):
 		self.clearContents()

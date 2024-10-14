@@ -66,7 +66,7 @@ class LineNumberWidget(QWidget):
 		while block.isValid() and top <= rect.bottom() - 15:
 			if block.isVisible() and bottom >= rect.top():
 				number = str(block_number + 1)
-				painter.setPen(Qt.white)
+				painter.setPen(QColor(100,100,100))
 				painter.drawText(0, top, self.width(), self.fontMetrics().height(), Qt.AlignRight, number)
 
 			block = block.next()

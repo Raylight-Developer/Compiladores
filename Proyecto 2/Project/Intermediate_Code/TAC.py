@@ -240,7 +240,6 @@ class TAC_Generator():
 							else:
 								var.member = self.cls
 								self.cls.member_variables[var.name] = var
-							self.addSymbolToTable(var)
 						else:
 							self.scope.declareVariable(var)
 						self.var = var
@@ -404,7 +403,6 @@ class TAC_Generator():
 			self.com() << NL() << "//} INSTANTIATE CLASS"
 
 			self.com() << NL() << "// INIT CLASS {"
-			self.inc()
 			params = []
 			if node.arguments:
 				arguments: List[str] = self.visit(node.arguments)
@@ -417,8 +415,7 @@ class TAC_Generator():
 			else:
 				self.add() << NL() << "CALL " << cls.initializer.ID
 				self.com() << " // Calling " << cls.name << ".init function with NO params"
-				
-			self.dec()
+
 			self.com() << NL() << "//} INIT CLASS"
 
 			self.cls = None
@@ -643,7 +640,6 @@ class TAC_Generator():
 			self.add() << NL() << "RETURN"
 			self.com() << NL() << "//} FUNCTION END"
 
-			self.addSymbolToTable(fun)
 			self.fun = None
 
 			return fun.ID
@@ -661,7 +657,6 @@ class TAC_Generator():
 					self.add() << NL() << var.ID << ": " << expression
 					self.com() << " // " << node.IDENTIFIER << " = " << str(expression)
 
-				self.addSymbolToTable(var)
 				self.var = None
 				return var.ID
 
@@ -699,14 +694,21 @@ class TAC_Generator():
 		self.output -= 1
 
 	def addSymbols(self):
+		offset = 0
 		for scope in reversed(self.scope.persistent_stack):
-			for key, val in scope.items():
-				self.addSymbolToTable(val)
-
-	def addSymbolToTable(self, value: Tac_Class | Tac_Function | Tac_Variable):
-		if isinstance(value, Tac_Class):
-			self.table_c.addSymbol(value)
-		if isinstance(value, Tac_Function):
-			self.table_f.addSymbol(value)
-		elif isinstance(value, Tac_Variable):
-			self.table_v.addSymbol(value)
+			for key, value in scope.items():
+				if isinstance(value, Tac_Class):
+					value.offset = offset
+					offset += 8
+					for i, var in enumerate(value.member_variables.values()):
+						offset += 8
+						var.offset = i*8 + 8
+						self.table_v.addSymbol(var)
+					self.table_c.addSymbol(value)
+				elif isinstance(value, Tac_Function):
+					self.table_f.addSymbol(value)
+				elif isinstance(value, Tac_Variable):
+					if not value.member:
+						value.offset = offset
+						offset += 8
+					self.table_v.addSymbol(value)

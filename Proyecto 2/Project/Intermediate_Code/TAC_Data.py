@@ -14,6 +14,8 @@ class Tac_Variable:
 		self.array: List[str] = []
 		self.length: int = None
 
+		self.offset: int = 0
+
 class Tac_Function_Parameter:
 	def __init__(self):
 		self.ID   : str = None
@@ -47,6 +49,8 @@ class Tac_Class:
 		self.initializer      : Tac_Function       = None
 		self.member_functions : Dict[str, Tac_Function] = {}
 		self.member_variables : Dict[str, Tac_Variable] = {}
+
+		self.offset: int = 0
 
 	def lookupFunction(self, name: str):
 		for key, member in self.member_functions.items():

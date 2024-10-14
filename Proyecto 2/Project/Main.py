@@ -17,13 +17,13 @@ class Display(QMainWindow):
 		self.code_input.setPlainText(open("./Tests/Ejemplo1.cspt", "r", -1, "utf-8").read())
 		self.tac_output = Logger()
 		self.tac_output.setPlaceholderText("TAC code")
-		self.tac_highlight = TAC_Syntax_Highlighter(self.tac_output.document())
+		TAC_Syntax_Highlighter(self.tac_output.document())
 		self.tac_number = LineNumberWidget(self.tac_output)
 
 		self.debug_output = Logger()
 		self.debug_output.setPlaceholderText("Debug output")
 		self.debug_output.setTabStopDistance(10)
-		self.debug_highlight = SAM_Syntax_Highlighter(self.debug_output.document())
+		PYT_Syntax_Highlighter(self.debug_output.document())
 
 		self.tables = QTabWidget()
 
@@ -88,8 +88,8 @@ class Display(QMainWindow):
 		))
 
 	def compile(self):
-		TAC_Syntax_Highlighter(self.tac_output.document())
-		PYT_Syntax_Highlighter(self.debug_output.document())
+		#TAC_Syntax_Highlighter(self.tac_output.document())
+		#PYT_Syntax_Highlighter(self.debug_output.document())
 
 		self.tac_output.clear()
 		self.debug_output.clear()
