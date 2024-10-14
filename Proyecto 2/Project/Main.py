@@ -1,7 +1,6 @@
 from GUI.Logger import*
 from GUI.Syntax_Highlighting import *
 
-#from Analyzer.Semantic_Analyzer import *
 from Intermediate_Code.TAC import *
 
 TAC_INFO = True
