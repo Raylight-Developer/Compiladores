@@ -8,9 +8,8 @@ from Lace import *
 from GUI.Symbol_Table import *
 from GUI.Logger import *
 
-from Analyzer.Symbols import *
-from Analyzer.Scope import *
-
+from .Symbols import *
+from .Scope import *
 from .TAC_Data import *
 from .Classes import *
 from .Tree import *
