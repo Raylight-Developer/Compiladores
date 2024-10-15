@@ -111,7 +111,7 @@ class TAC_Generator():
 				start = self.new_label()
 				self.com() << NL() << "// FOR LOOP START {"
 				self.add() << NL() << start << ":"
-				self.inc()
+				self.cominc()
 				end = self.new_label()
 
 				if node.compare_expression:
@@ -123,13 +123,13 @@ class TAC_Generator():
 						increment = self.visit(node.increment_expression)
 						self.add() << NL() << fun << ": " << increment
 				self.com() << NL() << "// FOR LOOP BODY START {"
-				self.inc()
+				self.cominc()
 				self.visit(node.statement)
-				self.dec()
+				self.comdec()
 				self.com() << NL() << "//} FOR LOOP BODY END"
 				self.add() << NL() << "GO_TO " << start
 
-				self.dec()
+				self.comdec()
 				self.add() << NL() << end << ":"
 				self.com() << NL() << "//} FOR LOOP END"
 			elif node.exprStmt:
@@ -368,16 +368,16 @@ class TAC_Generator():
 			for expression in node.expressions:
 				array.append(self.visit(expression))
 			self.com() << NL() << "// ARRAY START {"
-			self.inc()
+			self.cominc()
 			self.add() << NL() << length << ": " << len(array)
 			self.add() << NL() << "ALLOCATE " << ID << ", " << length
 			self.com() << NL() << "// ELEMENT START {"
-			self.inc()
+			self.cominc()
 			for i, element in enumerate(array):
 				self.add() << NL() << f"MOV [IT_ARRAY_PTR + {i}], " << element
-			self.dec()
+			self.comdec()
 			self.com() << NL() << "//} ELEMENT END"
-			self.dec()
+			self.comdec()
 			self.com() << NL() << "//} ARRAY END"
 			self.var.array = array
 			self.var.length = length
@@ -691,6 +691,14 @@ class TAC_Generator():
 
 	def add(self):
 		return self.output
+
+	def cominc(self):
+		if self.info:
+			self.output += 1
+
+	def comdec(self):
+		if self.info:
+			self.output -= 1
 
 	def inc(self):
 		self.output += 1
