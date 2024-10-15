@@ -25,7 +25,7 @@ class Syntax_Highlighter(QSyntaxHighlighter) :
 		self.control = QTextCharFormat()
 		self.control.setForeground(QColor(216, 160, 223))
 		for pattern in [
-			"if", "else", "else if", "while", "for", "return", "switch", "case", "break", "continue"
+			"if", "else", "else if", "while", "for", "return"
 		]:
 			rule = HighlightingRule(
 				QRegularExpression(r"\b" + pattern + r"\b"),
@@ -44,24 +44,51 @@ class Syntax_Highlighter(QSyntaxHighlighter) :
 			)
 			self.highlightingRules.append(rule)
 
+		member_function = QTextCharFormat()
+		member_function.setForeground(QColor(230,220,120))
+		self.highlightingRules.append(HighlightingRule(
+			QRegularExpression(r"\.(.*?)(?=\()"),
+			member_function
+		))
+
+		member_function = QTextCharFormat()
+		member_function.setForeground(QColor(230,220,120))
+		self.highlightingRules.append(HighlightingRule(
+			QRegularExpression(r"\b\S*(?=\()"),
+			member_function
+		))
+
+		instantiation = QTextCharFormat()
+		instantiation.setForeground(QColor(78,201,176))
+		self.highlightingRules.append(HighlightingRule(
+			QRegularExpression(r"\bnew \S*(?=\()"),
+			instantiation
+		))
+
+		array = QTextCharFormat()
+		array.setForeground(QColor(120, 150, 150))
+		self.highlightingRules.append(HighlightingRule(
+			QRegularExpression(r"\S*\[\S*\]"),
+			array
+		))
+
 		self.builtinClasses = QTextCharFormat()
 		self.builtinClasses.setForeground(QColor(78,201,176))
 		for pattern in [
-			"super"
+			r"\bsuper\.",
+			r"\bthis\.",
 		]:
 			rule = HighlightingRule(
-				QRegularExpression(r"\b" + pattern + r"\b"),
+				QRegularExpression(pattern),
 				self.builtinClasses
 			)
 			self.highlightingRules.append(rule)
-		
+
 		self.brackets = QTextCharFormat()
-		self.brackets.setForeground(QColor(255,215,0))
+		self.brackets.setForeground(QColor(200,110,100))
 		for pattern in [
 			r"\(",
 			r"\)",
-			r"\[",
-			r"\]",
 			r"\{",
 			r"\}"
 		]:
@@ -252,7 +279,7 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 		self.control = QTextCharFormat()
 		self.control.setForeground(QColor(216, 160, 223))
 		for pattern in [
-			"IF", "GO_TO", "SYSCALL", "PRINT", "RETURN", "CALL", "PUSH"
+			"IF", "GO_TO", "SYSCALL", "PRINT", "RETURN", "CALL", "PUSH", "ALLOCATE", "MOV"
 		]:
 			rule = HighlightingRule(
 				QRegularExpression(r"\b" + pattern + r"\b"),
@@ -275,8 +302,7 @@ class TAC_Syntax_Highlighter(QSyntaxHighlighter) :
 		self.operation.setForeground(QColor(100, 255, 120))
 		for pattern in [
 			"ADD", "SUB", "MUL", "DIV", "MOD",
-			"AND", "OR", "NOT", "EQ", "NEQ", "LEQ", "GEQ","LT", "GT",
-			"ALLOCATE", "MOV"
+			"AND", "OR", "NOT", "EQ", "NEQ", "LEQ", "GEQ","LT", "GT"
 		]:
 			rule = HighlightingRule(
 				QRegularExpression(r"\b" + pattern + r"\b"),

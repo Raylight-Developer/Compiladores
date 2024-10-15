@@ -14,7 +14,7 @@ class Display(QMainWindow):
 		self.code_number = LineNumberWidget(self.code_input)
 		self.code_input.setPlaceholderText("Code to compile...")
 		Syntax_Highlighter(self.code_input.document())
-		self.code_input.setPlainText(open("./Tests/Ejemplo3.cspt", "r", -1, "utf-8").read())
+		self.code_input.setPlainText(open("./Tests/Ejemplo4.cspt", "r", -1, "utf-8").read())
 		self.tac_output = Logger()
 		self.tac_output.setPlaceholderText("TAC code")
 		TAC_Syntax_Highlighter(self.tac_output.document())

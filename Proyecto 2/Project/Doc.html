@@ -329,6 +329,7 @@ L_3 CajaRegistradora::reiniciar
 			const b_highlightingRules = [
 				{ pattern: /\b(float|int|uint|bool|class|struct|const|true|false)\b/g, cssClass: 'user_keywords' },
 				{ pattern: /\b(if|else|else if|while|for|return|switch|case|break|continue)\b/g, cssClass: 'control' },
+				{ pattern: /\bthis\./g, cssClass: 'user_keywords' },
 				{ pattern: /\b(fun|print|init|var)\b/g, cssClass: 'builtinFunctions' },
 				{ pattern: /\bsuper\b/g, cssClass: 'builtinClasses' },
 				{ pattern: /[\(\)\[\]\{\}]/g, cssClass: 'brackets' },
