@@ -11,6 +11,10 @@
 				font-size: 16pt;
 				color: rgb(250, 250, 250);
 			}
+			h1 {
+				font-size: 24pt;
+				text-align: center;
+			}
 			.builtinFunctions { color: rgb(225, 225, 120); }
 			.builtinClasses { color: rgb(78, 201, 176); }
 			.control { color: rgb(216, 160, 223); }
@@ -27,6 +31,11 @@
 		</style>
 	</head>
 	<body>
+		<h1>Intermediate Code</h1>
+		<span>Loosely based on RISCV RV64I</span>
+		<hr>
+		<a href = "https://msyksphinz-self.github.io/riscv-isadoc/html/rv64i.html">RV64I Instruction Set</a>
+		<hr>
 		<pre>
 Arithmetic:
 	<span class="operation">ADD </span> +
@@ -55,6 +64,7 @@ Instructions:
 	<span class="control">PUSH</span>     Push Value To Parameter Stack
 	<span class="control">MOV</span>      Move value into array offset pointer
 	<span class="control">IF</span>       Compare two values
+	<hr>
 		</pre>
 		<table border="1">
 			<tr>
