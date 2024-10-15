@@ -460,8 +460,8 @@ class TAC_Generator():
 								res = var.instance.lookupVariable(call.IDENTIFIER).ID
 					elif call.expression: # Calling the index of an array [expression]
 						expression = self.visit(call.expression)
-						self.add() << NL() << "IT_ADDR: " << primary << ", [" << expression << "]"
-						res = "IT_ADDR"
+						self.add() << NL() << "IT_ARRAY_PTR: " << primary << ", [" << expression << "]"
+						res = "IT_ARRAY_PTR"
 					elif call.arguments: # Calling Function with params
 						if node.primary.superCall:
 							function: Tac_Function = self.cls.extends.initializer

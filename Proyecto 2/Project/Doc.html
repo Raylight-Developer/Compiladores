@@ -15,8 +15,6 @@
 				font-size: 24pt;
 				text-align: center;
 			}
-			.builtinFunctions { color: rgb(225, 225, 120); }
-			.builtinClasses { color: rgb(78, 201, 176); }
 			.control { color: rgb(216, 160, 223); }
 			.user_keywords { color: rgb(86, 156, 214); }
 			.operation { color: rgb(100, 255, 120); }
@@ -55,15 +53,21 @@ Comaprison:
 	<span class="operation">LT  </span> <
 	<span class="operation">GT  </span> >
 Instructions:
-	<span class="control">ALLOCATE</span> Allocate pointer locations for Arrays
-	<span class="control">SYSCALL</span>  Call for Print
-	<span class="control">RETURN</span>   Pop item of call stack and go_to where called
-	<span class="control">GO_TO</span>    Go to label, pop params from param_stack
-	<span class="control">PRINT</span>    Print Value at address
-	<span class="control">CALL</span>     Go to label, pop params from param_stack, push self to call_stack
-	<span class="control">PUSH</span>     Push Value To Parameter Stack
-	<span class="control">MOV</span>      Move value into array offset pointer
+	<span class="control">ALLOCATE</span> Allocate pointer location for an array in <span class="internal">ARRAY_STACK</span>
+	<span class="control">SYSCALL</span>  Call for print
+	<span class="control">RETURN</span>   Pop item of <span class="internal">CALL_STACK</span> and go_to where called
+	<span class="control">GO_TO</span>    Go to label, pop params from <span class="internal">PARAM_STACK</span>
+	<span class="control">PRINT</span>    Print value at address
+	<span class="control">CALL</span>     Go to label, pop params from <span class="internal">PARAM_STACK</span>, push self to <span class="internal">CALL_STACK</span>
+	<span class="control">PUSH</span>     Push value To <span class="internal">PARAM_STACK</span>
+	<span class="control">MOV</span>      Move value into <span class="internal">ARRAY_STACK</span> with offsets
 	<span class="control">IF</span>       Compare two values
+Stacks:
+	<span class="internal">ARRAY_STACK</span> Store all Array Elements
+	<span class="internal">PARAM_STACK</span> Store function parameters (useful for recursive functions)
+	<span class="internal">CALL_STACK</span>  Store location to go to when <span class="control">RETURN</span> is called
+Internal:
+	<span class="internal">IT_ARRAY_PTR</span> Store location and offset for array elements
 	<hr>
 		</pre>
 		<table border="1">
