@@ -8,13 +8,14 @@ class Tac_Variable:
 		self.ID   : str = None
 		self.name : str = None
 
-		self.member : Tac_Class = None
+		self.member : Union[Tac_Class, Tac_Function] = None
 
 		self.instance : Tac_Class = None
 		self.array: List[str] = []
 		self.length: int = None
 
 		self.offset: int = 0
+		self.type: str = None
 
 class Tac_Function_Parameter:
 	def __init__(self):

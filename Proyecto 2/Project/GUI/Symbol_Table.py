@@ -41,12 +41,12 @@ class Symbol_Table(QTableWidget):
 					return
 			elif isinstance(value, Tac_Variable):
 				if (self.item(row, 0).text() == value.name and self.item(row, 1).text() == value.ID):
-					self.setItem(row, 3, QTableWidgetItem(value.member.name if value.member else "-"))
+					self.setItem(row, 3, QTableWidgetItem(value.member.name if isinstance(value.member, Tac_Class) else (value.member.name + "()" if isinstance(value.member, Tac_Function) else "-") if value.member else "-"))
 					if value.instance:
 						self.setItem(row, 4, QTableWidgetItem(str(len(value.instance.member_variables)*8+8)))
 					else:
 						self.setItem(row, 4, QTableWidgetItem("8"))
-					if value.member:
+					if value.member and isinstance(value.member, Tac_Class):
 						self.setItem(row, 5, QTableWidgetItem(f"{value.member.offset} + {value.offset}"))
 					else:
 						self.setItem(row, 5, QTableWidgetItem(str(value.offset)))
@@ -73,13 +73,13 @@ class Symbol_Table(QTableWidget):
 		elif isinstance(value, Tac_Variable):
 			self.setItem(row, 0, QTableWidgetItem(str(value.name)))
 			self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
-			self.setItem(row, 2, QTableWidgetItem("Instance of "+str(value.instance.name) if value.instance else (str(value.array if value.array else "Object"))))
-			self.setItem(row, 3, QTableWidgetItem(value.member.name if value.member else "-"))
+			self.setItem(row, 2, QTableWidgetItem("Instance of "+str(value.instance.name) if value.instance else (str(value.array if value.array else (value.type if value.type else "Object")))))
+			self.setItem(row, 3, QTableWidgetItem(value.member.name if isinstance(value.member, Tac_Class) else (value.member.name + "()" if isinstance(value.member, Tac_Function) else "-") if value.member else "-"))
 			if value.instance:
 				self.setItem(row, 4, QTableWidgetItem(str(len(value.instance.member_variables)*8+8)))
 			else:
 				self.setItem(row, 4, QTableWidgetItem("8"))
-			if value.member:
+			if value.member and isinstance(value.member, Tac_Class):
 				self.setItem(row, 5, QTableWidgetItem(f"{value.member.offset} + {value.offset}"))
 			else:
 				self.setItem(row, 5, QTableWidgetItem(str(value.offset)))

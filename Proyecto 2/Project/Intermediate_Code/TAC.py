@@ -721,6 +721,13 @@ class TAC_Generator():
 						self.table_f.addSymbol(fun)
 					self.table_c.addSymbol(value)
 				elif isinstance(value, Tac_Function):
+					for param in value.parameters:
+						var = Tac_Variable()
+						var.name = param.name
+						var.ID = param.ID
+						var.type = "Param"
+						var.member = value
+						self.table_v.addSymbol(var)
 					self.table_f.addSymbol(value)
 				elif isinstance(value, Tac_Variable):
 					if not value.member:
