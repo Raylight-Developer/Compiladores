@@ -47,7 +47,7 @@ class Syntax_Highlighter(QSyntaxHighlighter) :
 		member_function = QTextCharFormat()
 		member_function.setForeground(QColor(230,220,120))
 		self.highlightingRules.append(HighlightingRule(
-			QRegularExpression(r"\.(.*?)(?=\()"),
+			QRegularExpression(r"\.\S*(?=\()"),
 			member_function
 		))
 
