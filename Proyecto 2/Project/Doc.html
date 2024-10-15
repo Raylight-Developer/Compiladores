@@ -79,13 +79,13 @@ Comaprison:
 Instructions:
 	<span class="control">ALLOCATE</span> Allocate pointer location for an array in <span class="internal">ARRAY_STACK</span>
 	<span class="control">SYSCALL</span>  Call for print
-	<span class="control">RETURN</span>   Pop item of <span class="internal">CALL_STACK</span> and go_to where called
+	<span class="control">RETURN</span>   Pop item of <span class="internal">CALL_STACK</span> and <span class="control">GO_TO</span> location
 	<span class="control">GO_TO</span>    Go to label, pop params from <span class="internal">PARAM_STACK</span>
 	<span class="control">PRINT</span>    Print value at address
-	<span class="control">CALL</span>     Go to label, pop params from <span class="internal">PARAM_STACK</span>, push self to <span class="internal">CALL_STACK</span>
+	<span class="control">CALL</span>     <span class="control">GO_TO</span> label, pop params from <span class="internal">PARAM_STACK</span>, push self to <span class="internal">CALL_STACK</span>
 	<span class="control">PUSH</span>     Push value To <span class="internal">PARAM_STACK</span>
 	<span class="control">MOV</span>      Move value into <span class="internal">ARRAY_STACK</span> with offsets
-	<span class="control">IF</span>       Compare two values
+	<span class="control">IF</span>       If True call next immediate <span class="control">GO_TO</span> Else skip line and continue
 Stacks:
 	<span class="internal">ARRAY_STACK</span> Store all Array Elements
 	<span class="internal">PARAM_STACK</span> Store function parameters (useful for recursive functions)
