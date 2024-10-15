@@ -51,11 +51,11 @@ class Syntax_Highlighter(QSyntaxHighlighter) :
 			member_function
 		))
 
-		member_function = QTextCharFormat()
-		member_function.setForeground(QColor(230,220,120))
+		function_decl = QTextCharFormat()
+		function_decl.setForeground(QColor(230,220,120))
 		self.highlightingRules.append(HighlightingRule(
-			QRegularExpression(r"\b\S*(?=\()"),
-			member_function
+			QRegularExpression(r"([^.\s]*?)(?=\()"),
+			function_decl
 		))
 
 		instantiation = QTextCharFormat()
@@ -89,6 +89,8 @@ class Syntax_Highlighter(QSyntaxHighlighter) :
 		for pattern in [
 			r"\(",
 			r"\)",
+			r"\[",
+			r"\]",
 			r"\{",
 			r"\}"
 		]:
