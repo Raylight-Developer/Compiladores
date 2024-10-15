@@ -407,7 +407,7 @@ class TAC_Generator():
 			if node.arguments:
 				arguments: List[str] = self.visit(node.arguments)
 				for i, argument in enumerate(arguments):
-					self.add() << NL() << cls.initializer.parameters[i].ID << ": " << argument
+					self.add() << NL() << "PUSH " << cls.initializer.ID << "[" << cls.initializer.parameters[i].ID << "]: " << argument
 					params.append((cls.initializer.parameters[i].name, cls.initializer.parameters[i].ID))
 
 				self.add() << NL() << "CALL " << cls.initializer.ID
@@ -468,7 +468,7 @@ class TAC_Generator():
 							arguments = self.visit(call.arguments)
 							params = []
 							for i, param in enumerate(function.parameters):
-								self.add() << NL() << param.ID << ": " << arguments[i]
+								self.add() << NL() << "PUSH " << function.ID << "[" <<  param.ID << "]: " << arguments[i]
 								params.append((param.name, param.ID))
 							self.add() << NL() << "CALL " << function.ID
 							self.com() << " // Calling super." << function.name << " function with params " << str(params)
@@ -478,7 +478,7 @@ class TAC_Generator():
 							arguments = self.visit(call.arguments)
 							params = []
 							for i, param in enumerate(function.parameters):
-								self.add() << NL() << param.ID << ": " << arguments[i]
+								self.add() << NL() << "PUSH " << function.ID << "[" << param.ID << "]: " << arguments[i]
 								params.append((param.name, param.ID))
 							self.add() << NL() << "CALL " << function.ID
 							self.com() << " // Calling function " << function.name << " with params " << str(params)

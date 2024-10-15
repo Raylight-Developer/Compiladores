@@ -161,7 +161,13 @@ T_5 is assigned to T_1(parameter n)
 L_0 is Called
 Result of LESS_OR_EQUAL (LEQ) is stored on T_2 (n < 1)
 IF T_2 is True, GO_TO L_1(if true) else keep going (else)
-...
+ELSE {
+	Result of SUBTRACTION (SUB) is stored on T_3 (n - 1)
+
+}
+IF {
+
+}
 				</pre></td>
 			</tr>
 			<tr>
@@ -266,7 +272,7 @@ L_3 reiniciar
 		<script>
 
 			const a_highlightingRules = [
-				{ pattern: /\b(IF|GO_TO|LINK_BACK|IF_NOT|SYSCALL|PRINT|RETURN|CALL)\b/g, cssClass: 'control' },
+				{ pattern: /\b(IF|GO_TO|LINK_BACK|IF_NOT|SYSCALL|PRINT|RETURN|CALL|PUSH)\b/g, cssClass: 'control' },
 				{ pattern: /\b(true|false|nil|this)\b/g, cssClass: 'user_keywords' },
 				{ pattern: /\b(ADD|SUB|MUL|DIV|MOD|AND|OR|NOT|EQ|NEQ|LEQ|GEQ|LT|GT|ALLOCATE|MOV)\b/g, cssClass: 'operation' },
 				{ pattern: /\bL_[0-9]*\b/g, cssClass: 'label' },
