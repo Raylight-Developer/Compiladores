@@ -3,12 +3,14 @@ from GUI.Syntax_Highlighting import *
 
 from Intermediate_Code.TAC import *
 
-TAC_INFO = False
+TAC_INFO = True
 
 class Display(QMainWindow):
 	def __init__(self):
 		super().__init__()
 		self.setWindowTitle("Compiler")
+
+		# 3 5 4 6 1 2
 
 		self.code_input = Input()
 		self.code_number = LineNumberWidget(self.code_input)

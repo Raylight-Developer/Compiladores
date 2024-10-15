@@ -189,7 +189,9 @@ class TAC_Generator():
 			if node.expression:
 				self.com() << NL() << "// COMPARE"
 				compare = self.visit(node.expression)
-				self.add() << NL() << "IF " << compare << " GO_TO " << end
+				not_temp = self.new_temp()
+				self.add() << NL() << "NOT " << not_temp << ": " << compare
+				self.add() << NL() << "IF " << not_temp << " GO_TO " << end
 			
 			self.com() << NL() << "// WHILE LOOP BODY START {"
 			self.inc()
