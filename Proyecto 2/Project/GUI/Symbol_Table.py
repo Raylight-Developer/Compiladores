@@ -12,7 +12,7 @@ class Symbol_Table(QTableWidget):
 		if type == "Classes":
 			self.columns = ["ID", "Extends", "Init?", "Fun", "Var", "Functions", "Variables", "Size", "Addr"]
 		if type == "Functions":
-			self.columns = ["ID", "TAC", "Type", "Params", "Member"]
+			self.columns = ["ID", "TAC", "Return", "Params", "Member"]
 		if type == "Variables":
 			self.columns = ["ID", "TAC", "Type", "Member", "Size", "Addr"]
 
@@ -35,8 +35,8 @@ class Symbol_Table(QTableWidget):
 					return
 			elif isinstance(value, Tac_Function):
 				if (self.item(row, 0).text() == value.name and self.item(row, 1).text() == value.ID):
-					self.setItem(row, 2, QTableWidgetItem("[" + ", ".join([param.name for param in value.parameters]) + "]"))
-					self.setItem(row, 3, QTableWidgetItem(value.return_ID))
+					self.setItem(row, 2, QTableWidgetItem(value.return_ID))
+					self.setItem(row, 3, QTableWidgetItem("[" + ", ".join([param.name for param in value.parameters]) + "]"))
 					self.setItem(row, 4, QTableWidgetItem(value.member.name if value.member else "-"))
 					return
 			elif isinstance(value, Tac_Variable):
@@ -67,8 +67,8 @@ class Symbol_Table(QTableWidget):
 		elif isinstance(value, Tac_Function):
 			self.setItem(row, 0, QTableWidgetItem(str(value.name)))
 			self.setItem(row, 1, QTableWidgetItem(str(value.ID)))
-			self.setItem(row, 2, QTableWidgetItem("[" + ", ".join([param.name for param in value.parameters]) + "]"))
-			self.setItem(row, 3, QTableWidgetItem(value.return_ID))
+			self.setItem(row, 2, QTableWidgetItem(value.return_ID))
+			self.setItem(row, 3, QTableWidgetItem("[" + ", ".join([param.name for param in value.parameters]) + "]"))
 			self.setItem(row, 4, QTableWidgetItem(value.member.name if value.member else "-"))
 		elif isinstance(value, Tac_Variable):
 			self.setItem(row, 0, QTableWidgetItem(str(value.name)))

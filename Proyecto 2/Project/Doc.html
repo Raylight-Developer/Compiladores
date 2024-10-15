@@ -49,9 +49,10 @@ Instructions:
 	<span class="control">ALLOCATE</span> Allocate pointer locations for Arrays
 	<span class="control">SYSCALL</span>  Call for Print
 	<span class="control">RETURN</span>   Pop item of call stack and go_to where called
-	<span class="control">GO_TO</span>    Go to label
+	<span class="control">GO_TO</span>    Go to label, pop params from param_stack
 	<span class="control">PRINT</span>    Print Value at address
-	<span class="control">CALL</span>     Go to label, push self to call stack
+	<span class="control">CALL</span>     Go to label, pop params from param_stack, push self to call_stack
+	<span class="control">PUSH</span>     Push Value To Parameter Stack
 	<span class="control">MOV</span>      Move value into array offset pointer
 	<span class="control">IF</span>       Compare two values
 		</pre>
@@ -127,7 +128,7 @@ L_0:
 	LEQ T_2: T_1, 1
 	IF T_2 GO_TO L_1
 		SUB T_3: T_1, 1
-		T_1: T_3
+		PUSH L_0[T_1]: T_3
 		CALL L_0
 		MUL T_4: T_1, T_0
 		T_0: T_4
@@ -138,7 +139,7 @@ L_0:
 	L_2:
 RETURN
 T_5: 5
-T_1: T_5
+PUSH L_0[T_1]: T_5
 CALL L_0
 T_6: T_0
 SYSCALL
@@ -149,11 +150,11 @@ PRINT T_9
 SYSCALL
 				</pre></td>
 				<td><pre class="Table">
-T_1 factorial::n
 T_5 numero
 T_6 reultado
 
 L_0 factorial
+T_1 factorial::(n)
 				</pre></td>
 				<td><pre class="Table">
 5 is assigned to T_5(numero)
@@ -232,13 +233,13 @@ L_3:
 	PRINT "La caja registradora se ha reiniciado."
 	SYSCALL
 RETURN
-T_2: 12
+PUSH L_0[T_2]: 12
 CALL L_0
-T_6: 100
+PUSH L_1[T_6]: 100
 CALL L_1
-T_6: 50
+PUSH L_1[T_6]: 50
 CALL L_1
-T_6: 25
+PUSH L_1[T_6]: 25
 CALL L_1
 CALL L_2
 CALL L_3
@@ -249,10 +250,12 @@ T_3  impuesto
 T_17 total
 T_0  caja
 
-L_0 init
-L_1 agregarProducto
-L_2 calcularTotalConImpuesto
-L_3 reiniciar
+L_0 CajaRegistradora::init
+T_2 CajaRegistradora::init::(impuesto)
+L_1 CajaRegistradora::agregarProducto
+T_6 CajaRegistradora::agregarProducto::(precio)
+L_2 CajaRegistradora::calcularTotalConImpuesto
+L_3 CajaRegistradora::reiniciar
 				</pre></td>
 				<td><pre class="Table">
 ...

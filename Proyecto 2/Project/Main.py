@@ -3,7 +3,7 @@ from GUI.Syntax_Highlighting import *
 
 from Intermediate_Code.TAC import *
 
-TAC_INFO = True
+TAC_INFO = False
 
 class Display(QMainWindow):
 	def __init__(self):
